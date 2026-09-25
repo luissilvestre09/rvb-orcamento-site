@@ -225,6 +225,18 @@
     padding-right: 10px; border-right: 1px solid var(--line);
   }
   .inpwrap .prefix .flag { font-size: 20px; line-height: 1; }
+  .ddi {
+    flex: none; position: relative; display: inline-flex; align-items: center; gap: 4px;
+    padding-right: 10px; border-right: 1px solid var(--line); cursor: pointer;
+    font-weight: 600; color: var(--text); font-size: 16px; white-space: nowrap;
+  }
+  .ddi .flag { font-size: 20px; line-height: 1; }
+  .ddi .chev { width: 14px; height: 14px; color: var(--muted); }
+  .ddi select {
+    position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;
+    font-size: 16px; /* evita zoom no iOS */
+  }
+  .ddi:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 8px; }
   .inpwrap .wa { flex: none; width: 22px; height: 22px; color: #25D366; }
   .field input {
     flex: 1 1 auto; min-width: 0; width: 100%;
@@ -498,6 +510,7 @@
       const inp = document.getElementById('inp'), send = document.getElementById('send'), hint = document.getElementById('hint');
       const form = document.getElementById('f');
       if (opts.mask) inp.addEventListener('input', () => { inp.value = opts.mask(inp.value); });
+      if (opts.prefix) ligarSeletorPais(inp);
       inp.addEventListener('input', () => { send.disabled = inp.value.trim().length === 0; hint.className = 'hint'; hint.textContent = opts.hint || ''; });
       form.addEventListener('submit', e => {
         e.preventDefault();
@@ -542,6 +555,31 @@
 
   /* ---------- Formatting & validation ---------- */
   const digits = s => s.replace(/\D/g, '');
+  const PAISES = [
+    ['BR','Brasil','55'], ['PT','Portugal','351'], ['US','Estados Unidos','1'], ['AR','Argentina','54'], ['UY','Uruguai','598'], ['PY','Paraguai','595'],
+    ['CL','Chile','56'], ['BO','Bolívia','591'], ['PE','Peru','51'], ['CO','Colômbia','57'], ['MX','México','52'], ['ES','Espanha','34'], ['IT','Itália','39'],
+    ['FR','França','33'], ['DE','Alemanha','49'], ['GB','Reino Unido','44'], ['AO','Angola','244'], ['MZ','Moçambique','258'], ['JP','Japão','81'], ['CN','China','86']
+  ];
+  const bandeira = (iso) => String.fromCodePoint(...[...iso].map(c => 0x1F1E6 + c.charCodeAt(0) - 65));
+  let DDI = '55';
+  function seletorPais() {
+    return '<label class="ddi" id="ddi"><span class="flag" id="ddiFlag">' + bandeira('BR') + '</span><span id="ddiCode">+55</span>' +
+      '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>' +
+      '<select id="ddiSel" aria-label="País">' + PAISES.map(([iso, nome, ddi]) => '<option value="' + iso + '"' + (iso === 'BR' ? ' selected' : '') + '>' + bandeira(iso) + ' ' + nome + ' (+' + ddi + ')</option>').join('') + '</select></label>';
+  }
+  function ligarSeletorPais(inp) {
+    const sel = document.getElementById('ddiSel'); if (!sel) return;
+    sel.addEventListener('change', () => {
+      const [iso, , ddi] = PAISES.find(x => x[0] === sel.value);
+      DDI = ddi; document.getElementById('ddiFlag').textContent = bandeira(iso); document.getElementById('ddiCode').textContent = '+' + ddi;
+      inp.value = ''; inp.placeholder = ddi === '55' ? '(11) 99999-9999' : 'número com código de área'; inp.dispatchEvent(new Event('input')); inp.focus();
+    });
+  }
+  function maskFone(v) { return DDI === '55' ? maskPhone(v) : digits(v).slice(0, 15); }
+  function validFone(v) {
+    if (DDI === '55') return validPhone(v);
+    const d = digits(v); return d.length >= 6 && d.length <= 15 ? null : 'Digite o número completo, com o código de área.';
+  }
   function fmtWa(w) { const d = String(w || '').replace(/\D/g, '').replace(/^55/, ''); return maskPhone(d); }
   function maskPhone(v) {
     let d = digits(v).slice(0, 11);
@@ -601,7 +639,7 @@
     const L = { origem: lerOrigem(), session_id: novaSessao() };
     L.produto = L.origem.produto || null;
     const payload = (extra) => Object.assign({
-      session_id: L.session_id, nome: L.nome, whatsapp: L.whatsapp ? L.whatsapp.replace(/\D/g, '') : undefined, empresa: L.empresa, email: L.email,
+      session_id: L.session_id, nome: L.nome, whatsapp: L.whatsapp ? L.whatsapp.replace(/\D/g, '') : undefined, ddi: L.ddi || '55', empresa: L.empresa, email: L.email,
       produto_id: L.produto ? L.produto.id : null, produto_nome: L.produto ? L.produto.label : null,
       objetivo: L.objetivo ? L.objetivo.id : undefined, objetivo_label: L.objetivo ? L.objetivo.label : undefined, detalhe: L.detalhe,
       quando: L.quando ? L.quando.id : undefined, quando_label: L.quando ? L.quando.label : undefined, data_evento: L.data || null,
@@ -626,10 +664,12 @@
 
     setStep(2);
     await bot('Prazer, <b>' + esc(nome) + '</b>! Qual é o seu WhatsApp? É por ele que a consultora te chama.');
-    L.whatsapp = await askText({ label: 'WhatsApp', placeholder: '(11) 99999-9999', type: 'tel', inputmode: 'numeric', autocomplete: 'tel-national', mask: maskPhone, validate: validPhone,
-      prefix: '<span class="prefix"><span class="flag" aria-hidden="true">\u{1F1E7}\u{1F1F7}</span>+55</span>' + WA_ICON.replace('<svg ', '<svg class="wa" ') });
-    user(L.whatsapp); salvar(2);
-    L.regiao = REGIAO[ddd(L.whatsapp)[0]] || 'a confirmar';
+    DDI = '55';
+    L.whatsapp = await askText({ label: 'WhatsApp', placeholder: '(11) 99999-9999', type: 'tel', inputmode: 'numeric', autocomplete: 'tel-national', mask: maskFone, validate: validFone,
+      prefix: seletorPais() + WA_ICON.replace('<svg ', '<svg class="wa" ') });
+    L.ddi = DDI;
+    user((DDI === '55' ? '' : '+' + DDI + ' ') + L.whatsapp); salvar(2);
+    L.regiao = DDI === '55' ? (REGIAO[ddd(L.whatsapp)[0]] || 'a confirmar') : 'exterior (+' + DDI + ')';
 
     setStep(3);
     await bot('Perfeito. E qual é o nome da sua empresa?');
@@ -789,13 +829,14 @@
     if (!L.produto) sinais.push('Produto não informado (entrada geral): entender o uso antes de recomendar. Trazer foto de inflável já feito no segmento do cliente.');
     if (L.produto && L.produto.id === 'portal') sinais.push('Portal: medida é o vão livre. Se for corrida, faixas de patrocinadores e relógio de prova.');
     if (L.produto && L.produto.id === 'replica') sinais.push('Réplica: confirmar se a embalagem é quadrada (estrutura interna) e autorização se a marca for de terceiro.');
-    sinais.push('DDD ' + ddd(L.whatsapp) + ' = ' + L.regiao + '. Conferir se a cidade de uso (' + L.cidade + ') bate com a região do telefone.');
+    if (!L.ddi || L.ddi === '55') sinais.push('DDD ' + ddd(L.whatsapp) + ' = ' + L.regiao + '. Conferir se a cidade de uso (' + L.cidade + ') bate com a região do telefone.');
+    else sinais.push('Telefone do exterior (+' + L.ddi + '): confirmar se o uso é no Brasil e como será o faturamento.');
 
     const utms = Object.keys(L.origem.utms).length ? Object.entries(L.origem.utms).map(([k, v]) => k.replace('utm_', '') + '=' + v).join(' · ') : 'nenhuma na URL deste teste';
     const rows = [
       ['Produto', L.produto ? L.produto.label + (L.detalhe ? ' · ' + L.detalhe : '') : 'Não informado (entrada geral do site)'],
       ['Página de origem', L.origem.pagina],
-      ['Contato', L.nome + ' · ' + L.whatsapp + (L.email ? ' · ' + L.email : '')],
+      ['Contato', L.nome + ' · ' + (L.ddi && L.ddi !== '55' ? '+' + L.ddi + ' ' : '') + L.whatsapp + (L.email ? ' · ' + L.email : '')],
       ['Empresa', L.empresa],
       ['CNPJ', L.cnpj ? L.cnpj + ' · ' + L.razao + ' · ' + L.cidadeCnpj : 'não informado'],
       ['Objetivo', L.objetivo.label],
