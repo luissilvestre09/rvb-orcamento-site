@@ -25,44 +25,7 @@
     --font-display: "Baloo 2", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
     --font-body: "Baloo 2", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      color-scheme: dark;
-      --bg: #0E1330;
-      --surface: #171D45;
-      --surface-2: #1F2654;
-      --line: #2C3468;
-      --text: #ECEFFA;
-      --muted: #A3ABC9;
-      --bot-bubble: #1B2250;
-      --bot-text: #ECEFFA;
-      --user-bubble: #2F4FD6;
-      --user-text: #FFFFFF;
-      --input-bg: #1B2250;
-      --focus: #7E9CFF;
-      --wall: #0B102A;
-      --wall-dot: #1E2650;
-      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.25);
-    }
-  }
-  :root[data-theme="dark"] {
-    color-scheme: dark;
-    --bg: #0E1330;
-    --surface: #171D45;
-    --surface-2: #1F2654;
-    --line: #2C3468;
-    --text: #ECEFFA;
-    --muted: #A3ABC9;
-    --bot-bubble: #1B2250;
-    --bot-text: #ECEFFA;
-    --user-bubble: #2F4FD6;
-    --user-text: #FFFFFF;
-    --input-bg: #1B2250;
-    --focus: #7E9CFF;
-    --wall: #0B102A;
-    --wall-dot: #1E2650;
-    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.25);
-  }
+  :root { color-scheme: light; }
 
   html, body { height: 100%; }
   body {
@@ -269,12 +232,6 @@
   .choice:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .choice.quiet { border-color: var(--line); color: var(--muted); background: var(--surface); }
   .choice.quiet:hover { background: var(--surface-2); color: var(--text); }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .choice { border-color: #8A98F0; color: #C9D0FA; }
-    :root:not([data-theme="light"]) .choice:hover { background: #4759D9; color: #fff; }
-  }
-  :root[data-theme="dark"] .choice { border-color: #8A98F0; color: #C9D0FA; }
-  :root[data-theme="dark"] .choice:hover { background: #4759D9; color: #fff; }
 
   .cta {
     display: inline-flex; align-items: center; justify-content: center; gap: 10px;
@@ -347,12 +304,6 @@
     border: 2px solid var(--blue); background: var(--blue); color: #fff;
   }
   .btn.ghost { background: transparent; color: var(--blue); }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .btn { border-color: #4759D9; background: #4759D9; }
-    :root:not([data-theme="light"]) .btn.ghost { background: transparent; color: #C9D0FA; }
-  }
-  :root[data-theme="dark"] .btn { border-color: #4759D9; background: #4759D9; }
-  :root[data-theme="dark"] .btn.ghost { background: transparent; color: #C9D0FA; }
 </style>
 
 <div class="app">
@@ -372,7 +323,7 @@
 
   <footer class="dock">
     <div class="dock-inner" id="dock"></div>
-    <div class="proto">Protótipo v2 · nada é enviado · a engrenagem abre o painel de distribuição · <code>#chute-a-gol</code> no fim do link simula a entrada pela página do produto (no site real: <code>?produto_id=chute-a-gol&amp;utm_source=…</code>)</div>
+    <div class="proto">Ambiente de teste · grava no Supabase e cria no Pipedrive de verdade · <code>#chute-a-gol</code> no fim do link simula a entrada pela página do produto (no site real: <code>?produto_id=chute-a-gol&amp;utm_source=…</code>)</div>
   </footer>
 </div>
 
