@@ -335,7 +335,9 @@
      Em produção a tela conversa com as funções do projeto rvb-orcamento.
      No protótipo (link do claude.ai) as chamadas falham e a tela cai na simulação local. */
   const SUPABASE_FUNCS = 'https://zyzrslzlqtrvlotxrsgu.supabase.co/functions/v1';
-  const PROTOTIPO = !/supabase\.co$|rvb\.com\.br$/.test(location.hostname);
+  const PRODUCAO  = /rvb\.com\.br$/.test(location.hostname);          // domínio final
+  const TESTE     = /github\.io$|supabase\.co$/.test(location.hostname); // ambiente de teste (backend real)
+  const PROTOTIPO = !PRODUCAO && !TESTE;                                // link do claude.ai: simulação local
   async function api(nome, body) {
     try {
       const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), 12000);
@@ -733,7 +735,7 @@
       await bot('A <b>' + C.nome + '</b> vai continuar seu atendimento pelo WhatsApp, já com as principais informações do projeto. Se quiser adiantar a conversa, é só chamar pelo botão abaixo.');
     }
 
-    if (PROTOTIPO || /debug/.test(location.hash)) renderCard(L);
+    if (PROTOTIPO || TESTE || /debug/.test(location.hash)) renderCard(L);
 
     const msg = encodeURIComponent('Oi' + (C === CENTRAL ? '' : ', ' + C.nome) + '! Sou ' + nome + ', da ' + L.empresa + '. Acabei de preencher o orçamento' + (L.produto ? ' de ' + L.produto.label : '') + ' no site da RVB.');
     dock.innerHTML =
@@ -814,7 +816,8 @@
     refreshQueue();
   }
   document.getElementById('gear').addEventListener('click', openPanel);
-  if (!PROTOTIPO) { document.getElementById('gear').hidden = true; const pr = document.querySelector('.proto'); if (pr) pr.hidden = true; }
+  if (!PROTOTIPO) document.getElementById('gear').hidden = true;   // fora do protótipo, quem distribui é o servidor
+  if (PRODUCAO) { const pr = document.querySelector('.proto'); if (pr) pr.hidden = true; }
 
   run();
   window.addEventListener('hashchange', run);
