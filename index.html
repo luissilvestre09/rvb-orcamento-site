@@ -710,14 +710,19 @@
       if (dona && dona !== C.id) { const t = CFG.team.find(x => x.id === dona); trocaPara = { id: t.id, nome: t.nome, fone: t.fone, wa: t.wa, foto: null }; }
     }
     const conhecido = rs && rs.ok ? rs.conhecido : null;
+    const ehCliente = !!(conhecido && conhecido.cliente);
     if (trocaPara) {
       const anterior = C.nome;
-      await bot('Ah, você já fala com a <b>' + esc(trocaPara.nome) + '</b> aqui na RVB! Vou passar para ela continuar com você.');
+      await bot(ehCliente
+        ? 'Ah, você já é cliente da casa e fala com a <b>' + esc(trocaPara.nome) + '</b>! Vou passar para ela continuar com você.'
+        : 'Ah, você já conversou com a <b>' + esc(trocaPara.nome) + '</b> aqui na RVB! Vou passar para ela continuar com você.');
       C = trocaPara; D = { c: C, motivo: (rs && rs.motivo) || ('pessoa já na base → ' + C.nome) }; L.dist = D;
       await definirConsultora(C.nome, C.foto || null);
-      await bot('Oi, <b>' + esc(nome) + '</b>! Aqui é a <b>' + esc(C.nome) + '</b>. Que bom falar com você de novo. A ' + esc(anterior) + ' me passou o que você já contou, sigo daqui.', 700);
+      await bot('Oi, <b>' + esc(nome) + '</b>! Aqui é a <b>' + esc(C.nome) + '</b>. ' + (ehCliente ? 'Que bom falar com você de novo! Cliente da casa tem passagem rápida por aqui.' : 'Que bom que você voltou! Vou aproveitar o que a gente já conversou.') + ' A ' + esc(anterior) + ' me passou o que você já contou, sigo daqui.', 700);
     } else if (conhecido) {
-      await bot('Que bom falar com você de novo, <b>' + esc(nome) + '</b>!', 500);
+      await bot(ehCliente
+        ? 'Que bom falar com você de novo, <b>' + esc(nome) + '</b>! Cliente da casa tem passagem rápida por aqui.'
+        : 'Que bom que você voltou, <b>' + esc(nome) + '</b>! A gente já conversou sobre um projeto antes, vou aproveitar o que já temos.', 500);
     }
 
 
