@@ -440,7 +440,7 @@
   function fila() { const f = []; CFG.team.forEach(t => { if (t.ativa) for (let i = 0; i < t.peso; i++) f.push(t); }); return f; }
   function distribuir(empresa) {
     const key = (empresa || '').trim().toLowerCase();
-    const dona = BASE_EXISTENTE[key];
+    const dona = key ? BASE_EXISTENTE[key] : null;
     if (dona) {
       const t = CFG.team.find(x => x.id === dona);
       return { c: t, motivo: 'cliente já na base → dona da conta: ' + t.nome + (t.ativa ? '' : ' (inativa hoje; recebe mesmo assim, por continuidade)') };
@@ -663,10 +663,20 @@
     const prodLabel = L.produto ? L.produto.label : null;
     const prodTxt = L.produto ? L.produto.label : 'inflável';
 
+    /* consultora definida na abertura (rodízio no servidor; simulação local no protótipo) */
+    let D, C;
+    const r0 = await salvar(0, { distribuir: true });
+    if (r0 && r0.ok && r0.consultora && r0.consultora.id !== 'central') {
+      C = { id: r0.consultora.id, nome: r0.consultora.nome, fone: fmtWa(r0.consultora.whatsapp), wa: r0.consultora.whatsapp, foto: r0.consultora.foto || null };
+      D = { c: C, motivo: r0.motivo || 'rodízio (servidor)' };
+    } else { D = distribuir(''); C = D.c; }
+    L.dist = D;
+    if (C !== CENTRAL) definirConsultora(C.nome, C.foto || null);
+    const quem = C === CENTRAL ? 'Aqui é a <b>RVB Balões</b>.' : 'Eu sou a <b>' + esc(C.nome) + '</b>, da RVB Balões.';
     if (L.produto) {
-      await bot('Oi! Aqui é a <b>RVB Balões</b>. Vi que você está buscando um <b>' + esc(prodLabel) + '</b>. Em menos de 2 minutos eu anoto o essencial do seu projeto, e a nossa consultora já te chama sabendo do que se trata.', 900);
+      await bot('Oi! ' + quem + ' Vi que você está buscando um <b>' + esc(prodLabel) + '</b>. Em menos de 2 minutos eu anoto o essencial do seu projeto e já sigo com você no WhatsApp sabendo do que se trata.', 900);
     } else {
-      await bot('Oi! Aqui é a <b>RVB Balões</b>. Em menos de 2 minutos eu anoto o essencial do seu projeto, e a nossa consultora já te chama sabendo do que se trata.', 900);
+      await bot('Oi! ' + quem + ' Em menos de 2 minutos eu anoto o essencial do seu projeto e já sigo com você no WhatsApp sabendo do que se trata.', 900);
     }
     await bot('Para começar, qual é o seu nome?', 600);
 
@@ -689,19 +699,22 @@
     L.empresa = await askText({ label: 'Empresa', placeholder: 'Nome da empresa', autocomplete: 'organization' });
     user(L.empresa);
 
-    /* distribuição acontece aqui: a partir de agora o bot já sabe quem é a consultora.
-       Em produção quem decide é o servidor (salvar-passo com distribuir=true); no protótipo, a simulação local. */
-    let D, C;
-    const rs = await salvar(3, { distribuir: true });
-    if (rs && rs.ok && rs.consultora) {
-      C = { id: rs.consultora.id, nome: rs.consultora.nome, fone: fmtWa(rs.consultora.whatsapp), wa: rs.consultora.whatsapp, foto: rs.consultora.foto || null };
-      D = { c: C, motivo: rs.motivo || 'definido pelo servidor' };
-      if (C.id === 'central') C = CENTRAL;
-    } else { D = distribuir(L.empresa); C = D.c; }
-    L.dist = D;
-    if (C !== CENTRAL) definirConsultora(C.nome, C.foto || null);
-    const cNome = C === CENTRAL ? 'a equipe da RVB' : 'a ' + C.nome;
-    const cNomeCap = C === CENTRAL ? 'A equipe da RVB' : 'A ' + C.nome;
+    /* a empresa é conhecida: se a conta já tem dona na base, a consultora passa a conversa para ela */
+    const rs = await salvar(3, { verificar_conta: true });
+    let trocaPara = null;
+    if (rs && rs.ok && rs.trocou && rs.consultora) {
+      trocaPara = { id: rs.consultora.id, nome: rs.consultora.nome, fone: fmtWa(rs.consultora.whatsapp), wa: rs.consultora.whatsapp, foto: rs.consultora.foto || null };
+    } else if (!rs) {
+      const dona = BASE_EXISTENTE[(L.empresa || '').trim().toLowerCase()];
+      if (dona && dona !== C.id) { const t = CFG.team.find(x => x.id === dona); trocaPara = { id: t.id, nome: t.nome, fone: t.fone, wa: t.wa, foto: null }; }
+    }
+    if (trocaPara) {
+      const anterior = C.nome;
+      await bot('Ah, a <b>' + esc(L.empresa) + '</b> já é atendida pela <b>' + esc(trocaPara.nome) + '</b> aqui na RVB. Vou passar para ela continuar com você.');
+      C = trocaPara; D = { c: C, motivo: (rs && rs.motivo) || ('cliente já na base → dona da conta: ' + C.nome) }; L.dist = D;
+      definirConsultora(C.nome, C.foto || null);
+      await bot('Oi! Aqui é a <b>' + esc(C.nome) + '</b>. A ' + esc(anterior) + ' me passou o que você já contou, sigo daqui.', 700);
+    }
 
     setStep(4);
     if (L.produto) await bot('Legal, <b>' + esc(nome) + '</b>! E esse <b>' + esc(prodLabel) + '</b> será usado principalmente em qual tipo de ação?');
@@ -734,16 +747,16 @@
       user(fmtDate(L.data)); salvar(5);
       L.dias = daysUntil(L.data);
       if (L.dias <= 25) {
-        await bot('Anotado: <b>' + fmtDate(L.data) + '</b>. Como a data está próxima, vou deixar essa informação destacada para ' + esc(cNome) + ' validar produção e entrega antes de confirmar a viabilidade.');
+        await bot('Anotado: <b>' + fmtDate(L.data) + '</b>. Como a data está próxima, ' + (C === CENTRAL ? 'a equipe vai validar' : 'vou validar') + ' produção e entrega com a fábrica antes de confirmar a viabilidade.');
       } else {
-        await bot('Anotado: <b>' + fmtDate(L.data) + '</b>. ' + esc(cNomeCap) + ' vai considerar essa data na preparação da proposta e na programação de produção e entrega.');
+        await bot('Anotado: <b>' + fmtDate(L.data) + '</b>. ' + (C === CENTRAL ? 'A equipe vai' : 'Vou') + ' considerar essa data na proposta e na programação de produção e entrega.');
       }
     } else if (w.id === '15') {
-      await bot('Anotado. Como é para os próximos dias, vou deixar isso destacado para ' + esc(cNome) + ' validar produção e entrega antes de confirmar a viabilidade.');
+      await bot('Anotado. Como é para os próximos dias, ' + (C === CENTRAL ? 'a equipe vai validar' : 'vou validar') + ' produção e entrega com a fábrica antes de confirmar a viabilidade.');
     }
 
     setStep(6);
-    await bot('Quase lá. Para ' + esc(cNome) + ' preparar a cotação com os dados corretos da empresa, qual é o CNPJ?');
+    await bot('Quase lá. Para ' + (C === CENTRAL ? 'a equipe' : 'eu') + ' preparar a cotação com os dados corretos da empresa, qual é o CNPJ?');
     let cnpjOk = false;
     while (!cnpjOk) {
       const c = await askText({ label: 'CNPJ', placeholder: '00.000.000/0001-00', inputmode: 'numeric', mask: maskCnpj, validate: validCnpj, skip: 'Não tenho agora' });
@@ -817,7 +830,7 @@
     if (C === CENTRAL) {
       await bot('A equipe da <b>RVB</b> vai continuar seu atendimento pelo WhatsApp, já com as principais informações do projeto. Se quiser adiantar a conversa, é só chamar pelo botão abaixo.');
     } else {
-      await bot('A <b>' + C.nome + '</b> vai continuar seu atendimento pelo WhatsApp, já com as principais informações do projeto. Se quiser adiantar a conversa, é só chamar pelo botão abaixo.');
+      await bot('Vou continuar seu atendimento pelo WhatsApp, já com as principais informações do projeto. Se quiser adiantar a conversa, é só me chamar pelo botão abaixo.');
     }
 
     if (PROTOTIPO || TESTE || /debug/.test(location.hash)) renderCard(L);
