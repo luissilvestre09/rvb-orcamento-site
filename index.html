@@ -695,7 +695,12 @@
     L.ddi = DDI;
     user((DDI === '55' ? '' : '+' + DDI + ' ') + L.whatsapp);
     L.regiao = DDI === '55' ? (REGIAO[ddd(L.whatsapp)[0]] || 'a confirmar') : 'exterior (+' + DDI + ')';
-    /* o WhatsApp é conhecido: se a pessoa já fala com alguém da RVB, a consultora passa a conversa para ela */
+    setStep(3);
+    await bot('E qual é o seu e-mail? É para onde vai a proposta em PDF e as referências.');
+    L.email = await askText({ label: 'E-mail', placeholder: 'voce@empresa.com.br', type: 'email', inputmode: 'email', autocomplete: 'email', validate: validEmail });
+    user(L.email);
+
+    /* WhatsApp e e-mail conhecidos: se a pessoa já fala com alguém da RVB, a consultora passa a conversa para ela */
     const rs = await salvar(2, { verificar_conta: true });
     let trocaPara = null;
     if (rs && rs.ok && rs.trocou && rs.consultora) {
@@ -716,7 +721,7 @@
     }
 
 
-    setStep(3);
+    setStep(4);
     /* pessoa conhecida com empresa no Pipedrive: só confirma; senão pergunta */
     L.empresa = null;
     if (conhecido && conhecido.empresa) {
@@ -732,7 +737,7 @@
     }
     salvar(3);
 
-    setStep(4);
+    setStep(5);
     if (L.produto) await bot('Legal, <b>' + esc(nome) + '</b>! E esse <b>' + esc(prodLabel) + '</b> será usado principalmente em qual tipo de ação?');
     else await bot('Legal, <b>' + esc(nome) + '</b>! Para eu orientar certo: o inflável será usado principalmente em qual tipo de ação?');
     L.objetivo = await askChoice(OBJECTIVES);
@@ -748,7 +753,7 @@
       const t = await askChoice(TENDA_USO); L.detalhe = t.label; user(t.label);
     }
 
-    setStep(5);
+    setStep(6);
     const whenQ = L.objetivo.id === 'evento'     ? 'E quando será o evento?' :
                   L.objetivo.id === 'inaug'      ? 'Quando será a inauguração ou a ação?' :
                   L.objetivo.id === 'promo'      ? 'Quando será a ação?' :
@@ -771,7 +776,7 @@
       await bot('Anotado. Como é para os próximos dias, ' + (C === CENTRAL ? 'a equipe vai validar' : 'vou validar') + ' produção e entrega com a fábrica antes de confirmar a viabilidade.');
     }
 
-    setStep(6);
+    setStep(7);
     await bot('Quase lá. Para ' + (C === CENTRAL ? 'a equipe' : 'eu') + ' preparar a cotação com os dados corretos da empresa, qual é o CNPJ?');
     let cnpjOk = false;
     while (!cnpjOk) {
@@ -800,7 +805,7 @@
       else await bot('Sem problema, confere o número e digita de novo.', 300);
     }
 
-    setStep(7);
+    setStep(8);
     const usoTxt = L.objetivo.id === 'evento' ? 'O evento será' : (L.objetivo.id === 'inaug' ? 'A inauguração será' : 'O uso será');
     const cidadeQ = L.objetivo.id === 'evento' ? 'Em qual cidade e estado será o evento?' :
                     L.objetivo.id === 'inaug'  ? 'Em qual cidade e estado será a inauguração?' :
@@ -822,10 +827,6 @@
     }
     salvar(7);
 
-    setStep(8);
-    await bot('Por último, quer deixar um <b>e-mail</b>? Assim a proposta também chega na sua caixa de entrada. Se preferir, pode pular.');
-    const em = await askText({ label: 'E-mail (opcional)', placeholder: 'voce@empresa.com.br', type: 'email', inputmode: 'email', autocomplete: 'email', validate: validEmail, skip: 'Pular' });
-    if (em === null) { user('Pular'); L.email = null; } else { user(em); L.email = em; }
     L.convertidoEm = new Date();
 
     /* finalização: cria tudo no Pipedrive e confirma a consultora */
