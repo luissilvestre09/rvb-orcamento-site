@@ -704,19 +704,33 @@
       const dona = BASE_EXISTENTE[digits(L.whatsapp).slice(-8)];
       if (dona && dona !== C.id) { const t = CFG.team.find(x => x.id === dona); trocaPara = { id: t.id, nome: t.nome, fone: t.fone, wa: t.wa, foto: null }; }
     }
+    const conhecido = rs && rs.ok ? rs.conhecido : null;
     if (trocaPara) {
       const anterior = C.nome;
       await bot('Ah, você já fala com a <b>' + esc(trocaPara.nome) + '</b> aqui na RVB! Vou passar para ela continuar com você.');
       C = trocaPara; D = { c: C, motivo: (rs && rs.motivo) || ('pessoa já na base → ' + C.nome) }; L.dist = D;
       await definirConsultora(C.nome, C.foto || null);
       await bot('Oi, <b>' + esc(nome) + '</b>! Aqui é a <b>' + esc(C.nome) + '</b>. Que bom falar com você de novo. A ' + esc(anterior) + ' me passou o que você já contou, sigo daqui.', 700);
+    } else if (conhecido) {
+      await bot('Que bom falar com você de novo, <b>' + esc(nome) + '</b>!', 500);
     }
 
 
     setStep(3);
-    await bot('Perfeito. E qual é o nome da sua empresa?');
-    L.empresa = await askText({ label: 'Empresa', placeholder: 'Nome da empresa', autocomplete: 'organization' });
-    user(L.empresa); salvar(3);
+    /* pessoa conhecida com empresa no Pipedrive: só confirma; senão pergunta */
+    L.empresa = null;
+    if (conhecido && conhecido.empresa) {
+      await bot('Você continua na <b>' + esc(conhecido.empresa) + '</b>?');
+      const ok = await askChoice([{ id: 'sim', label: 'Sim' }, { id: 'nao', label: 'Não, é outra empresa', quiet: true }]);
+      user(ok.label);
+      if (ok.id === 'sim') L.empresa = conhecido.empresa;
+    }
+    if (!L.empresa) {
+      await bot(conhecido && conhecido.empresa ? 'Sem problema. Qual é o nome da empresa agora?' : 'Perfeito. E qual é o nome da sua empresa?');
+      L.empresa = await askText({ label: 'Empresa', placeholder: 'Nome da empresa', autocomplete: 'organization' });
+      user(L.empresa);
+    }
+    salvar(3);
 
     setStep(4);
     if (L.produto) await bot('Legal, <b>' + esc(nome) + '</b>! E esse <b>' + esc(prodLabel) + '</b> será usado principalmente em qual tipo de ação?');
