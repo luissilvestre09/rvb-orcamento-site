@@ -122,6 +122,8 @@
     box-shadow: var(--shadow);
   }
   .avatar img { width: 26px; height: 26px; object-fit: contain; }
+  .avatar.foto img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
+  .brand img.foto { border-radius: 50%; object-fit: cover; border: 2px solid var(--yellow); }
 
   .bubble {
     position: relative;
@@ -460,6 +462,15 @@
 
   const AVATAR = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3C8.1 3 5.5 5.9 5.5 9.5c0 3.6 3.7 6.6 5.4 7.9.3.3.9.3 1.2 0 1.7-1.3 5.4-4.3 5.4-7.9C17.5 5.9 15.9 3 12 3z" fill="#F9B233"/><path d="M12 3c-1.4 0-2.5 2.9-2.5 6.5s1.6 6.7 2.5 8c.9-1.3 2.5-4.4 2.5-8S13.4 3 12 3z" fill="#EE3D5D"/><rect x="10.6" y="17.8" width="2.8" height="2.4" rx=".7" fill="#1E2D8C"/></svg>';
   const LOGO = document.querySelector('.brand img').src;
+  let AVATAR_ATUAL = { src: LOGO, foto: false };
+  function definirConsultora(nome, fotoUrl) {
+    const img = document.querySelector('.brand img'); const t1 = document.querySelector('.brand .t1'); const t2 = document.querySelector('.brand .t2');
+    if (fotoUrl) {
+      const probe = new Image();
+      probe.onload = () => { AVATAR_ATUAL = { src: fotoUrl, foto: true }; img.src = fotoUrl; img.classList.add('foto'); t1.textContent = nome; t2.textContent = 'Consultora RVB Balões'; };
+      probe.src = fotoUrl;
+    } else { t1.textContent = nome + ' · RVB Balões'; t2.textContent = 'Sua consultora'; }
+  }
   const SEND_ICON = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4l17.8-8a.5.5 0 0 0 0-.9L3.4 3.6a.5.5 0 0 0-.7.6L5 11.2l9 .8-9 .8-2.3 7a.5.5 0 0 0 .7.6z"/></svg>';
   const WA_ICON = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.5l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2c0 1.3.9 2.5 1.1 2.7.1.2 1.9 2.9 4.6 4 1.7.7 2.3.8 3.2.7.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3z"/></svg>';
 
@@ -470,7 +481,7 @@
   function addBubble(who, html) {
     const row = document.createElement('div');
     row.className = 'row ' + who;
-    if (who === 'bot') row.innerHTML = '<div class="avatar"><img src="' + LOGO + '" alt=""></div><div class="bubble">' + html + '</div>';
+    if (who === 'bot') row.innerHTML = '<div class="avatar' + (AVATAR_ATUAL.foto ? ' foto' : '') + '"><img src="' + AVATAR_ATUAL.src + '" alt=""></div><div class="bubble">' + html + '</div>';
     else row.innerHTML = '<div class="bubble">' + html + '</div>';
     chat.appendChild(row);
     lastSpeaker = who;
@@ -636,6 +647,8 @@
   /* ---------- The conversation ---------- */
   async function run() {
     chat.innerHTML = ''; lastSpeaker = null; setStep(0); clearDock();
+    AVATAR_ATUAL = { src: LOGO, foto: false };
+    { const img = document.querySelector('.brand img'); img.src = LOGO; img.classList.remove('foto'); document.querySelector('.brand .t1').textContent = 'Solicitar orçamento'; document.querySelector('.brand .t2').textContent = 'Leva menos de 2 minutos'; }
     const L = { origem: lerOrigem(), session_id: novaSessao() };
     L.produto = L.origem.produto || null;
     const payload = (extra) => Object.assign({
@@ -681,11 +694,12 @@
     let D, C;
     const rs = await salvar(3, { distribuir: true });
     if (rs && rs.ok && rs.consultora) {
-      C = { id: rs.consultora.id, nome: rs.consultora.nome, fone: fmtWa(rs.consultora.whatsapp), wa: rs.consultora.whatsapp };
+      C = { id: rs.consultora.id, nome: rs.consultora.nome, fone: fmtWa(rs.consultora.whatsapp), wa: rs.consultora.whatsapp, foto: rs.consultora.foto || null };
       D = { c: C, motivo: rs.motivo || 'definido pelo servidor' };
       if (C.id === 'central') C = CENTRAL;
     } else { D = distribuir(L.empresa); C = D.c; }
     L.dist = D;
+    if (C !== CENTRAL) definirConsultora(C.nome, C.foto || null);
     const cNome = C === CENTRAL ? 'a equipe da RVB' : 'a ' + C.nome;
     const cNomeCap = C === CENTRAL ? 'A equipe da RVB' : 'A ' + C.nome;
 
