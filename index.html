@@ -429,7 +429,8 @@
   ];
   const CENTRAL = { nome: 'RVB', fone: '(11) 96192-7484', wa: '5511961927484' };
   /* contas de exemplo já existentes na base, para demonstrar a regra de continuidade */
-  const BASE_EXISTENTE = { 'smart fit': 'natalia', 'sicoob': 'katia', 'cacau show': 'lais', 'fortlev': 'katia' };
+  /* protótipo: telefones de exemplo já 'na base' (8 últimos dígitos) → consultora do último negócio */
+  const BASE_EXISTENTE = { '99999999': 'natalia', '88888888': 'katia', '77777777': 'lais' };
   const KEY = 'rvb_rodizio_v1';
   function loadCfg() {
     try { const c = JSON.parse(localStorage.getItem(KEY)); if (c && c.team) return c; } catch (e) {}
@@ -440,7 +441,7 @@
   function fila() { const f = []; CFG.team.forEach(t => { if (t.ativa) for (let i = 0; i < t.peso; i++) f.push(t); }); return f; }
   function distribuir(empresa) {
     const key = (empresa || '').trim().toLowerCase();
-    const dona = key ? BASE_EXISTENTE[key] : null;
+    const dona = null;
     if (dona) {
       const t = CFG.team.find(x => x.id === dona);
       return { c: t, motivo: 'cliente já na base → dona da conta: ' + t.nome + (t.ativa ? '' : ' (inativa hoje; recebe mesmo assim, por continuidade)') };
@@ -463,13 +464,15 @@
   const AVATAR = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3C8.1 3 5.5 5.9 5.5 9.5c0 3.6 3.7 6.6 5.4 7.9.3.3.9.3 1.2 0 1.7-1.3 5.4-4.3 5.4-7.9C17.5 5.9 15.9 3 12 3z" fill="#F9B233"/><path d="M12 3c-1.4 0-2.5 2.9-2.5 6.5s1.6 6.7 2.5 8c.9-1.3 2.5-4.4 2.5-8S13.4 3 12 3z" fill="#EE3D5D"/><rect x="10.6" y="17.8" width="2.8" height="2.4" rx=".7" fill="#1E2D8C"/></svg>';
   const LOGO = document.querySelector('.brand img').src;
   let AVATAR_ATUAL = { src: LOGO, foto: false };
+  /* a foto da consultora vai só nos balões da conversa; o cabeçalho fica sempre com o logo da RVB */
   function definirConsultora(nome, fotoUrl) {
-    const img = document.querySelector('.brand img'); const t1 = document.querySelector('.brand .t1'); const t2 = document.querySelector('.brand .t2');
-    if (fotoUrl) {
-      const probe = new Image();
-      probe.onload = () => { AVATAR_ATUAL = { src: fotoUrl, foto: true }; img.src = fotoUrl; img.classList.add('foto'); t1.textContent = nome; t2.textContent = 'Consultora RVB Balões'; };
-      probe.src = fotoUrl;
-    } else { t1.textContent = nome + ' · RVB Balões'; t2.textContent = 'Sua consultora'; }
+    return new Promise(resolve => {
+      if (!fotoUrl) { AVATAR_ATUAL = { src: LOGO, foto: false }; return resolve(); }
+      const probe = new Image(); let done = false;
+      const fim = ok => { if (done) return; done = true; AVATAR_ATUAL = ok ? { src: fotoUrl, foto: true } : { src: LOGO, foto: false }; resolve(); };
+      probe.onload = () => fim(true); probe.onerror = () => fim(false); probe.src = fotoUrl;
+      setTimeout(() => fim(probe.complete && probe.naturalWidth > 0), 1500);
+    });
   }
   const SEND_ICON = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4l17.8-8a.5.5 0 0 0 0-.9L3.4 3.6a.5.5 0 0 0-.7.6L5 11.2l9 .8-9 .8-2.3 7a.5.5 0 0 0 .7.6z"/></svg>';
   const WA_ICON = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.5l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2c0 1.3.9 2.5 1.1 2.7.1.2 1.9 2.9 4.6 4 1.7.7 2.3.8 3.2.7.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3z"/></svg>';
@@ -648,7 +651,6 @@
   async function run() {
     chat.innerHTML = ''; lastSpeaker = null; setStep(0); clearDock();
     AVATAR_ATUAL = { src: LOGO, foto: false };
-    { const img = document.querySelector('.brand img'); img.src = LOGO; img.classList.remove('foto'); document.querySelector('.brand .t1').textContent = 'Solicitar orçamento'; document.querySelector('.brand .t2').textContent = 'Leva menos de 2 minutos'; }
     const L = { origem: lerOrigem(), session_id: novaSessao() };
     L.produto = L.origem.produto || null;
     const payload = (extra) => Object.assign({
@@ -671,7 +673,7 @@
       D = { c: C, motivo: r0.motivo || 'rodízio (servidor)' };
     } else { D = distribuir(''); C = D.c; }
     L.dist = D;
-    if (C !== CENTRAL) definirConsultora(C.nome, C.foto || null);
+    if (C !== CENTRAL) await definirConsultora(C.nome, C.foto || null);
     const quem = C === CENTRAL ? 'Aqui é a <b>RVB Balões</b>.' : 'Eu sou a <b>' + esc(C.nome) + '</b>, da RVB Balões.';
     if (L.produto) {
       await bot('Oi! ' + quem + ' Vi que você está buscando um <b>' + esc(prodLabel) + '</b>. Em menos de 2 minutos eu anoto o essencial do seu projeto e já sigo com você no WhatsApp sabendo do que se trata.', 900);
@@ -691,30 +693,30 @@
     L.whatsapp = await askText({ label: 'WhatsApp', placeholder: '(11) 99999-9999', type: 'tel', inputmode: 'numeric', autocomplete: 'tel-national', mask: maskFone, validate: validFone,
       prefix: seletorPais() + WA_ICON.replace('<svg ', '<svg class="wa" ') });
     L.ddi = DDI;
-    user((DDI === '55' ? '' : '+' + DDI + ' ') + L.whatsapp); salvar(2);
+    user((DDI === '55' ? '' : '+' + DDI + ' ') + L.whatsapp);
     L.regiao = DDI === '55' ? (REGIAO[ddd(L.whatsapp)[0]] || 'a confirmar') : 'exterior (+' + DDI + ')';
-
-    setStep(3);
-    await bot('Perfeito. E qual é o nome da sua empresa?');
-    L.empresa = await askText({ label: 'Empresa', placeholder: 'Nome da empresa', autocomplete: 'organization' });
-    user(L.empresa);
-
-    /* a empresa é conhecida: se a conta já tem dona na base, a consultora passa a conversa para ela */
-    const rs = await salvar(3, { verificar_conta: true });
+    /* o WhatsApp é conhecido: se a pessoa já fala com alguém da RVB, a consultora passa a conversa para ela */
+    const rs = await salvar(2, { verificar_conta: true });
     let trocaPara = null;
     if (rs && rs.ok && rs.trocou && rs.consultora) {
       trocaPara = { id: rs.consultora.id, nome: rs.consultora.nome, fone: fmtWa(rs.consultora.whatsapp), wa: rs.consultora.whatsapp, foto: rs.consultora.foto || null };
     } else if (!rs) {
-      const dona = BASE_EXISTENTE[(L.empresa || '').trim().toLowerCase()];
+      const dona = BASE_EXISTENTE[digits(L.whatsapp).slice(-8)];
       if (dona && dona !== C.id) { const t = CFG.team.find(x => x.id === dona); trocaPara = { id: t.id, nome: t.nome, fone: t.fone, wa: t.wa, foto: null }; }
     }
     if (trocaPara) {
       const anterior = C.nome;
-      await bot('Ah, a <b>' + esc(L.empresa) + '</b> já é atendida pela <b>' + esc(trocaPara.nome) + '</b> aqui na RVB. Vou passar para ela continuar com você.');
-      C = trocaPara; D = { c: C, motivo: (rs && rs.motivo) || ('cliente já na base → dona da conta: ' + C.nome) }; L.dist = D;
-      definirConsultora(C.nome, C.foto || null);
-      await bot('Oi! Aqui é a <b>' + esc(C.nome) + '</b>. A ' + esc(anterior) + ' me passou o que você já contou, sigo daqui.', 700);
+      await bot('Ah, você já fala com a <b>' + esc(trocaPara.nome) + '</b> aqui na RVB! Vou passar para ela continuar com você.');
+      C = trocaPara; D = { c: C, motivo: (rs && rs.motivo) || ('pessoa já na base → ' + C.nome) }; L.dist = D;
+      await definirConsultora(C.nome, C.foto || null);
+      await bot('Oi, <b>' + esc(nome) + '</b>! Aqui é a <b>' + esc(C.nome) + '</b>. Que bom falar com você de novo. A ' + esc(anterior) + ' me passou o que você já contou, sigo daqui.', 700);
     }
+
+
+    setStep(3);
+    await bot('Perfeito. E qual é o nome da sua empresa?');
+    L.empresa = await askText({ label: 'Empresa', placeholder: 'Nome da empresa', autocomplete: 'organization' });
+    user(L.empresa); salvar(3);
 
     setStep(4);
     if (L.produto) await bot('Legal, <b>' + esc(nome) + '</b>! E esse <b>' + esc(prodLabel) + '</b> será usado principalmente em qual tipo de ação?');
