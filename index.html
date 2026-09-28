@@ -84,6 +84,7 @@
     font-variant-numeric: tabular-nums; white-space: nowrap;
   }
   .stepinfo b { color: var(--blue); font-weight: 700; }
+  .stepinfo[hidden] { display: none; }
   @media (max-width: 430px) {
     .brand .t1 { font-size: 16px; }
     .brand .t2 { font-size: 12px; }
@@ -767,6 +768,9 @@
 
     if (MODO === 'contato') {
       /* triagem antes de sortear consultora: financeiro, RH etc. não gastam o rodízio */
+      document.querySelector('.brand .t1').textContent = 'Fale com a RVB';
+      document.querySelector('.brand .t2').textContent = 'Orçamento, pedidos e outros assuntos';
+      document.getElementById('stepinfo').hidden = true;
       await definirConsultora(ANFITRIAO.nome, ANFITRIAO.foto);
       await bot('Oi! Aqui é o <b>' + ANFITRIAO.nome + '</b>, da RVB Balões. Como posso te ajudar?', 900);
       const via = await askChoice([
@@ -778,6 +782,9 @@
       if (via.id === 'cliente') { await fluxoCliente(L, CENTRAL, salvar); return; }
       if (via.id === 'outro')   { await fluxoOutro(L, salvar); return; }
       const foiLuis = AVATAR_ATUAL.foto;
+      document.querySelector('.brand .t1').textContent = 'Solicitar orçamento';
+      document.querySelector('.brand .t2').textContent = 'Leva menos de 2 minutos';
+      document.getElementById('stepinfo').hidden = false;
       await escolherConsultora();
       if (foiLuis && C !== CENTRAL) {
         const fotoC = AVATAR_ATUAL; AVATAR_ATUAL = { src: ANFITRIAO.foto, foto: true, perto: true };
