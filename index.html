@@ -345,6 +345,7 @@
   .proto code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11px; }
 
   /* ---------- Painel de distribuição (protótipo) ---------- */
+  .gear[hidden] { display: none; }
   .gear {
     background: var(--surface-2); border: 0; color: var(--muted); width: 36px; height: 36px;
     border-radius: 50%; display: grid; place-items: center; cursor: pointer; flex: none;
@@ -538,7 +539,7 @@
   function definirConsultora(nome, fotoUrl) {
     return new Promise(resolve => {
       if (!fotoUrl) { AVATAR_ATUAL = { src: LOGO, foto: false }; return resolve(); }
-      const probe = new Image(); let done = false;
+      const probe = new Image(); probe.referrerPolicy = 'no-referrer'; let done = false;   // o site bloqueia imagem com referer de outro domínio
       const fim = ok => { if (done) return; done = true; AVATAR_ATUAL = ok ? { src: fotoUrl, foto: true, perto: !/\.webp(\?|$)/i.test(fotoUrl) } : { src: LOGO, foto: false }; resolve(); };
       probe.onload = () => fim(true); probe.onerror = () => fim(false); probe.src = fotoUrl;
       setTimeout(() => fim(probe.complete && probe.naturalWidth > 0), 1500);
@@ -559,7 +560,7 @@
   function addBubble(who, html) {
     const row = document.createElement('div');
     row.className = 'row ' + who;
-    if (who === 'bot') row.innerHTML = '<div class="avatar' + (AVATAR_ATUAL.foto ? ' foto' : '') + (AVATAR_ATUAL.perto ? ' perto' : '') + '"><img src="' + AVATAR_ATUAL.src + '" alt=""></div><div class="bubble">' + html + '</div>';
+    if (who === 'bot') row.innerHTML = '<div class="avatar' + (AVATAR_ATUAL.foto ? ' foto' : '') + (AVATAR_ATUAL.perto ? ' perto' : '') + '"><img src="' + AVATAR_ATUAL.src + '" alt="" referrerpolicy="no-referrer"></div><div class="bubble">' + html + '</div>';
     else row.innerHTML = '<div class="bubble">' + html + '</div>';
     chat.appendChild(row);
     lastSpeaker = who;
