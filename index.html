@@ -131,13 +131,13 @@
   .row.bot { justify-content: flex-start; }
   .row.user { justify-content: flex-end; }
   .avatar {
-    width: 40px; height: 40px; border-radius: 50%; flex: none;
+    width: 44px; height: 44px; border-radius: 50%; flex: none;
     background: var(--surface); color: #fff; border: 1px solid var(--line);
     display: grid; place-items: center; overflow: hidden;
     box-shadow: var(--shadow);
   }
-  .avatar img { width: 30px; height: 30px; object-fit: contain; }
-  .avatar.foto img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+  .avatar img { width: 32px; height: 32px; object-fit: contain; }
+  .avatar.foto img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; }
   /* fotos novas (RVB-Baloes-*.png): aproxima o rosto, que fica pequeno no tamanho do avatar */
   .avatar.foto.perto { display: block; }
   .avatar.foto.perto img { width: 160%; height: 160%; max-width: none; margin-left: -30%; margin-top: -15%; border-radius: 0; }
@@ -687,6 +687,13 @@
     if (calc(12) != d[12] || calc(13) != d[13]) return 'Esse CNPJ não parece válido. Confere os dígitos?';
     return null;
   }
+  function validNome(v) {
+    const t = v.trim();
+    if (/\d/.test(t)) return 'Aqui é só o seu nome; o WhatsApp eu pergunto em seguida.';
+    if (t.replace(/[^\p{L}]/gu, '').length < 2) return 'Me diz o seu nome, por favor.';
+    if (/^[^\p{L}]*$/u.test(t)) return 'Me diz o seu nome, por favor.';
+    return null;
+  }
   function validEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v) ? null : 'Esse e-mail não parece completo.'; }
   function fmtDate(iso) { const [y, m, d] = iso.split('-'); return d + '/' + m + '/' + y; }
   function daysUntil(iso) { const t = new Date(); t.setHours(0,0,0,0); const d = new Date(iso + 'T00:00:00'); return Math.round((d - t) / 86400000); }
@@ -766,7 +773,7 @@
     await bot('Para começar, qual é o seu nome?', 600);
 
     setStep(1);
-    L.nome = await askText({ label: 'Nome completo', placeholder: 'Seu nome', autocomplete: 'name' });
+    L.nome = await askText({ label: 'Nome completo', placeholder: 'Seu nome', autocomplete: 'name', validate: validNome });
     user(L.nome); salvar(1);
     const nome = firstName(L.nome);
 
@@ -1000,7 +1007,7 @@
     if (dep.registrar && dep.pessoa) {
       /* departamento com responsável: pega nome e WhatsApp, registra no Pipedrive e apresenta a pessoa */
       await bot('Quem cuida de <b>' + esc(dep.label.toLowerCase()) + '</b> é ' + (dep.pessoa.split(' ')[0].slice(-1) === 'a' ? 'a' : 'o') + ' <b>' + esc(dep.pessoa) + '</b>. Me diz seu nome e seu WhatsApp que eu já aviso do seu contato.');
-      L.nome = await askText({ label: 'Nome', placeholder: 'Seu nome', autocomplete: 'name' });
+      L.nome = await askText({ label: 'Nome', placeholder: 'Seu nome', autocomplete: 'name', validate: validNome });
       user(L.nome); L.tipo = 'contato';
       setStep(2);
       await bot('E o seu WhatsApp?');
