@@ -316,6 +316,10 @@
     padding: 6px 16px 0; letter-spacing: .04em;
   }
 
+  /* ---------- Tela cheia por cima do site: o × do site fica no canto; abre espaço no cabeçalho ---------- */
+  body.cheia .topbar-row { padding-right: 56px; }
+  body.cheia .gear { display: none; }
+
   /* ---------- Modo embutido (iframe dentro do cartão do site) ---------- */
   body.embed .topbar-row { display: none; }
   body.embed .app { max-width: none; }
@@ -1074,7 +1078,9 @@
     if (MODO === 'contato') { a.hidden = true; return; }
     const u = new URL(location.href); u.searchParams.set('modo', 'contato'); a.href = u.toString();
   })();
-  const EMBED = /[?&]embed=1/.test(location.search) || (window.self !== window.top);
+  const CHEIA = /[?&]tela=cheia/.test(location.search);
+  if (CHEIA) document.body.classList.add('cheia');
+  const EMBED = !CHEIA && (/[?&]embed=1/.test(location.search) || (window.self !== window.top));
   if (EMBED) {
     document.body.classList.add('embed');
     const avisar = (msg) => { try { window.parent.postMessage({ rvb: msg }, '*'); } catch (e) {} };
