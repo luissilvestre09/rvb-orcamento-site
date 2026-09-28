@@ -747,7 +747,8 @@
       objetivo: L.objetivo ? L.objetivo.id : undefined, objetivo_label: L.objetivo ? L.objetivo.label : undefined, detalhe: L.detalhe,
       quando: L.quando ? L.quando.id : undefined, quando_label: L.quando ? L.quando.label : undefined, data_evento: L.data || null,
       cnpj: L.cnpj, razao_social: L.razao, cidade_cnpj: L.cidadeCnpj, cidade_uso: L.cidade,
-      origem_url: L.origem.url, origem_pagina: L.origem.pagina, utms: L.origem.utms
+      origem_url: L.origem.url, origem_pagina: L.origem.pagina, utms: L.origem.utms,
+      consultora_id: L.dist && L.dist.c && L.dist.c.id !== 'central' ? L.dist.c.id : undefined, distribuicao: L.dist ? L.dist.motivo : undefined
     }, extra || {});
     const salvar = (passo, extra) => api('salvar-passo', payload(Object.assign({ passo }, extra || {})));
     const prodLabel = L.produto ? L.produto.label : null;
