@@ -485,6 +485,8 @@
   const CENTRAL = { nome: 'RVB', fone: '(11) 96192-7484', wa: '5511961927484', email: 'atendimento@rvb.com.br' };
   /* Modo contato (menu "Contato" do site): triagem antes de qualquer pergunta.
      Departamentos: preencher e-mail/WhatsApp de cada um; sem canal próprio, vai ao WhatsApp central com o assunto. */
+  /* Modo contato começa com o Luis (foto na conversa; o logo continua no topo) */
+  const ANFITRIAO = { nome: 'Luis', foto: 'https://rvb.com.br/wp-content/uploads/2026/09/luis-silvestre.png' };
   const MODO = (() => { try { return (new URLSearchParams(location.search).get('modo') || '').toLowerCase(); } catch (e) { return ''; } })();
   const DEPARTAMENTOS = [   // cópia local; a lista oficial vem da tabela departamentos no Supabase
     { id: 'financeiro',     label: 'Financeiro',             pessoa: 'Natália Fernandes', artigo: 'a', whatsapp: '5511990104592', email: 'financeiro@rvb.com.br',     foto_url: 'https://rvb.com.br/wp-content/uploads/2026/09/Natalia-Financeiro-RVB-Baloes.png', registrar: true },
@@ -763,7 +765,8 @@
 
     if (MODO === 'contato') {
       /* triagem antes de sortear consultora: financeiro, RH etc. não gastam o rodízio */
-      await bot('Oi! Aqui é a <b>RVB Balões</b>. Como posso te ajudar?', 900);
+      await definirConsultora(ANFITRIAO.nome, ANFITRIAO.foto);
+      await bot('Oi! Aqui é o <b>' + ANFITRIAO.nome + '</b>, da RVB Balões. Como posso te ajudar?', 900);
       const via = await askChoice([
         { id: 'orcamento', label: 'Quero um orçamento' },
         { id: 'cliente',   label: 'Já sou cliente, é sobre um pedido' },
@@ -772,8 +775,16 @@
       user(via.label);
       if (via.id === 'cliente') { await fluxoCliente(L, CENTRAL, salvar); return; }
       if (via.id === 'outro')   { await fluxoOutro(L, salvar); return; }
+      const foiLuis = AVATAR_ATUAL.foto;
       await escolherConsultora();
-      await bot('Perfeito! ' + quemSou() + ' Em menos de 2 minutos eu anoto o essencial do seu projeto e já sigo com você no WhatsApp sabendo do que se trata.', 700);
+      if (foiLuis && C !== CENTRAL) {
+        const fotoC = AVATAR_ATUAL; AVATAR_ATUAL = { src: ANFITRIAO.foto, foto: true, perto: true };
+        await bot('Perfeito! Vou te passar para a <b>' + esc(C.nome) + '</b>, que cuida dos orçamentos.', 600);
+        AVATAR_ATUAL = fotoC;
+        await bot('Oi! ' + quemSou() + ' Em menos de 2 minutos eu anoto o essencial do seu projeto e já sigo com você no WhatsApp sabendo do que se trata.', 900);
+      } else {
+        await bot('Perfeito! ' + quemSou() + ' Em menos de 2 minutos eu anoto o essencial do seu projeto e já sigo com você no WhatsApp sabendo do que se trata.', 700);
+      }
     } else if (await escolherConsultora(), L.produto) {
       await bot('Oi! ' + quemSou() + ' Vi que você está buscando um <b>' + esc(prodLabel) + '</b>. Em menos de 2 minutos eu anoto o essencial do seu projeto e já sigo com você no WhatsApp sabendo do que se trata.', 900);
     } else {
