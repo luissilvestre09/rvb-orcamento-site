@@ -310,6 +310,7 @@
   }
   .legal svg { width: 12px; height: 12px; flex: none; }
   .legal a { color: var(--blue); font-weight: 600; }
+  .legal a.outro { color: var(--muted); font-weight: 500; margin-left: 4px; }
   .proto {
     font-size: 11px; color: var(--muted); text-align: center;
     padding: 6px 16px 0; letter-spacing: .04em;
@@ -407,7 +408,7 @@
 
   <footer class="dock">
     <div class="dock-inner" id="dock"></div>
-    <div class="legal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Sem spam. Ao continuar, você concorda com a <a href="https://rvb.com.br/politica-de-privacidade/" target="_blank" rel="noopener">Política de Privacidade</a>.</span></div>
+    <div class="legal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Sem spam. Ao continuar, você concorda com a <a href="https://rvb.com.br/politica-de-privacidade/" target="_blank" rel="noopener">Política de Privacidade</a>. <a href="?modo=contato" id="irContato" class="outro">Não é orçamento?</a></span></div>
     <div class="proto">Ambiente de teste · grava no Supabase e cria no Pipedrive de verdade · <code>#chute-a-gol</code> no fim do link simula a entrada pela página do produto (no site real: <code>?produto_id=chute-a-gol&amp;utm_source=…</code>)</div>
   </footer>
 </div>
@@ -470,6 +471,16 @@
     { id: 'lais',    nome: 'Laís',    fone: '(11) 99385-8024', wa: '5511993858024', ativa: true, peso: 1 }
   ];
   const CENTRAL = { nome: 'RVB', fone: '(11) 96192-7484', wa: '5511961927484' };
+  /* Modo contato (menu "Contato" do site): triagem antes de qualquer pergunta.
+     Departamentos: preencher e-mail/WhatsApp de cada um; sem canal próprio, vai ao WhatsApp central com o assunto. */
+  const MODO = (() => { try { return (new URLSearchParams(location.search).get('modo') || '').toLowerCase(); } catch (e) { return ''; } })();
+  const DEPARTAMENTOS = [
+    { id: 'financeiro',  label: 'Financeiro',              email: '', wa: '' },
+    { id: 'logistica',   label: 'Entregas e logística',    email: '', wa: '' },
+    { id: 'rh',          label: 'RH / Trabalhe conosco',   email: '', wa: '' },
+    { id: 'fornecedor',  label: 'Sou fornecedor',          email: '', wa: '' },
+    { id: 'imprensa',    label: 'Imprensa e parcerias',    email: '', wa: '' },
+  ];
   /* contas de exemplo já existentes na base, para demonstrar a regra de continuidade */
   /* protótipo: telefones de exemplo já 'na base' (8 últimos dígitos) → consultora do último negócio */
   const BASE_EXISTENTE = { '99999999': 'natalia', '88888888': 'katia', '77777777': 'lais' };
@@ -678,6 +689,7 @@
     let q = {};
     try { new URLSearchParams(location.search).forEach((v, k) => { q[k] = v; }); } catch (e) {}
     Object.keys(q).forEach(k => { if (k.startsWith('utm_')) o.utms[k] = q[k]; });
+    if (q.landing) o.utms.landing = q.landing;   // primeira página visitada (cookie do site)
     const hash = (location.hash || '').replace('#', '');
     const pid = q.produto_id || q.produto || hash;
     if (pid && PRODUCTS[pid]) {
@@ -708,19 +720,35 @@
     const prodTxt = L.produto ? L.produto.label : 'inflável';
 
     /* consultora definida na abertura (rodízio no servidor; simulação local no protótipo) */
-    let D, C;
-    const r0 = await salvar(0, { distribuir: true });
-    if (r0 && r0.ok && r0.consultora && r0.consultora.id !== 'central') {
-      C = { id: r0.consultora.id, nome: r0.consultora.nome, fone: fmtWa(r0.consultora.whatsapp), wa: r0.consultora.whatsapp, foto: r0.consultora.foto || null };
-      D = { c: C, motivo: r0.motivo || 'rodízio (servidor)' };
-    } else { D = distribuir(''); C = D.c; }
-    L.dist = D;
-    if (C !== CENTRAL) await definirConsultora(C.nome, C.foto || null);
-    const quem = C === CENTRAL ? 'Aqui é a <b>RVB Balões</b>.' : 'Eu sou a <b>' + esc(C.nome) + '</b>, da RVB Balões.';
-    if (L.produto) {
-      await bot('Oi! ' + quem + ' Vi que você está buscando um <b>' + esc(prodLabel) + '</b>. Em menos de 2 minutos eu anoto o essencial do seu projeto e já sigo com você no WhatsApp sabendo do que se trata.', 900);
+    let D, C = CENTRAL;
+    const escolherConsultora = async () => {
+      const r0 = await salvar(0, { distribuir: true });
+      if (r0 && r0.ok && r0.consultora && r0.consultora.id !== 'central') {
+        C = { id: r0.consultora.id, nome: r0.consultora.nome, fone: fmtWa(r0.consultora.whatsapp), wa: r0.consultora.whatsapp, foto: r0.consultora.foto || null };
+        D = { c: C, motivo: r0.motivo || 'rodízio (servidor)' };
+      } else { D = distribuir(''); C = D.c; }
+      L.dist = D;
+      if (C !== CENTRAL) await definirConsultora(C.nome, C.foto || null);
+    };
+    const quemSou = () => C === CENTRAL ? 'Aqui é a <b>RVB Balões</b>.' : 'Eu sou a <b>' + esc(C.nome) + '</b>, da RVB Balões.';
+
+    if (MODO === 'contato') {
+      /* triagem antes de sortear consultora: financeiro, RH etc. não gastam o rodízio */
+      await bot('Oi! Aqui é a <b>RVB Balões</b>. Como posso te ajudar?', 900);
+      const via = await askChoice([
+        { id: 'orcamento', label: 'Quero um orçamento' },
+        { id: 'cliente',   label: 'Já sou cliente, é sobre um pedido' },
+        { id: 'outro',     label: 'Outro assunto' },
+      ]);
+      user(via.label);
+      if (via.id === 'cliente') { await fluxoCliente(L, CENTRAL, salvar); return; }
+      if (via.id === 'outro')   { await fluxoOutro(CENTRAL); return; }
+      await escolherConsultora();
+      await bot('Perfeito! ' + quemSou() + ' Em menos de 2 minutos eu anoto o essencial do seu projeto e já sigo com você no WhatsApp sabendo do que se trata.', 700);
+    } else if (await escolherConsultora(), L.produto) {
+      await bot('Oi! ' + quemSou() + ' Vi que você está buscando um <b>' + esc(prodLabel) + '</b>. Em menos de 2 minutos eu anoto o essencial do seu projeto e já sigo com você no WhatsApp sabendo do que se trata.', 900);
     } else {
-      await bot('Oi! ' + quem + ' Em menos de 2 minutos eu anoto o essencial do seu projeto e já sigo com você no WhatsApp sabendo do que se trata.', 900);
+      await bot('Oi! ' + quemSou() + ' Em menos de 2 minutos eu anoto o essencial do seu projeto e já sigo com você no WhatsApp sabendo do que se trata.', 900);
     }
     await bot('Para começar, qual é o seu nome?', 600);
 
@@ -907,6 +935,63 @@
     scrollDown();
   }
 
+  /* ---------- Modo contato: já sou cliente ---------- */
+  async function fluxoCliente(L, C, salvar) {
+    setStep(1);
+    await bot('Que bom! Me passa o seu WhatsApp que eu vejo quem está cuidando do seu atendimento.');
+    DDI = '55';
+    L.whatsapp = await askText({ label: 'WhatsApp', placeholder: '(11) 99999-9999', type: 'tel', inputmode: 'numeric', autocomplete: 'tel-national', mask: maskFone, validate: validFone,
+      prefix: seletorPais() + WA_ICON.replace('<svg ', '<svg class="wa" ') });
+    L.ddi = DDI; L.tipo = 'contato';
+    user((DDI === '55' ? '' : '+' + DDI + ' ') + L.whatsapp);
+    const r = await salvar(1, { verificar_conta: true, tipo: 'contato' });
+    let alvo = C, texto;
+    if (r && r.ja_na_base && r.consultora && r.consultora.id !== 'central') {
+      alvo = { id: r.consultora.id, nome: r.consultora.nome, fone: fmtWa(r.consultora.whatsapp), wa: r.consultora.whatsapp, foto: r.consultora.foto || null };
+      const nome = r.conhecido && r.conhecido.nome ? ', ' + esc(firstName(r.conhecido.nome)) : '';
+      if (alvo.id !== C.id) await definirConsultora(alvo.nome, alvo.foto || null);
+      await bot('Achei' + nome + '! Quem cuida do seu atendimento é a <b>' + esc(alvo.nome) + '</b>. É só tocar no botão e falar direto com ela.');
+      texto = 'Oi, ' + alvo.nome + '! Sou cliente da RVB e quero falar sobre um pedido.';
+    } else if (r && r.ja_na_base) {
+      alvo = C;
+      await bot('Achei o seu cadastro! Toca no botão que eu já sigo com você no WhatsApp.');
+      texto = 'Oi, ' + C.nome + '! Sou cliente da RVB e quero falar sobre um pedido.';
+    } else {
+      alvo = CENTRAL;
+      await bot('Não encontrei esse número na minha base, mas sem problema: fala com a RVB pelo WhatsApp que a equipe localiza o seu pedido na hora.');
+      texto = 'Oi! Sou cliente da RVB e quero falar sobre um pedido.';
+    }
+    dock.innerHTML =
+      '<div class="choices"><a class="cta" href="https://wa.me/' + alvo.wa + '?text=' + encodeURIComponent(texto) + '" target="_blank" rel="noopener">' + WA_ICON + (alvo === CENTRAL ? 'Falar com a RVB no WhatsApp' : 'Falar com a ' + alvo.nome + ' no WhatsApp') + '</a></div>' +
+      '<div class="foot">WhatsApp oficial da RVB: ' + CENTRAL.fone + ' · <button type="button" class="restart" id="restart">Recomeçar</button></div>';
+    document.getElementById('restart').addEventListener('click', run);
+    scrollDown();
+  }
+
+  /* ---------- Modo contato: outro assunto ---------- */
+  async function fluxoOutro(C) {
+    setStep(1);
+    await bot('Sem problema. Com qual área você quer falar?');
+    const d = await askChoice(DEPARTAMENTOS.map(x => ({ id: x.id, label: x.label })));
+    user(d.label);
+    const dep = DEPARTAMENTOS.find(x => x.id === d.id);
+    const wa = dep.wa || CENTRAL.wa;
+    const texto = 'Oi! Assunto: ' + dep.label + '.';
+    if (dep.email) {
+      await bot('Para <b>' + esc(dep.label) + '</b>, o canal é o e-mail <b>' + esc(dep.email) + '</b>. Se preferir, dá para chamar no WhatsApp também.');
+    } else {
+      await bot('Para <b>' + esc(dep.label) + '</b>, chama a RVB no WhatsApp com o assunto que eu já deixo escrito, e a equipe direciona para a pessoa certa.');
+    }
+    dock.innerHTML =
+      '<div class="choices">' +
+        (dep.email ? '<a class="cta" style="background:var(--surface-2);color:var(--text)" href="mailto:' + esc(dep.email) + '?subject=' + encodeURIComponent(dep.label) + '">Enviar e-mail</a>' : '') +
+        '<a class="cta" href="https://wa.me/' + wa + '?text=' + encodeURIComponent(texto) + '" target="_blank" rel="noopener">' + WA_ICON + 'Falar no WhatsApp</a>' +
+      '</div>' +
+      '<div class="foot">WhatsApp oficial da RVB: ' + CENTRAL.fone + ' · <button type="button" class="restart" id="restart">Recomeçar</button></div>';
+    document.getElementById('restart').addEventListener('click', run);
+    scrollDown();
+  }
+
   function renderCard(L) {
     const p1 = !!L.data || L.quando.id === '15';
     const prioTxt = L.data ? 'P1 · evento ' + fmtDate(L.data) : (L.quando.id === '15' ? 'P1 · próximos 15 dias' : 'P4 · sem data');
@@ -984,6 +1069,11 @@
 
   /* ---------- Modo embutido: a página do site coloca este chat num iframe (cartão do hero).
      No celular, no primeiro toque o chat pede para a página expandir o cartão para a tela toda. ---------- */
+  (function () {   // "Não é orçamento?" leva ao modo contato mantendo produto/origem/utms
+    const a = document.getElementById('irContato'); if (!a) return;
+    if (MODO === 'contato') { a.hidden = true; return; }
+    const u = new URL(location.href); u.searchParams.set('modo', 'contato'); a.href = u.toString();
+  })();
   const EMBED = /[?&]embed=1/.test(location.search) || (window.self !== window.top);
   if (EMBED) {
     document.body.classList.add('embed');
