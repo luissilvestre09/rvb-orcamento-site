@@ -280,6 +280,9 @@
   .hint.err { color: var(--coral); font-weight: 500; }
 
   .choices { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-start; }
+  .row.quick { margin-top: -2px; }
+  .row.quick .avatar.espaco { visibility: hidden; box-shadow: none; }
+  .row.quick .choices { flex: 1 1 auto; }
   .choice {
     border: 2px solid var(--blue); background: var(--surface); color: var(--blue);
     border-radius: 999px; padding: 9px 18px; font-weight: 700; font-size: 15px;
@@ -599,15 +602,18 @@
     });
   }
 
+  /* Botões de escolha aparecem dentro da conversa, logo abaixo da pergunta (não na barra de baixo) */
   function askChoice(items, opts) {
     return new Promise(resolve => {
       clearDock();
-      const label = opts && opts.label ? '<div class="label">' + esc(opts.label) + '</div>' : '';
-      dock.innerHTML = label + '<div class="choices">' + items.map(it =>
+      const row = document.createElement('div');
+      row.className = 'row bot quick';
+      row.innerHTML = '<div class="avatar espaco" aria-hidden="true"></div><div class="choices">' + items.map(it =>
         '<button type="button" class="choice' + (it.quiet ? ' quiet' : '') + '" data-id="' + esc(it.id) + '">' + esc(it.label) + '</button>').join('') + '</div>';
-      dock.querySelectorAll('.choice').forEach(b => b.addEventListener('click', () => {
+      chat.appendChild(row);
+      row.querySelectorAll('.choice').forEach(b => b.addEventListener('click', () => {
         const it = items.find(x => x.id === b.dataset.id);
-        clearDock(); resolve(it);
+        row.remove(); resolve(it);
       }));
       setTimeout(scrollDown, 50);
     });
