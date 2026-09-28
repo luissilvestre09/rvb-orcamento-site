@@ -14,6 +14,9 @@
       <body data-rvb-flutuante="nao">.
    3. Passa para o chat a página de origem e os UTMs (da URL atual ou do primeiro acesso,
       guardado em cookie por 90 dias).
+   4. Intercepta links antigos sem precisar editá-los: links para o WhatsApp da central
+      (wa.me/551120928787, que caía no Blip) abrem o chat no modo contato, e links para a página
+      /solicitar-orcamento abrem o chat de orçamento. Desligue com data-interceptar="nao".
    Configuração opcional na tag do script:
      data-base="https://atendimento.rvb.com.br/"   endereço do chat
      data-nova-aba="sim"                          botões abrem o chat em nova aba em vez de tela cheia
@@ -29,6 +32,8 @@
   var ORIGEM = new URL(BASE).origin;
   var FLUTUANTE = (ds.flutuante || (document.body && document.body.dataset.rvbFlutuante) || 'sim') !== 'nao';
   var NOVA_ABA = (ds.novaAba || 'nao') === 'sim';
+  var INTERCEPTAR = (ds.interceptar || 'sim') !== 'nao';
+  var WA_CENTRAL = /(wa\.me|whatsapp\.com)\/(send\?phone=)?(\+?55)?1120928787/;
   var MOBILE = function () { return window.innerWidth <= 640; };
 
   /* ---------- UTMs: primeiro toque guardado em cookie ---------- */
@@ -138,11 +143,15 @@
     return o;
   }
   document.addEventListener('click', function (e) {
-    var el = e.target.closest && e.target.closest('a[href*="#orcamento"], a[href*="#contato"], .rvb-abrir-chat, [data-rvb-chat]');
+    var el = e.target.closest && e.target.closest('a[href], .rvb-abrir-chat, [data-rvb-chat]');
     if (!el) return;
+    var href = el.getAttribute('href') || '';
+    var direto = /#(orcamento|contato)/.test(href) || el.matches('.rvb-abrir-chat, [data-rvb-chat]');
+    var legado = INTERCEPTAR && (WA_CENTRAL.test(href) || /\/solicitar-orcamento\/?(\?|#|$)/.test(href));
+    if (!direto && !legado) return;
     e.preventDefault();
     var o = opcoesDe(el); o.cheia = true;
-    if (!o.modo && /#contato/.test(el.getAttribute('href') || '')) o.modo = 'contato';
+    if (!o.modo && (/#contato/.test(href) || WA_CENTRAL.test(href))) o.modo = 'contato';
     abrir(o);
   }, true);
 
