@@ -1,0 +1,6 @@
+# atendimento.rvb.com.br — o chat é atualizado direto do GitHub; não deixar o navegador segurar versão velha
+<IfModule mod_headers.c>
+  <FilesMatch "\.(js|html)$">
+    Header set Cache-Control "public, max-age=300, must-revalidate"
+  </FilesMatch>
+</IfModule>
