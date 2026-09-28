@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Painel RVB</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap">
+<style>
+  :root {
+    --navy:#1533A3; --blue:#0E30CC; --coral:#EE003B; --yellow:#FFB100; --green:#1E9E5A;
+    --bg:#F4F7FB; --surface:#fff; --line:#D3E2F2; --text:#17171D; --muted:#5C6470; --soft:#E7F3FF;
+    --font:"Baloo 2", -apple-system, "Segoe UI", Arial, sans-serif;
+    color-scheme: light;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:var(--font); font-size:15px; line-height:1.4; }
+  a { color:var(--blue); }
+  button, input, select { font:inherit; }
+  .top { background:var(--surface); border-bottom:1px solid var(--line); position:sticky; top:0; z-index:5; }
+  .top-in { max-width:1280px; margin:0 auto; padding:10px 16px; display:flex; align-items:center; gap:14px; }
+  .top img { height:40px; }
+  .top .t { font-weight:800; font-size:18px; }
+  .top .sp { flex:1; }
+  .tabs { display:flex; gap:4px; }
+  .tab { border:0; background:transparent; padding:8px 12px; border-radius:999px; font-weight:700; color:var(--muted); cursor:pointer; }
+  .tab.on { background:var(--soft); color:var(--blue); }
+  .who { font-size:13px; color:var(--muted); }
+  .sair { border:1px solid var(--line); background:#fff; border-radius:999px; padding:6px 12px; cursor:pointer; font-size:13px; }
+  main { max-width:1280px; margin:0 auto; padding:16px; }
+  .painel { display:none; } .painel.on { display:block; }
+  .filtros { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:12px; }
+  .filtros select, .filtros input { border:1px solid var(--line); border-radius:10px; padding:8px 10px; background:#fff; }
+  .filtros input[type=search] { min-width:240px; }
+  .btn { border:1px solid var(--line); background:#fff; border-radius:999px; padding:8px 14px; cursor:pointer; font-weight:600; }
+  .btn.primario { background:var(--blue); color:#fff; border-color:var(--blue); }
+  .card { background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:14px 16px; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(170px,1fr)); gap:10px; margin-bottom:14px; }
+  .kpi .n { font-size:30px; font-weight:800; line-height:1.1; }
+  .kpi .l { font-size:13px; color:var(--muted); }
+  table { width:100%; border-collapse:collapse; background:#fff; border:1px solid var(--line); border-radius:14px; overflow:hidden; }
+  th, td { text-align:left; padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:top; font-size:14px; }
+  th { background:var(--soft); font-size:12.5px; text-transform:uppercase; letter-spacing:.03em; color:var(--muted); }
+  tr:hover td { background:#FAFCFF; }
+  tr.linha { cursor:pointer; }
+  .tag { display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; font-weight:700; background:var(--soft); color:var(--blue); white-space:nowrap; }
+  .tag.ok { background:#E3F6EA; color:#146C3B; } .tag.parcial { background:#FFF3D6; color:#7A5200; } .tag.resg { background:#FCE4EA; color:#9B0026; } .tag.cont { background:#EEE; color:#444; }
+  .muted { color:var(--muted); } .small { font-size:12.5px; }
+  .drawer { position:fixed; inset:0; background:rgba(20,26,51,.45); display:none; z-index:20; }
+  .drawer.on { display:block; }
+  .drawer .box { position:absolute; right:0; top:0; bottom:0; width:min(560px,100%); background:#fff; overflow:auto; padding:20px; }
+  .drawer h2 { margin:0 0 6px; font-size:20px; }
+  .drawer .x { position:absolute; top:12px; right:12px; border:0; background:var(--soft); width:34px; height:34px; border-radius:50%; cursor:pointer; font-size:18px; }
+  .kv { display:grid; grid-template-columns:130px 1fr; gap:4px 10px; font-size:14px; margin:12px 0; }
+  .kv b { color:var(--muted); font-weight:600; }
+  .msg { background:var(--soft); border-radius:12px; padding:12px; white-space:pre-wrap; font-style:italic; }
+  .grade { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px,1fr)); gap:12px; }
+  .cons { display:flex; align-items:center; gap:12px; }
+  .cons img { width:48px; height:48px; border-radius:50%; object-fit:cover; background:var(--soft); }
+  .cons .nome { font-weight:800; font-size:17px; }
+  .switch { position:relative; width:46px; height:26px; background:#ccd; border-radius:999px; border:0; cursor:pointer; flex:none; }
+  .switch::after { content:""; position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:#fff; transition:left .15s; }
+  .switch.on { background:var(--green); } .switch.on::after { left:23px; }
+  .barras { display:grid; gap:6px; }
+  .barra { display:grid; grid-template-columns:140px 1fr 44px; align-items:center; gap:8px; font-size:13px; }
+  .barra .tr { height:14px; background:var(--soft); border-radius:4px; overflow:hidden; }
+  .barra .fi { height:100%; background:var(--navy); border-radius:0 4px 4px 0; min-width:2px; }
+  .barra .v { text-align:right; font-variant-numeric:tabular-nums; color:var(--muted); }
+  .dias { display:flex; align-items:flex-end; gap:3px; height:120px; padding-top:10px; }
+  .dia { flex:1; background:var(--navy); border-radius:3px 3px 0 0; min-height:2px; position:relative; }
+  .dia:hover { background:var(--blue); }
+  .dia .tip { display:none; position:absolute; bottom:100%; left:50%; transform:translateX(-50%); background:#17171D; color:#fff; font-size:12px; padding:3px 6px; border-radius:6px; white-space:nowrap; margin-bottom:4px; }
+  .dia:hover .tip { display:block; }
+  .login { max-width:380px; margin:60px auto; }
+  .login input { width:100%; border:1px solid var(--line); border-radius:10px; padding:10px 12px; margin:6px 0 12px; }
+  .erro { color:var(--coral); font-size:13px; min-height:1.2em; }
+  .inp { border:1px solid var(--line); border-radius:8px; padding:6px 8px; width:100%; }
+  h3 { margin:18px 0 8px; font-size:16px; }
+  @media (max-width:700px) { .top-in { flex-wrap:wrap; } th.oc, td.oc { display:none; } .barra { grid-template-columns:100px 1fr 40px; } }
+</style>
+</head>
+<body>
+
+<div class="top"><div class="top-in">
+  <img src="../logo.png" alt="RVB" onerror="this.style.display='none'">
+  <div class="t">Painel RVB</div>
+  <div class="tabs" id="tabs" hidden>
+    <button class="tab on" data-p="leads">Leads</button>
+    <button class="tab" data-p="numeros">Números</button>
+    <button class="tab" data-p="equipe">Consultoras</button>
+    <button class="tab" data-p="deptos">Departamentos</button>
+  </div>
+  <div class="sp"></div>
+  <span class="who" id="who"></span>
+  <button class="sair" id="sair" hidden>Sair</button>
+</div></div>
+
+<main>
+  <div class="painel on" id="p-login">
+    <div class="card login">
+      <h2 style="margin:0 0 4px">Entrar</h2>
+      <p class="muted small" style="margin:0 0 10px">Só e-mails @rvb.com.br cadastrados.</p>
+      <label>E-mail<input type="email" id="lemail" autocomplete="username"></label>
+      <label>Senha<input type="password" id="lsenha" autocomplete="current-password"></label>
+      <button class="btn primario" id="entrar">Entrar</button>
+      <div class="erro" id="lerro"></div>
+    </div>
+  </div>
+
+  <div class="painel" id="p-leads">
+    <div class="cards" id="kpis"></div>
+    <div class="filtros">
+      <select id="fStatus">
+        <option value="">Todos os status</option>
+        <option value="completo">Completos (no Pipedrive)</option>
+        <option value="parcial">Incompletos</option>
+        <option value="resgatado">Resgatados (Caixa de Leads)</option>
+        <option value="contato">Contatos (departamentos)</option>
+      </select>
+      <select id="fCons"><option value="">Todas as consultoras</option></select>
+      <select id="fDias"><option value="7">7 dias</option><option value="30" selected>30 dias</option><option value="90">90 dias</option><option value="365">1 ano</option></select>
+      <input type="search" id="fBusca" placeholder="Buscar nome, empresa, telefone, e-mail…">
+      <button class="btn" id="csv">Exportar CSV</button>
+      <span class="muted small" id="cont"></span>
+    </div>
+    <div style="overflow:auto"><table>
+      <thead><tr><th>Quando</th><th>Nome</th><th>Empresa</th><th class="oc">WhatsApp</th><th class="oc">Produto</th><th>Status</th><th class="oc">Score</th><th>Consultora</th><th class="oc">Origem</th><th>Pipedrive</th></tr></thead>
+      <tbody id="tb"></tbody>
+    </table></div>
+  </div>
+
+  <div class="painel" id="p-numeros">
+    <div class="cards" id="kpis2"></div>
+    <div class="grade">
+      <div class="card"><h3 style="margin-top:0">Leads por dia (30 dias)</h3><div class="dias" id="gDias"></div></div>
+      <div class="card"><h3 style="margin-top:0">Onde a conversa para</h3><div class="barras" id="gEtapas"></div><p class="muted small">Incompletos dos últimos 30 dias, pela última pergunta respondida.</p></div>
+      <div class="card"><h3 style="margin-top:0">Por consultora (completos)</h3><div class="barras" id="gCons"></div></div>
+      <div class="card"><h3 style="margin-top:0">Por origem</h3><div class="barras" id="gOrigem"></div></div>
+    </div>
+  </div>
+
+  <div class="painel" id="p-equipe">
+    <div class="card" style="margin-bottom:12px"><span id="fila"></span></div>
+    <div class="grade" id="consultoras"></div>
+    <p class="muted small">Desligar tira a consultora do rodízio na hora. Peso 2 = recebe o dobro. Cliente que já está na base continua indo para a dona da conta.</p>
+  </div>
+
+  <div class="painel" id="p-deptos">
+    <div style="overflow:auto"><table>
+      <thead><tr><th>Departamento</th><th>Quem atende</th><th>WhatsApp (só dígitos, com 55)</th><th>E-mail</th><th>Registra no Pipedrive</th><th></th></tr></thead>
+      <tbody id="tbDep"></tbody>
+    </table></div>
+    <p class="muted small">"Registra no Pipedrive" cria uma atividade para a conta do departamento a cada pedido de contato.</p>
+  </div>
+</main>
+
+<div class="drawer" id="drawer"><div class="box" id="drawerBox"></div></div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+import { SUPABASE_URL, SUPABASE_ANON } from './config.js';
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fone = (d) => { d = String(d || '').replace(/\D/g, ''); return d.length === 11 ? `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}` : d.length === 10 ? `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}` : d; };
+const dt = (s) => s ? new Date(s).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }) : '';
+const PERGUNTAS = { 0:'abriu', 1:'nome (parou no WhatsApp)', 2:'WhatsApp/e-mail (parou na empresa)', 3:'empresa (parou no objetivo)', 4:'objetivo (parou no prazo)', 5:'prazo (parou no CNPJ)', 6:'CNPJ (parou na cidade)', 7:'cidade (parou no resumo)', 8:'completo' };
+const PD = 'https://rvb.pipedrive.com';
+let CONS = [], LEADS = [], DEPS = [];
+
+/* ---------- login ---------- */
+async function entrar() {
+  $('#lerro').textContent = '';
+  const { error } = await sb.auth.signInWithPassword({ email: $('#lemail').value.trim(), password: $('#lsenha').value });
+  if (error) { $('#lerro').textContent = 'Não deu: ' + (error.message === 'Invalid login credentials' ? 'e-mail ou senha errados.' : error.message); return; }
+}
+$('#entrar').addEventListener('click', entrar);
+$('#lsenha').addEventListener('keydown', e => { if (e.key === 'Enter') entrar(); });
+$('#sair').addEventListener('click', () => sb.auth.signOut());
+sb.auth.onAuthStateChange((_e, sess) => {
+  const ok = !!sess && /@rvb\.com\.br$/i.test(sess.user.email || '');
+  $('#p-login').classList.toggle('on', !ok);
+  $('#tabs').hidden = !ok; $('#sair').hidden = !ok;
+  $('#who').textContent = ok ? sess.user.email : '';
+  if (ok) { mostrar('leads'); carregarTudo(); } else { document.querySelectorAll('.painel').forEach(p => p.classList.toggle('on', p.id === 'p-login')); }
+});
+
+/* ---------- abas ---------- */
+function mostrar(p) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.p === p));
+  document.querySelectorAll('.painel').forEach(x => x.classList.toggle('on', x.id === 'p-' + p));
+}
+$('#tabs').addEventListener('click', e => { const t = e.target.closest('.tab'); if (t) mostrar(t.dataset.p); });
+
+/* ---------- dados ---------- */
+async function carregarTudo() {
+  const [c, d] = await Promise.all([sb.from('consultoras').select('*').order('ordem'), sb.from('departamentos').select('*').order('ordem')]);
+  CONS = c.data || []; DEPS = d.data || [];
+  $('#fCons').innerHTML = '<option value="">Todas as consultoras</option>' + CONS.filter(x => x.id !== 'central').map(x => `<option value="${x.id}">${esc(x.nome)}</option>`).join('');
+  await carregarLeads();
+  renderConsultoras(); renderDeps();
+}
+async function carregarLeads() {
+  const dias = Number($('#fDias').value);
+  const desde = new Date(Date.now() - dias * 86400000).toISOString();
+  const { data, error } = await sb.from('leads').select('*').gte('criado_em', desde).order('criado_em', { ascending: false }).limit(2000);
+  if (error) { $('#tb').innerHTML = `<tr><td colspan="10" class="erro">${esc(error.message)}</td></tr>`; return; }
+  LEADS = data || [];
+  renderLeads(); renderNumeros();
+}
+['#fStatus', '#fCons', '#fBusca'].forEach(s => $(s).addEventListener('input', renderLeads));
+$('#fDias').addEventListener('change', carregarLeads);
+
+function statusDe(L) {
+  if (L.tipo === 'contato' || L.status === 'contato') return ['contato', 'Contato' + (L.departamento ? ' · ' + (DEPS.find(d => d.id === L.departamento)?.label || L.departamento) : ''), 'cont'];
+  if (L.status === 'completo') return ['completo', 'Completo', 'ok'];
+  if (L.status === 'resgatado') return ['resgatado', 'Resgatado', 'resg'];
+  return ['parcial', 'Incompleto · ' + (PERGUNTAS[L.passo] || 'passo ' + L.passo), 'parcial'];
+}
+function filtrados() {
+  const st = $('#fStatus').value, co = $('#fCons').value, q = $('#fBusca').value.trim().toLowerCase();
+  return LEADS.filter(L => {
+    const [s] = statusDe(L);
+    if (st && s !== st) return false;
+    if (co && L.consultora_id !== co) return false;
+    if (q) { const alvo = [L.nome, L.empresa, L.whatsapp, L.email, L.razao_social, L.cidade_uso].join(' ').toLowerCase(); if (!alvo.includes(q)) return false; }
+    return true;
+  });
+}
+function renderLeads() {
+  const rows = filtrados();
+  $('#cont').textContent = rows.length + ' de ' + LEADS.length;
+  const tot = LEADS.filter(L => L.tipo !== 'contato'), comp = tot.filter(L => L.status === 'completo');
+  $('#kpis').innerHTML = kpi(tot.length, 'orçamentos iniciados') + kpi(comp.length, 'completos') + kpi(tot.length ? Math.round(comp.length / tot.length * 100) + '%' : '–', 'taxa de conclusão') +
+    kpi(LEADS.filter(L => L.status === 'resgatado').length, 'resgatados') + kpi(LEADS.filter(L => L.tipo === 'contato').length, 'contatos');
+  $('#tb').innerHTML = rows.map(L => {
+    const [, lab, cls] = statusDe(L);
+    const cons = CONS.find(c => c.id === L.consultora_id);
+    const Q = L.qualificacao || {};
+    const pdLink = L.pipedrive_deal_id ? `<a href="${PD}/deal/${L.pipedrive_deal_id}" target="_blank" rel="noopener">negócio</a>` : L.pipedrive_lead_id ? `<a href="${PD}/leads/inbox/${L.pipedrive_lead_id}" target="_blank" rel="noopener">lead</a>` : '<span class="muted">–</span>';
+    const origem = (L.origem_pagina || '').replace(/^\/produtos\//, '').replace(/\/$/, '') || 'site';
+    const utm = L.utms && L.utms.utm_source ? ' · ' + L.utms.utm_source : '';
+    return `<tr class="linha" data-id="${esc(L.session_id)}">
+      <td class="small">${dt(L.criado_em)}</td><td><b>${esc(L.nome || '–')}</b></td><td>${esc(L.empresa || '–')}</td>
+      <td class="oc small">${L.whatsapp ? `<a href="https://wa.me/${L.ddi && L.ddi !== '55' ? L.ddi : '55'}${esc(L.whatsapp)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(fone(L.whatsapp))}</a>` : '–'}</td>
+      <td class="oc small">${esc(L.produto_nome || '–')}</td><td><span class="tag ${cls}">${esc(lab)}</span></td>
+      <td class="oc">${Q.potencial ? `<span class="tag">${esc(Q.potencial)}</span>` : ''}</td>
+      <td>${esc(cons ? cons.nome : (L.consultora_id || '–'))}</td>
+      <td class="oc small muted">${esc(origem + utm)}</td><td onclick="event.stopPropagation()">${pdLink}</td></tr>`;
+  }).join('') || '<tr><td colspan="10" class="muted">Nada nesse filtro.</td></tr>';
+}
+const kpi = (n, l) => `<div class="card kpi"><div class="n">${n}</div><div class="l">${l}</div></div>`;
+$('#tb').addEventListener('click', e => { const tr = e.target.closest('tr.linha'); if (tr) abrirLead(tr.dataset.id); });
+
+function abrirLead(id) {
+  const L = LEADS.find(x => x.session_id === id); if (!L) return;
+  const Q = L.qualificacao || {}; const R = L.receita || {}; const cons = CONS.find(c => c.id === L.consultora_id);
+  const [, lab] = statusDe(L);
+  const kv = [
+    ['Status', lab], ['Quando', dt(L.criado_em) + (L.convertido_em ? ' → concluído ' + dt(L.convertido_em) : '')],
+    ['Nome', L.nome], ['WhatsApp', L.whatsapp ? fone(L.whatsapp) : ''], ['E-mail', L.email], ['Empresa', L.empresa + (L.razao_social ? ' · ' + L.razao_social : '')],
+    ['Produto', L.produto_nome + (L.detalhe ? ' (' + L.detalhe + ')' : '')], ['Objetivo', L.objetivo_label], ['Quando precisa', (L.quando_label || '') + (L.data_evento ? ' · ' + L.data_evento.split('-').reverse().join('/') : '')],
+    ['Cidade', L.cidade_uso + (L.cidade_cnpj && L.cidade_cnpj !== L.cidade_uso ? ' (CNPJ em ' + L.cidade_cnpj + ')' : '')],
+    ['CNPJ', L.cnpj ? L.cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5') + (R.ie ? (R.ie.tem ? ' · IE ' + (R.ie.ativa ? 'ativa' : 'não ativa') + ' (' + R.ie.uf + ')' : ' · sem IE') : '') + (R.porte ? ' · ' + R.porte : '') : ''],
+    ['Consultora', (cons ? cons.nome : L.consultora_id || '') + (L.distribuicao ? ' · ' + L.distribuicao : '')],
+    ['Origem', (L.origem_pagina || '') + (L.utms && Object.keys(L.utms).length ? ' · ' + Object.entries(L.utms).map(([k, v]) => k.replace('utm_', '') + '=' + v).join(' ') : '')],
+    ['Score', Q.potencial ? Q.potencial + (Q.potencial_motivo ? ' · ' + Q.potencial_motivo : '') : ''],
+    ['Perfil', Q.perfil ? Q.perfil + (Q.rede ? ' · REDE: ' + Q.unidades : '') : ''],
+    ['Pipedrive', L.pipedrive_deal_id ? `<a href="${PD}/deal/${L.pipedrive_deal_id}" target="_blank" rel="noopener">abrir negócio</a>` : L.pipedrive_lead_id ? `<a href="${PD}/leads/inbox/${L.pipedrive_lead_id}" target="_blank" rel="noopener">abrir na Caixa de Leads</a>` : ''],
+  ].filter(([, v]) => v && String(v).trim() && v !== 'undefined' && v !== 'null');
+  $('#drawerBox').innerHTML = `<button class="x" id="fechaD">×</button><h2>${esc(L.nome || 'Lead')}</h2><div class="muted small">${esc(L.empresa || '')}</div>
+    <div class="kv">${kv.map(([k, v]) => `<b>${k}</b><span>${k === 'Pipedrive' ? v : esc(v)}</span>`).join('')}</div>
+    ${Q.abertura_sugerida ? `<h3>Sugestão de mensagem</h3><div class="msg">${esc(Q.abertura_sugerida)}</div>` : ''}
+    ${Q.oportunidade ? `<h3>Jogada</h3><div>${esc(Q.oportunidade)}</div>` : ''}
+    ${(Q.falta_descobrir || []).length ? `<h3>Falta descobrir</h3><ul>${Q.falta_descobrir.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
+    ${(Q.atencao || []).length ? `<h3>Atenção</h3><ul>${Q.atencao.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
+    <p class="muted small">sessão ${esc(L.session_id)}</p>`;
+  $('#drawer').classList.add('on');
+  $('#fechaD').addEventListener('click', () => $('#drawer').classList.remove('on'));
+}
+$('#drawer').addEventListener('click', e => { if (e.target === $('#drawer')) $('#drawer').classList.remove('on'); });
+
+$('#csv').addEventListener('click', () => {
+  const cols = ['criado_em', 'status', 'passo', 'nome', 'whatsapp', 'email', 'empresa', 'razao_social', 'cnpj', 'produto_nome', 'objetivo_label', 'quando_label', 'data_evento', 'cidade_uso', 'consultora_id', 'origem_pagina', 'pipedrive_deal_id', 'pipedrive_lead_id'];
+  const linhas = [cols.join(';')].concat(filtrados().map(L => cols.map(c => '"' + String(L[c] ?? '').replace(/"/g, '""') + '"').join(';')));
+  const blob = new Blob(['﻿' + linhas.join('\n')], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'leads-rvb.csv'; a.click();
+});
+
+/* ---------- números ---------- */
+function barras(el, pares, total) {
+  const max = Math.max(1, ...pares.map(p => p[1]));
+  el.innerHTML = pares.map(([k, v]) => `<div class="barra"><span title="${esc(k)}">${esc(k)}</span><div class="tr"><div class="fi" style="width:${Math.round(v / max * 100)}%"></div></div><span class="v">${v}${total ? ' · ' + Math.round(v / total * 100) + '%' : ''}</span></div>`).join('') || '<span class="muted small">Sem dados.</span>';
+}
+function renderNumeros() {
+  const ini = new Date(); ini.setHours(0, 0, 0, 0); ini.setDate(ini.getDate() - 29);
+  const orc = LEADS.filter(L => L.tipo !== 'contato' && new Date(L.criado_em) >= ini);
+  const comp = orc.filter(L => L.status === 'completo');
+  $('#kpis2').innerHTML = kpi(orc.length, 'iniciados em 30 dias') + kpi(comp.length, 'completos') + kpi(orc.length ? Math.round(comp.length / orc.length * 100) + '%' : '–', 'conclusão') + kpi((comp.length / 30).toFixed(1), 'completos por dia');
+  const porDia = {}; for (let i = 0; i < 30; i++) { const d = new Date(ini); d.setDate(ini.getDate() + i); porDia[d.toISOString().slice(0, 10)] = 0; }
+  comp.forEach(L => { const k = new Date(L.criado_em).toISOString().slice(0, 10); if (k in porDia) porDia[k]++; });
+  const mx = Math.max(1, ...Object.values(porDia));
+  $('#gDias').innerHTML = Object.entries(porDia).map(([d, n]) => `<div class="dia" style="height:${Math.max(2, n / mx * 100)}%"><span class="tip">${d.split('-').reverse().slice(0, 2).join('/')}: ${n}</span></div>`).join('');
+  const inc = orc.filter(L => L.status !== 'completo');
+  const etapas = {}; inc.forEach(L => { const k = PERGUNTAS[L.passo] || 'passo ' + L.passo; etapas[k] = (etapas[k] || 0) + 1; });
+  barras($('#gEtapas'), Object.entries(etapas).sort((a, b) => b[1] - a[1]), inc.length);
+  const pc = {}; comp.forEach(L => { const n = CONS.find(c => c.id === L.consultora_id)?.nome || L.consultora_id || '?'; pc[n] = (pc[n] || 0) + 1; });
+  barras($('#gCons'), Object.entries(pc).sort((a, b) => b[1] - a[1]), comp.length);
+  const po = {}; orc.forEach(L => { const k = (L.utms && L.utms.utm_source) ? L.utms.utm_source : ((L.origem_pagina || '').startsWith('/produtos') ? 'página de produto' : (L.origem_pagina || 'site')); po[k] = (po[k] || 0) + 1; });
+  barras($('#gOrigem'), Object.entries(po).sort((a, b) => b[1] - a[1]).slice(0, 8), orc.length);
+}
+
+/* ---------- consultoras ---------- */
+async function renderConsultoras() {
+  const { data: rod } = await sb.from('rodizio').select('contador').eq('id', 1).maybeSingle();
+  const fila = CONS.filter(c => c.ativa && c.id !== 'central').flatMap(c => Array(c.peso || 1).fill(c));
+  const prox = fila.length ? fila[(rod?.contador || 0) % fila.length] : null;
+  $('#fila').innerHTML = fila.length ? `Fila agora: <b>${fila.map(c => esc(c.nome)).join(' → ')}</b> · próxima a receber: <b>${esc(prox.nome)}</b> · ${rod?.contador || 0} leads distribuídos` : '<b>Ninguém ativa: leads vão para o número central.</b>';
+  $('#consultoras').innerHTML = CONS.filter(c => c.id !== 'central').map(c => `
+    <div class="card cons">
+      <img src="${esc(c.foto_url || '')}" alt="" referrerpolicy="no-referrer" onerror="this.style.visibility='hidden'">
+      <div style="flex:1"><div class="nome">${esc(c.nome)}</div><div class="muted small">${esc(fone((c.whatsapp || '').replace(/^55/, '')))}${c.email ? ' · ' + esc(c.email) : ''}${c.pipedrive_user_id ? '' : ' · <span style="color:var(--coral)">sem ID no Pipedrive</span>'}</div>
+        <div class="small" style="margin-top:6px">Peso <select data-peso="${c.id}"><option ${c.peso == 1 ? 'selected' : ''}>1</option><option ${c.peso == 2 ? 'selected' : ''}>2</option><option ${c.peso == 3 ? 'selected' : ''}>3</option></select></div></div>
+      <button class="switch ${c.ativa ? 'on' : ''}" data-ativa="${c.id}" title="${c.ativa ? 'Ativa — clique para desligar' : 'Desligada — clique para ligar'}"></button>
+    </div>`).join('');
+  document.querySelectorAll('[data-ativa]').forEach(b => b.addEventListener('click', async () => {
+    const c = CONS.find(x => x.id === b.dataset.ativa); const { error } = await sb.from('consultoras').update({ ativa: !c.ativa }).eq('id', c.id);
+    if (error) return alert('Não salvou: ' + error.message); c.ativa = !c.ativa; renderConsultoras();
+  }));
+  document.querySelectorAll('[data-peso]').forEach(s => s.addEventListener('change', async () => {
+    const c = CONS.find(x => x.id === s.dataset.peso); const { error } = await sb.from('consultoras').update({ peso: Number(s.value) }).eq('id', c.id);
+    if (error) return alert('Não salvou: ' + error.message); c.peso = Number(s.value); renderConsultoras();
+  }));
+}
+
+/* ---------- departamentos ---------- */
+function renderDeps() {
+  $('#tbDep').innerHTML = DEPS.map(d => `<tr data-dep="${d.id}">
+    <td><b>${esc(d.label)}</b></td>
+    <td><input class="inp" data-f="pessoa" value="${esc(d.pessoa || '')}"></td>
+    <td><input class="inp" data-f="whatsapp" value="${esc(d.whatsapp || '')}"></td>
+    <td><input class="inp" data-f="email" value="${esc(d.email || '')}"></td>
+    <td><input type="checkbox" data-f="registrar" ${d.registrar ? 'checked' : ''}></td>
+    <td><button class="btn" data-salvar="${d.id}">Salvar</button></td></tr>`).join('');
+  document.querySelectorAll('[data-salvar]').forEach(b => b.addEventListener('click', async () => {
+    const tr = b.closest('tr'); const up = {};
+    tr.querySelectorAll('[data-f]').forEach(i => { up[i.dataset.f] = i.type === 'checkbox' ? i.checked : (i.value.trim() || null); });
+    if (up.whatsapp) up.whatsapp = up.whatsapp.replace(/\D/g, '');
+    const { error } = await sb.from('departamentos').update(up).eq('id', b.dataset.salvar);
+    b.textContent = error ? 'Erro' : 'Salvo ✓'; setTimeout(() => b.textContent = 'Salvar', 1500);
+    if (error) alert('Não salvou: ' + error.message); else Object.assign(DEPS.find(d => d.id === b.dataset.salvar), up);
+  }));
+}
+</script>
+</body>
+</html>
