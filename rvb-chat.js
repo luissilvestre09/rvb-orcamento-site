@@ -5,7 +5,7 @@
      <script src="https://atendimento.rvb.com.br/rvb-chat.js" defer></script>
 
    O que ele faz:
-   1. Qualquer link ou botão com href="#orcamento", classe "rvb-abrir-chat" ou atributo
+   1. Qualquer link ou botão com href="#orcamento" (ou o "#solicitar-orcamento" que o tema já usa), classe "rvb-abrir-chat" ou atributo
       data-rvb-chat abre o chat em TELA CHEIA por cima da página (o site continua embaixo; no ×
       a pessoa volta onde estava). Produto opcional: data-produto-id="chute-a-gol"
       data-produto-nome="Chute a Gol Inflável".
@@ -146,10 +146,10 @@
     var el = e.target.closest && e.target.closest('a[href], .rvb-abrir-chat, [data-rvb-chat]');
     if (!el) return;
     var href = el.getAttribute('href') || '';
-    var direto = /#(orcamento|contato)/.test(href) || el.matches('.rvb-abrir-chat, [data-rvb-chat]');
+    var direto = /#(orcamento|contato|solicitar-orcamento|solicite-orcamento)/.test(href) || el.matches('.rvb-abrir-chat, [data-rvb-chat]');
     var legado = INTERCEPTAR && (WA_CENTRAL.test(href) || /\/solicitar-orcamento\/?(\?|#|$)/.test(href));
     if (!direto && !legado) return;
-    e.preventDefault();
+    e.preventDefault(); e.stopImmediatePropagation();   // impede o tema de abrir o modal antigo do formulário
     var o = opcoesDe(el); o.cheia = true;
     if (!o.modo && (/#contato/.test(href) || WA_CENTRAL.test(href))) o.modo = 'contato';
     abrir(o);
