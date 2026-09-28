@@ -131,13 +131,16 @@
   .row.bot { justify-content: flex-start; }
   .row.user { justify-content: flex-end; }
   .avatar {
-    width: 34px; height: 34px; border-radius: 50%; flex: none;
+    width: 40px; height: 40px; border-radius: 50%; flex: none;
     background: var(--surface); color: #fff; border: 1px solid var(--line);
-    display: grid; place-items: center;
+    display: grid; place-items: center; overflow: hidden;
     box-shadow: var(--shadow);
   }
-  .avatar img { width: 26px; height: 26px; object-fit: contain; }
-  .avatar.foto img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
+  .avatar img { width: 30px; height: 30px; object-fit: contain; }
+  .avatar.foto img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+  /* fotos novas (RVB-Baloes-*.png): aproxima o rosto, que fica pequeno no tamanho do avatar */
+  .avatar.foto.perto { display: block; }
+  .avatar.foto.perto img { width: 160%; height: 160%; max-width: none; margin-left: -30%; margin-top: -15%; border-radius: 0; }
   .brand img.foto { border-radius: 50%; object-fit: cover; border: 2px solid var(--yellow); }
 
   .bubble {
@@ -526,7 +529,7 @@
     return new Promise(resolve => {
       if (!fotoUrl) { AVATAR_ATUAL = { src: LOGO, foto: false }; return resolve(); }
       const probe = new Image(); let done = false;
-      const fim = ok => { if (done) return; done = true; AVATAR_ATUAL = ok ? { src: fotoUrl, foto: true } : { src: LOGO, foto: false }; resolve(); };
+      const fim = ok => { if (done) return; done = true; AVATAR_ATUAL = ok ? { src: fotoUrl, foto: true, perto: /RVB-Baloes-/.test(fotoUrl) } : { src: LOGO, foto: false }; resolve(); };
       probe.onload = () => fim(true); probe.onerror = () => fim(false); probe.src = fotoUrl;
       setTimeout(() => fim(probe.complete && probe.naturalWidth > 0), 1500);
     });
@@ -541,7 +544,7 @@
   function addBubble(who, html) {
     const row = document.createElement('div');
     row.className = 'row ' + who;
-    if (who === 'bot') row.innerHTML = '<div class="avatar' + (AVATAR_ATUAL.foto ? ' foto' : '') + '"><img src="' + AVATAR_ATUAL.src + '" alt=""></div><div class="bubble">' + html + '</div>';
+    if (who === 'bot') row.innerHTML = '<div class="avatar' + (AVATAR_ATUAL.foto ? ' foto' : '') + (AVATAR_ATUAL.perto ? ' perto' : '') + '"><img src="' + AVATAR_ATUAL.src + '" alt=""></div><div class="bubble">' + html + '</div>';
     else row.innerHTML = '<div class="bubble">' + html + '</div>';
     chat.appendChild(row);
     lastSpeaker = who;
