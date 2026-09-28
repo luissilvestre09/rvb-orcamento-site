@@ -766,6 +766,19 @@
       if (C !== CENTRAL) await definirConsultora(C.nome, C.foto || null);
     };
     const quemSou = () => C === CENTRAL ? 'Aqui é a <b>RVB Balões</b>.' : 'Eu sou a <b>' + esc(C.nome) + '</b>, da RVB Balões.';
+    // Expediente comercial (Brasília): seg–sex, 8h às 17h30. Fora dele, o chat avisa quando a consultora chama.
+    const EXPEDIENTE = { inicio: 8 * 60, fim: 17 * 60 + 30 };
+    const quandoChamo = () => {   // null = dentro do expediente; senão o texto "amanhã a partir das 8h" etc.
+      const agora = new Date(Date.now() - 3 * 3600 * 1000);   // relógio de Brasília lido como UTC
+      const dia = agora.getUTCDay(), min = agora.getUTCHours() * 60 + agora.getUTCMinutes();
+      const util = dia >= 1 && dia <= 5;
+      if (util && min >= EXPEDIENTE.inicio && min < EXPEDIENTE.fim) return null;
+      const h = Math.floor(EXPEDIENTE.inicio / 60) + 'h';
+      if (util && min < EXPEDIENTE.inicio) return 'hoje a partir das ' + h;
+      if (dia === 5 || dia === 6 || dia === 0) return 'na segunda-feira a partir das ' + h;
+      return 'amanhã a partir das ' + h;
+    };
+    const avisoHorario = () => { const q = quandoChamo(); return q ? ' Agora estamos fora do expediente: eu anoto tudo e te chamo <b>' + q + '</b>.' : ''; };
 
     if (MODO === 'contato') {
       /* triagem antes de sortear consultora: financeiro, RH etc. não gastam o rodízio */
@@ -791,14 +804,14 @@
         const fotoC = AVATAR_ATUAL; AVATAR_ATUAL = { src: ANFITRIAO.foto, foto: true, perto: true };
         await bot('Perfeito! Vou te passar para a <b>' + esc(C.nome) + '</b>, que cuida dos orçamentos.', 600);
         AVATAR_ATUAL = fotoC;
-        await bot('Oi! ' + quemSou() + ' Em menos de 2 minutos eu anoto o essencial do seu projeto e já sigo com você no WhatsApp sabendo do que se trata.', 900);
+        await bot('Oi! ' + quemSou() + ' Em menos de 2 minutos eu anoto o essencial do seu projeto e já sigo com você no WhatsApp sabendo do que se trata.' + avisoHorario(), 900);
       } else {
-        await bot('Perfeito! ' + quemSou() + ' Em menos de 2 minutos eu anoto o essencial do seu projeto e já sigo com você no WhatsApp sabendo do que se trata.', 700);
+        await bot('Perfeito! ' + quemSou() + ' Em menos de 2 minutos eu anoto o essencial do seu projeto e já sigo com você no WhatsApp sabendo do que se trata.' + avisoHorario(), 700);
       }
     } else if (await escolherConsultora(), L.produto) {
-      await bot('Oi! ' + quemSou() + ' Vi que você está buscando um <b>' + esc(prodLabel) + '</b>. Em menos de 2 minutos eu anoto o essencial do seu projeto e já sigo com você no WhatsApp sabendo do que se trata.', 900);
+      await bot('Oi! ' + quemSou() + ' Vi que você está buscando um <b>' + esc(prodLabel) + '</b>. Em menos de 2 minutos eu anoto o essencial do seu projeto e já sigo com você no WhatsApp sabendo do que se trata.' + avisoHorario(), 900);
     } else {
-      await bot('Oi! ' + quemSou() + ' Em menos de 2 minutos eu anoto o essencial do seu projeto e já sigo com você no WhatsApp sabendo do que se trata.', 900);
+      await bot('Oi! ' + quemSou() + ' Em menos de 2 minutos eu anoto o essencial do seu projeto e já sigo com você no WhatsApp sabendo do que se trata.' + avisoHorario(), 900);
     }
     await bot('Para começar, qual é o seu nome?', 600);
 
@@ -969,7 +982,10 @@
                    L.objetivo.id === 'recorrente' ? 'uso recorrente' : 'o seu projeto';
     const whenTxt = L.data ? ' no dia <b>' + fmtDate(L.data) + '</b>' : (L.quando.id === 'semdata' ? ', ainda sem data definida' : ', previsto para ' + L.quando.label.toLowerCase().replace('nos ', 'os ').replace('entre ', ''));
     await bot('Pronto, <b>' + esc(nome) + '</b>! Resumindo: você está buscando um <b>' + esc(prodTxt) + '</b> para ' + objTxt + ', com uso em <b>' + esc(L.cidade) + '</b>' + whenTxt + '.');
-    if (C === CENTRAL) {
+    const qc = quandoChamo();
+    if (qc) {
+      await bot((C === CENTRAL ? 'A equipe da <b>RVB</b> continua' : 'Eu continuo') + ' seu atendimento pelo WhatsApp <b>' + qc + '</b>, já com as principais informações do projeto. Se quiser deixar alguma mensagem, é só chamar pelo botão abaixo que ' + (C === CENTRAL ? 'a equipe responde' : 'eu respondo') + ' assim que começar o expediente.');
+    } else if (C === CENTRAL) {
       await bot('A equipe da <b>RVB</b> vai continuar seu atendimento pelo WhatsApp, já com as principais informações do projeto. Se quiser adiantar a conversa, é só chamar pelo botão abaixo.');
     } else {
       await bot('Vou continuar seu atendimento pelo WhatsApp, já com as principais informações do projeto. Se quiser adiantar a conversa, é só me chamar pelo botão abaixo.');
