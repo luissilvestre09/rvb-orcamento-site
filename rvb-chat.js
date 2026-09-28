@@ -117,16 +117,29 @@
     montar();
     painel.classList.toggle('cheia', !!opts.cheia);
     var src = urlDoChat(opts);
-    if (src !== srcAtual) { frame.src = src; srcAtual = src; }   // mesma conversa se reabrir com o mesmo contexto
+    if (src !== srcAtual) {   // mesma conversa se reabrir com o mesmo contexto
+      // replace(): troca a página do iframe SEM criar entrada no histórico do navegador
+      // (com frame.src o "voltar" do navegador voltava o iframe para a tela anterior, sem cabeçalho)
+      try { frame.contentWindow.location.replace(src); } catch (e) { frame.src = src; }
+      srcAtual = src;
+    }
     ultimoFoco = document.activeElement;
     fundo.classList.add('on'); painel.classList.add('on');
     if (bolha) bolha.style.display = 'none';
     document.documentElement.classList.add('rvbc-trava');
+    if (!aberto) { try { history.pushState({ rvbc: 1 }, ''); } catch (e) {} }   // "voltar" do navegador fecha o chat em vez de sair do site
     aberto = true;
     try { frame.contentWindow.postMessage({ rvb: (MOBILE() || opts.cheia) ? 'expandido' : 'recolhido' }, ORIGEM); } catch (e) {}
     setTimeout(function () { try { frame.focus(); } catch (e) {} }, 250);
   }
   function fechar() {
+    if (!aberto) return;
+    // se foi a gente que empilhou a entrada no histórico, volta uma: o popstate abaixo fecha de fato
+    if (history.state && history.state.rvbc) { history.back(); return; }
+    fecharAgora();
+  }
+  window.addEventListener('popstate', function () { if (aberto) fecharAgora(); });
+  function fecharAgora() {
     if (!aberto) return;
     fundo.classList.remove('on'); painel.classList.remove('on');
     if (bolha) bolha.style.display = '';
