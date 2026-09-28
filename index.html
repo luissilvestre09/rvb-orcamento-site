@@ -484,12 +484,12 @@
   /* Modo contato (menu "Contato" do site): triagem antes de qualquer pergunta.
      Departamentos: preencher e-mail/WhatsApp de cada um; sem canal próprio, vai ao WhatsApp central com o assunto. */
   const MODO = (() => { try { return (new URLSearchParams(location.search).get('modo') || '').toLowerCase(); } catch (e) { return ''; } })();
-  const DEPARTAMENTOS = [
-    { id: 'financeiro',  label: 'Financeiro',              email: '', wa: '' },
-    { id: 'logistica',   label: 'Entregas e logística',    email: '', wa: '' },
-    { id: 'rh',          label: 'RH / Trabalhe conosco',   email: '', wa: '' },
-    { id: 'fornecedor',  label: 'Sou fornecedor',          email: '', wa: '' },
-    { id: 'imprensa',    label: 'Imprensa e parcerias',    email: '', wa: '' },
+  const DEPARTAMENTOS = [   // cópia local; a lista oficial vem da tabela departamentos no Supabase
+    { id: 'financeiro',  label: 'Financeiro',              pessoa: 'Natália Fernandes', whatsapp: '5511990104592', email: 'financeiro@rvb.com.br', foto_url: 'https://rvb.com.br/wp-content/uploads/2026/09/Natalia-Financeiro-RVB-Baloes.png', registrar: true },
+    { id: 'logistica',   label: 'Entregas e logística',    pessoa: 'Matheus',           whatsapp: '5511991435040', email: 'logistica@rvb.com.br',  foto_url: 'https://rvb.com.br/wp-content/uploads/2026/09/Matheus-Logistica-RVB-Baloes.png',   registrar: true },
+    { id: 'rh',          label: 'RH / Trabalhe conosco' },
+    { id: 'fornecedor',  label: 'Sou fornecedor' },
+    { id: 'imprensa',    label: 'Imprensa e parcerias' },
   ];
   /* contas de exemplo já existentes na base, para demonstrar a regra de continuidade */
   /* protótipo: telefones de exemplo já 'na base' (8 últimos dígitos) → consultora do último negócio */
@@ -532,7 +532,7 @@
     return new Promise(resolve => {
       if (!fotoUrl) { AVATAR_ATUAL = { src: LOGO, foto: false }; return resolve(); }
       const probe = new Image(); let done = false;
-      const fim = ok => { if (done) return; done = true; AVATAR_ATUAL = ok ? { src: fotoUrl, foto: true, perto: /RVB-Baloes-/.test(fotoUrl) } : { src: LOGO, foto: false }; resolve(); };
+      const fim = ok => { if (done) return; done = true; AVATAR_ATUAL = ok ? { src: fotoUrl, foto: true, perto: !/\.webp(\?|$)/i.test(fotoUrl) } : { src: LOGO, foto: false }; resolve(); };
       probe.onload = () => fim(true); probe.onerror = () => fim(false); probe.src = fotoUrl;
       setTimeout(() => fim(probe.complete && probe.naturalWidth > 0), 1500);
     });
@@ -755,7 +755,7 @@
       ]);
       user(via.label);
       if (via.id === 'cliente') { await fluxoCliente(L, CENTRAL, salvar); return; }
-      if (via.id === 'outro')   { await fluxoOutro(CENTRAL); return; }
+      if (via.id === 'outro')   { await fluxoOutro(L, salvar); return; }
       await escolherConsultora();
       await bot('Perfeito! ' + quemSou() + ' Em menos de 2 minutos eu anoto o essencial do seu projeto e já sigo com você no WhatsApp sabendo do que se trata.', 700);
     } else if (await escolherConsultora(), L.produto) {
@@ -982,25 +982,53 @@
   }
 
   /* ---------- Modo contato: outro assunto ---------- */
-  async function fluxoOutro(C) {
+  async function fluxoOutro(L, salvar) {
     setStep(1);
     await bot('Sem problema. Com qual área você quer falar?');
-    const d = await askChoice(DEPARTAMENTOS.map(x => ({ id: x.id, label: x.label })));
+    let lista = DEPARTAMENTOS;
+    const rd = await salvar(1, { departamentos: true, tipo: 'contato' });
+    if (rd && rd.ok && rd.departamentos && rd.departamentos.length) lista = rd.departamentos;
+    const d = await askChoice(lista.map(x => ({ id: x.id, label: x.label })));
     user(d.label);
-    const dep = DEPARTAMENTOS.find(x => x.id === d.id);
-    const wa = dep.wa || CENTRAL.wa;
-    const texto = 'Oi! Assunto: ' + dep.label + '.';
-    if (dep.email) {
-      await bot('Para <b>' + esc(dep.label) + '</b>, o canal é o e-mail <b>' + esc(dep.email) + '</b>. Se preferir, dá para chamar no WhatsApp também.');
-    } else {
-      await bot('Para <b>' + esc(dep.label) + '</b>, chama a RVB no WhatsApp com o assunto que eu já deixo escrito, e a equipe direciona para a pessoa certa.');
-    }
-    dock.innerHTML =
+    const dep = lista.find(x => x.id === d.id);
+    const cta = (wa, texto, email, rotulo) =>
       '<div class="choices">' +
-        (dep.email ? '<a class="cta" style="background:var(--surface-2);color:var(--text)" href="mailto:' + esc(dep.email) + '?subject=' + encodeURIComponent(dep.label) + '">Enviar e-mail</a>' : '') +
-        '<a class="cta" href="https://wa.me/' + wa + '?text=' + encodeURIComponent(texto) + '" target="_blank" rel="noopener">' + WA_ICON + 'Falar no WhatsApp</a>' +
-      '</div>' +
-      '<div class="foot">WhatsApp oficial da RVB: ' + CENTRAL.fone + ' · <button type="button" class="restart" id="restart">Recomeçar</button></div>';
+        '<a class="cta" href="https://wa.me/' + wa + '?text=' + encodeURIComponent(texto) + '" target="_blank" rel="noopener">' + WA_ICON + esc(rotulo) + '</a>' +
+        (email ? '<a class="cta" style="background:var(--surface-2);color:var(--text)" href="mailto:' + esc(email) + '?subject=' + encodeURIComponent(dep.label + ' · contato pelo site') + '">Enviar e-mail</a>' : '') +
+      '</div><div class="foot">WhatsApp oficial da RVB: ' + CENTRAL.fone + ' · <button type="button" class="restart" id="restart">Recomeçar</button></div>';
+
+    if (dep.registrar && dep.pessoa) {
+      /* departamento com responsável: pega nome e WhatsApp, registra no Pipedrive e apresenta a pessoa */
+      await bot('Quem cuida de <b>' + esc(dep.label.toLowerCase()) + '</b> é ' + (dep.pessoa.split(' ')[0].slice(-1) === 'a' ? 'a' : 'o') + ' <b>' + esc(dep.pessoa) + '</b>. Me diz seu nome e seu WhatsApp que eu já aviso do seu contato.');
+      L.nome = await askText({ label: 'Nome', placeholder: 'Seu nome', autocomplete: 'name' });
+      user(L.nome); L.tipo = 'contato';
+      setStep(2);
+      await bot('E o seu WhatsApp?');
+      DDI = '55';
+      L.whatsapp = await askText({ label: 'WhatsApp', placeholder: '(11) 99999-9999', type: 'tel', inputmode: 'numeric', autocomplete: 'tel-national', mask: maskFone, validate: validFone,
+        prefix: seletorPais() + WA_ICON.replace('<svg ', '<svg class="wa" ') });
+      L.ddi = DDI;
+      user((DDI === '55' ? '' : '+' + DDI + ' ') + L.whatsapp);
+      const r = await salvar(2, { contato_departamento: dep.id, tipo: 'contato' });
+      await definirConsultora(dep.pessoa, dep.foto_url || dep.foto || null);
+      const nome = firstName(L.nome);
+      const conhecido = r && r.conhecido;
+      if (r && r.registrado) {
+        await bot((conhecido && conhecido.empresa ? 'Achei você aqui, ' + esc(nome) + ' (' + esc(conhecido.empresa) + '). ' : 'Anotado, ' + esc(nome) + '! ') +
+          'Já deixei o seu pedido de contato registrado para ' + (dep.pessoa.split(' ')[0].slice(-1) === 'a' ? 'a' : 'o') + ' <b>' + esc(dep.pessoa) + '</b>. Se quiser adiantar, chama direto no WhatsApp' + (dep.email ? ' ou manda um e-mail para <b>' + esc(dep.email) + '</b>' : '') + '.');
+      } else {
+        await bot('Anotado, ' + esc(nome) + '! Chama ' + (dep.pessoa.split(' ')[0].slice(-1) === 'a' ? 'a' : 'o') + ' <b>' + esc(dep.pessoa) + '</b> no WhatsApp' + (dep.email ? ' ou manda um e-mail para <b>' + esc(dep.email) + '</b>' : '') + '.');
+      }
+      dock.innerHTML = cta(dep.whatsapp || CENTRAL.wa, 'Oi, ' + dep.pessoa.split(' ')[0] + '! Sou ' + nome + ', vim pelo site da RVB. Assunto: ' + dep.label + '.', dep.email, 'Falar com ' + dep.pessoa.split(' ')[0] + ' no WhatsApp');
+    } else {
+      /* sem responsável cadastrado: WhatsApp central com o assunto já escrito (e e-mail, se houver) */
+      if (dep.email) {
+        await bot('Para <b>' + esc(dep.label) + '</b>, o canal é o e-mail <b>' + esc(dep.email) + '</b>. Se preferir, dá para chamar no WhatsApp também.');
+      } else {
+        await bot('Para <b>' + esc(dep.label) + '</b>, chama a RVB no WhatsApp com o assunto que eu já deixo escrito, e a equipe direciona para a pessoa certa.');
+      }
+      dock.innerHTML = cta(dep.whatsapp || CENTRAL.wa, 'Oi! Assunto: ' + dep.label + '.', dep.email, 'Falar no WhatsApp');
+    }
     document.getElementById('restart').addEventListener('click', run);
     scrollDown();
   }
