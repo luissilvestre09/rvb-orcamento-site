@@ -2,7 +2,7 @@
    RVB · Chat de orçamento no site (rvb.com.br)
    Um script só, colocado uma vez no tema (antes de </body>):
 
-     <script src="https://orcamento.rvb.com.br/rvb-chat.js" defer></script>
+     <script src="https://atendimento.rvb.com.br/rvb-chat.js" defer></script>
 
    O que ele faz:
    1. Qualquer link ou botão com href="#orcamento", classe "rvb-abrir-chat" ou atributo
@@ -15,7 +15,7 @@
    3. Passa para o chat a página de origem e os UTMs (da URL atual ou do primeiro acesso,
       guardado em cookie por 90 dias).
    Configuração opcional na tag do script:
-     data-base="https://orcamento.rvb.com.br/"   endereço do chat
+     data-base="https://atendimento.rvb.com.br/"   endereço do chat
      data-nova-aba="sim"                          botões abrem o chat em nova aba em vez de tela cheia
    ===================================================================== */
 (function () {
@@ -24,7 +24,7 @@
   var me = document.currentScript || {};
   var ds = me.dataset || {};
   var BASE = ds.base || (function () {
-    try { return new URL('.', me.src).href; } catch (e) { return 'https://orcamento.rvb.com.br/'; }   // pasta onde este script está
+    try { return new URL('.', me.src).href; } catch (e) { return 'https://atendimento.rvb.com.br/'; }   // pasta onde este script está
   })();
   var ORIGEM = new URL(BASE).origin;
   var FLUTUANTE = (ds.flutuante || (document.body && document.body.dataset.rvbFlutuante) || 'sim') !== 'nao';
