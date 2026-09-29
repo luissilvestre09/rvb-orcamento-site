@@ -182,7 +182,13 @@
   /* Aviso de cookies (ou qualquer faixa fixa no rodapé): a bolha sobe para não cobrir o botão "Aceitar" no celular */
   function alturaFaixaRodape() {
     var sel = '[class*="cookie" i],[id*="cookie" i],[class*="consent" i],[id*="consent" i],[class*="gdpr" i],[id*="gdpr" i],[class*="cmplz" i],[class*="lgpd" i],[id*="lgpd" i]';
-    var lista; try { lista = document.querySelectorAll(sel); } catch (e) { return 0; }
+    var lista = []; try { lista = Array.prototype.slice.call(document.querySelectorAll(sel)); } catch (e) {}
+    /* plugins que não se identificam na classe (ex.: aviso do RD Station): qualquer caixa fixa perto do rodapé falando de cookies */
+    var raiz = document.body.children;
+    for (var a = 0; a < raiz.length; a++) {
+      var c = raiz[a]; if (lista.indexOf(c) < 0 && /cookie/i.test(c.textContent || '') && (c.textContent || '').length < 2000) lista.push(c);
+      var netos = c.children; for (var b = 0; b < netos.length && b < 30; b++) { var d = netos[b]; if (lista.indexOf(d) < 0 && /cookie/i.test(d.textContent || '') && (d.textContent || '').length < 2000) lista.push(d); }
+    }
     var h = 0;
     for (var i = 0; i < lista.length; i++) {
       var el = lista[i];
