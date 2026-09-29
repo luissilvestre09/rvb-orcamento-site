@@ -588,6 +588,7 @@
   /* ---------- Input primitives (each returns a promise) ---------- */
   function clearDock() { dock.innerHTML = ''; }
 
+  const VOLTAR = Symbol('voltar');   // devolvido por askText quando a pessoa clica em "corrigir a resposta anterior"
   function askText(opts) {
     return new Promise(resolve => {
       clearDock();
@@ -597,7 +598,7 @@
         '<input id="inp" type="' + (opts.type || 'text') + '" inputmode="' + (opts.inputmode || 'text') + '" autocomplete="' + (opts.autocomplete || 'off') + '" placeholder="' + esc(opts.placeholder || '') + '" aria-label="' + esc(opts.label || '') + '"></div>' +
         '<button class="send" id="send" type="submit" aria-label="Enviar" disabled>' + SEND_ICON + '</button></form>' +
         '<div class="hint" id="hint">' + esc(opts.hint || '') + '</div>' +
-        (opts.skip ? '<div class="choices"><button type="button" class="choice quiet" id="skip">' + esc(opts.skip) + '</button></div>' : '');
+        ((opts.skip || opts.voltar) ? '<div class="choices">' + (opts.skip ? '<button type="button" class="choice quiet" id="skip">' + esc(opts.skip) + '</button>' : '') + (opts.voltar ? '<button type="button" class="choice quiet" id="voltar">↩ ' + esc(opts.voltar) + '</button>' : '') + '</div>' : '');
       const inp = document.getElementById('inp'), send = document.getElementById('send'), hint = document.getElementById('hint');
       const form = document.getElementById('f');
       if (opts.mask) inp.addEventListener('input', () => { inp.value = opts.mask(inp.value); });
@@ -612,6 +613,7 @@
         clearDock(); resolve(v);
       });
       if (opts.skip) document.getElementById('skip').addEventListener('click', () => { clearDock(); resolve(null); });
+      if (opts.voltar) document.getElementById('voltar').addEventListener('click', () => { clearDock(); resolve(VOLTAR); });
       setTimeout(() => { inp.focus({ preventScroll: true }); scrollDown(); }, 50);
     });
   }
@@ -700,6 +702,18 @@
     const calc = (len) => { let s = 0, p = len - 7; for (let i = len; i >= 1; i--) { s += d[len - i] * p--; if (p < 2) p = 9; } const r = s % 11; return r < 2 ? 0 : 11 - r; };
     if (calc(12) != d[12] || calc(13) != d[13]) return 'Esse CNPJ não parece válido. Confere os dígitos?';
     return null;
+  }
+  const SAUDACAO = /^(oi+|ol[aá]+|opa|e ?a[ií]|bom dia|boa tarde|boa noite|tudo bem|tudo bom|ok|sim|obrigad[oa])[\s!.,?]*$/i;
+  const respondeSaudacao = (v) => { const t = v.trim().toLowerCase(); return /bom dia/.test(t) ? 'Bom dia!' : /boa tarde/.test(t) ? 'Boa tarde!' : /boa noite/.test(t) ? 'Boa noite!' : 'Oi!'; };
+  const capNome = (w) => w ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : '';
+  const semAcento = (t) => (t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  /* arthur.bertucco@empresa.com → "Arthur Bertucco"; sem sobrenome ou com número, devolve null */
+  function nomeDoEmail(email) {
+    const local = String(email || '').split('@')[0];
+    const partes = local.split(/[._-]+/).filter(x => /^[a-z]{2,}$/i.test(x));
+    if (partes.length < 2 || partes.length > 4) return null;
+    if (/^(contato|comercial|vendas|marketing|financeiro|compras|admin|adm|rh|suporte|atendimento|info|sac)$/i.test(partes[0])) return null;
+    return partes.map(capNome).join(' ');
   }
   function validNome(v) {
     const t = v.trim();
@@ -816,22 +830,53 @@
     await bot('Para começar, qual é o seu nome?', 600);
 
     setStep(1);
-    L.nome = await askText({ label: 'Nome completo', placeholder: 'Seu nome', autocomplete: 'name', validate: validNome });
-    user(L.nome); salvar(1);
-    const nome = firstName(L.nome);
+    const perguntarNome = async () => {   // "boa noite" no lugar do nome: responde a saudação e pergunta de novo
+      for (;;) {
+        const v = await askText({ label: 'Nome completo', placeholder: 'Seu nome', autocomplete: 'name', validate: validNome });
+        user(v);
+        if (SAUDACAO.test(v)) { await bot(respondeSaudacao(v) + ' E o seu nome, como é?', 500); continue; }
+        return v;
+      }
+    };
+    L.nome = await perguntarNome(); salvar(1);
+    let nome = firstName(L.nome);
 
     setStep(2);
     await bot('Prazer, <b>' + esc(nome) + '</b>! Qual é o seu WhatsApp? É por ele que a consultora te chama.');
-    DDI = '55';
-    L.whatsapp = await askText({ label: 'WhatsApp', placeholder: '(11) 99999-9999', type: 'tel', inputmode: 'numeric', autocomplete: 'tel-national', mask: maskFone, validate: validFone,
-      prefix: seletorPais() + WA_ICON.replace('<svg ', '<svg class="wa" ') });
+    for (;;) {
+      DDI = '55';
+      const w = await askText({ label: 'WhatsApp', placeholder: '(11) 99999-9999', type: 'tel', inputmode: 'numeric', autocomplete: 'tel-national', mask: maskFone, validate: validFone,
+        prefix: seletorPais() + WA_ICON.replace('<svg ', '<svg class="wa" '), voltar: 'Corrigir meu nome' });
+      if (w === VOLTAR) {
+        await bot('Sem problema. Como é o seu nome?', 400);
+        L.nome = await perguntarNome(); nome = firstName(L.nome); salvar(1);
+        await bot('Prazer, <b>' + esc(nome) + '</b>! E o seu WhatsApp?', 500);
+        continue;
+      }
+      L.whatsapp = w; break;
+    }
     L.ddi = DDI;
     user((DDI === '55' ? '' : '+' + DDI + ' ') + L.whatsapp);
     L.regiao = DDI === '55' ? (REGIAO[ddd(L.whatsapp)[0]] || 'a confirmar') : 'exterior (+' + DDI + ')';
     setStep(3);
     await bot('E qual é o seu e-mail? É para onde vai a proposta em PDF e as referências.');
-    L.email = await askText({ label: 'E-mail', placeholder: 'voce@empresa.com.br', type: 'email', inputmode: 'email', autocomplete: 'email', validate: validEmail });
+    for (;;) {
+      const e = await askText({ label: 'E-mail', placeholder: 'voce@empresa.com.br', type: 'email', inputmode: 'email', autocomplete: 'email', validate: validEmail, voltar: 'Corrigir o WhatsApp' });
+      if (e === VOLTAR) {
+        await bot('Claro. Qual é o WhatsApp certo?', 400);
+        DDI = L.ddi || '55';
+        L.whatsapp = await askText({ label: 'WhatsApp', placeholder: '(11) 99999-9999', type: 'tel', inputmode: 'numeric', autocomplete: 'tel-national', mask: maskFone, validate: validFone, prefix: seletorPais() + WA_ICON.replace('<svg ', '<svg class="wa" ') });
+        L.ddi = DDI; user((DDI === '55' ? '' : '+' + DDI + ' ') + L.whatsapp);
+        L.regiao = DDI === '55' ? (REGIAO[ddd(L.whatsapp)[0]] || 'a confirmar') : 'exterior (+' + DDI + ')';
+        await bot('Anotado. E o seu e-mail?', 400);
+        continue;
+      }
+      L.email = e; break;
+    }
     user(L.email);
+    /* nome só com primeiro nome e e-mail do tipo nome.sobrenome@: completa o sobrenome sem perguntar */
+    { const ne = nomeDoEmail(L.email);
+      if (ne && L.nome.trim().split(/\s+/).length === 1 && semAcento(ne.split(' ')[0]) === semAcento(L.nome.trim())) { L.nome = capNome(L.nome.trim()) + ' ' + ne.split(' ').slice(1).join(' '); nome = firstName(L.nome); } }
 
     /* WhatsApp e e-mail conhecidos: se a pessoa já fala com alguém da RVB, a consultora passa a conversa para ela */
     const rs = await salvar(2, { verificar_conta: true });
@@ -964,6 +1009,26 @@
       user(L.cidade);
     }
     salvar(7);
+
+    /* conferência em um toque antes de criar o negócio: evita cadastro errado no Pipedrive */
+    for (;;) {
+      const itens = ['<b>' + esc(L.nome) + '</b>', (L.ddi && L.ddi !== '55' ? '+' + L.ddi + ' ' : '') + esc(L.whatsapp), esc(L.email), esc(L.empresa), esc(L.cidade), L.data ? fmtDate(L.data) : null].filter(Boolean);
+      await bot('Só confere se está tudo certo: ' + itens.join(' · '), 500);
+      const ok = await askChoice([{ id: 'sim', label: 'Tudo certo' }, { id: 'nao', label: 'Corrigir algo', quiet: true }]);
+      user(ok.label);
+      if (ok.id === 'sim') break;
+      await bot('O que você quer corrigir?', 300);
+      const campos = [{ id: 'nome', label: 'Nome' }, { id: 'whatsapp', label: 'WhatsApp' }, { id: 'email', label: 'E-mail' }, { id: 'empresa', label: 'Empresa' }, { id: 'cidade', label: 'Cidade' }];
+      if (L.data) campos.push({ id: 'data', label: 'Data' });
+      const f = await askChoice(campos); user(f.label);
+      if (f.id === 'nome') { await bot('Como é o seu nome?', 300); L.nome = await perguntarNome(); nome = firstName(L.nome); }
+      if (f.id === 'whatsapp') { await bot('Qual é o WhatsApp certo?', 300); DDI = L.ddi || '55'; L.whatsapp = await askText({ label: 'WhatsApp', placeholder: '(11) 99999-9999', type: 'tel', inputmode: 'numeric', autocomplete: 'tel-national', mask: maskFone, validate: validFone, prefix: seletorPais() + WA_ICON.replace('<svg ', '<svg class="wa" ') }); L.ddi = DDI; user(L.whatsapp); }
+      if (f.id === 'email') { await bot('Qual é o e-mail certo?', 300); L.email = await askText({ label: 'E-mail', placeholder: 'voce@empresa.com.br', type: 'email', inputmode: 'email', autocomplete: 'email', validate: validEmail }); user(L.email); }
+      if (f.id === 'empresa') { await bot('Qual é o nome da empresa?', 300); L.empresa = await askText({ label: 'Empresa', placeholder: 'Nome da empresa', autocomplete: 'organization' }); user(L.empresa); }
+      if (f.id === 'cidade') { await bot('Qual é a cidade e o estado?', 300); L.cidade = await askText({ label: 'Cidade / UF', placeholder: 'Ex.: Recife/PE', autocomplete: 'address-level2' }); user(L.cidade); }
+      if (f.id === 'data') { await bot('Qual é a data?', 300); L.data = await askDate({ label: 'Data do evento ou do uso' }); user(fmtDate(L.data)); L.dias = daysUntil(L.data); }
+      salvar(7);
+    }
 
     L.convertidoEm = new Date();
 
