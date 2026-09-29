@@ -175,8 +175,39 @@
     bolha.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.5l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2c0 1.3.9 2.5 1.1 2.7.1.2 1.9 2.9 4.6 4 1.7.7 2.3.8 3.2.7.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3z"/></svg><span>Solicitar orçamento</span>';
     bolha.addEventListener('click', function () { abrir(Object.assign({}, window.RVB_CHAT || {}, { cheia: false })); });
     document.body.appendChild(bolha);
+    vigiarRodape();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', montarBolha); else montarBolha();
+
+  /* Aviso de cookies (ou qualquer faixa fixa no rodapé): a bolha sobe para não cobrir o botão "Aceitar" no celular */
+  function alturaFaixaRodape() {
+    var sel = '[class*="cookie" i],[id*="cookie" i],[class*="consent" i],[id*="consent" i],[class*="gdpr" i],[id*="gdpr" i],[class*="cmplz" i],[class*="lgpd" i],[id*="lgpd" i]';
+    var lista; try { lista = document.querySelectorAll(sel); } catch (e) { return 0; }
+    var h = 0;
+    for (var i = 0; i < lista.length; i++) {
+      var el = lista[i];
+      if (el === bolha || el === painel || (painel && painel.contains(el))) continue;
+      var cs = getComputedStyle(el);
+      if (cs.position !== 'fixed' || cs.display === 'none' || cs.visibility === 'hidden' || parseFloat(cs.opacity) === 0) continue;
+      var r = el.getBoundingClientRect();
+      if (r.height < 40 || r.width < window.innerWidth * 0.5 || r.bottom < window.innerHeight - 60) continue;   // só faixas largas coladas no rodapé
+      h = Math.max(h, Math.min(window.innerHeight - r.top, window.innerHeight * 0.7));
+    }
+    return h;
+  }
+  function ajustarBolha() {
+    if (!bolha) return;
+    var h = alturaFaixaRodape();
+    bolha.style.bottom = h ? (h + 12) + 'px' : '';
+  }
+  function vigiarRodape() {
+    var agendado = null;
+    var pedir = function () { if (agendado) return; agendado = setTimeout(function () { agendado = null; ajustarBolha(); }, 150); };
+    ajustarBolha();
+    if (window.MutationObserver) new MutationObserver(pedir).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style', 'hidden'] });
+    window.addEventListener('resize', pedir);
+    var n = 0, t = setInterval(function () { ajustarBolha(); if (++n > 30) clearInterval(t); }, 1000);   // plugins que aparecem com atraso
+  }
 
   /* abre sozinho se a página foi carregada com #orcamento (links de e-mail, anúncios) */
   if (/^#(orcamento|contato)$/.test(location.hash)) {
