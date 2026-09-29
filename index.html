@@ -297,6 +297,10 @@
   .choice:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .choice.quiet { border-color: var(--line); color: var(--muted); background: var(--surface); }
   .choice.quiet:hover { background: var(--surface-2); color: var(--text); }
+  /* "corrigir a resposta anterior": discreto, mas legível (texto escuro, borda azul suave, tamanho menor) */
+  .dock .choices { margin-top: 8px; }
+  .dock .choice.quiet { color: var(--text); border-color: rgba(14, 48, 204, .35); font-size: 13.5px; padding: 7px 14px; font-weight: 600; }
+  .dock .choice.quiet:hover { border-color: var(--blue); color: var(--blue); }
 
   .cta {
     display: inline-flex; align-items: center; justify-content: center; gap: 10px;
