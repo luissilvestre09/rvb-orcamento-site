@@ -263,13 +263,13 @@ function abrirLead(id) {
     ['Cidade', L.cidade_uso + (L.cidade_cnpj && L.cidade_cnpj !== L.cidade_uso ? ' (CNPJ em ' + L.cidade_cnpj + ')' : '')],
     ['CNPJ', L.cnpj ? L.cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5') + (R.ie ? (R.ie.tem ? ' · IE ' + (R.ie.ativa ? 'ativa' : 'não ativa') + ' (' + R.ie.uf + ')' : ' · sem IE') : '') + (R.porte ? ' · ' + R.porte : '') : ''],
     ['Consultora', (cons ? cons.nome : L.consultora_id || '') + (L.distribuicao ? ' · ' + L.distribuicao : '')],
-    ['Origem', (L.origem_pagina || '') + (L.utms && Object.keys(L.utms).length ? ' · ' + Object.entries(L.utms).map(([k, v]) => k.replace('utm_', '') + '=' + v).join(' ') : '')],
+    ['Origem', `<a href="${esc(L.origem_url && /^https?:\/\//.test(L.origem_url) ? L.origem_url : 'https://rvb.com.br' + (L.origem_pagina || '/'))}" target="_blank" rel="noopener">${esc(L.origem_pagina && L.origem_pagina !== '/' ? L.origem_pagina : 'página inicial')}</a>` + (L.utms && Object.keys(L.utms).length ? ' · ' + esc(Object.entries(L.utms).map(([k, v]) => k.replace('utm_', '') + '=' + v).join(' ')) : '')],
     ['Score', Q.potencial ? Q.potencial + (Q.potencial_motivo ? ' · ' + Q.potencial_motivo : '') : ''],
     ['Perfil', Q.perfil ? Q.perfil + (Q.rede ? ' · REDE: ' + Q.unidades : '') : ''],
     ['Pipedrive', L.pipedrive_deal_id ? `<a href="${PD}/deal/${L.pipedrive_deal_id}" target="_blank" rel="noopener">abrir negócio</a>` : L.pipedrive_lead_id ? `<a href="${PD}/leads/inbox/${L.pipedrive_lead_id}" target="_blank" rel="noopener">abrir na Caixa de Leads</a>` : ''],
   ].filter(([, v]) => v && String(v).trim() && v !== 'undefined' && v !== 'null');
   $('#drawerBox').innerHTML = `<button class="x" id="fechaD">×</button><h2>${esc(L.nome || 'Lead')}</h2><div class="muted small">${esc(L.empresa || '')}</div>
-    <div class="kv">${kv.map(([k, v]) => `<b>${k}</b><span>${k === 'Pipedrive' ? v : esc(v)}</span>`).join('')}</div>
+    <div class="kv">${kv.map(([k, v]) => `<b>${k}</b><span>${k === 'Pipedrive' || k === 'Origem' ? v : esc(v)}</span>`).join('')}</div>
     ${Q.abertura_sugerida ? `<h3>Sugestão de mensagem</h3><div class="msg">${esc(Q.abertura_sugerida)}</div>` : ''}
     ${Q.oportunidade ? `<h3>Jogada</h3><div>${esc(Q.oportunidade)}</div>` : ''}
     ${(Q.falta_descobrir || []).length ? `<h3>Falta descobrir</h3><ul>${Q.falta_descobrir.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
