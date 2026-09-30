@@ -846,7 +846,7 @@
     let nome = firstName(L.nome);
 
     setStep(2);
-    await bot('Prazer, <b>' + esc(nome) + '</b>! Qual é o seu WhatsApp? É por ele que a consultora te chama.');
+    await bot('Prazer, <b>' + esc(nome) + '</b>! Qual é o seu WhatsApp? É por ele que a gente te chama.');
     for (;;) {
       DDI = '55';
       const w = await askText({ label: 'WhatsApp', placeholder: '(11) 99999-9999', type: 'tel', inputmode: 'numeric', autocomplete: 'tel-national', mask: maskFone, validate: validFone,
