@@ -777,13 +777,13 @@
     const escolherConsultora = async () => {
       const r0 = await salvar(0, { distribuir: true });
       if (r0 && r0.ok && r0.consultora && r0.consultora.id !== 'central') {
-        C = { id: r0.consultora.id, nome: r0.consultora.nome, fone: fmtWa(r0.consultora.whatsapp), wa: r0.consultora.whatsapp, foto: r0.consultora.foto || null, email: r0.consultora.email || null };
+        C = { id: r0.consultora.id, nome: r0.consultora.nome, artigo: r0.consultora.artigo === 'o' ? 'o' : 'a', fone: fmtWa(r0.consultora.whatsapp), wa: r0.consultora.whatsapp, foto: r0.consultora.foto || null, email: r0.consultora.email || null };
         D = { c: C, motivo: r0.motivo || 'rodízio (servidor)' };
       } else { D = distribuir(''); C = D.c; }
       L.dist = D;
       if (C !== CENTRAL) await definirConsultora(C.nome, C.foto || null);
     };
-    const quemSou = () => C === CENTRAL ? 'Aqui é a <b>RVB Balões</b>.' : 'Eu sou a <b>' + esc(C.nome) + '</b>, da RVB Balões.';
+    const quemSou = () => C === CENTRAL ? 'Aqui é a <b>RVB Balões</b>.' : 'Eu sou ' + (C.artigo || 'a') + ' <b>' + esc(C.nome) + '</b>, da RVB Balões.';
     // Expediente comercial (Brasília): seg–sex, 8h às 17h30. Fora dele, o chat avisa quando a consultora chama.
     const EXPEDIENTE = { inicio: 8 * 60, fim: 17 * 60 + 30 };
     const quandoChamo = () => {   // null = dentro do expediente; senão o texto "amanhã a partir das 8h" etc.
@@ -886,7 +886,7 @@
     const rs = await salvar(2, { verificar_conta: true });
     let trocaPara = null;
     if (rs && rs.ok && rs.trocou && rs.consultora) {
-      trocaPara = { id: rs.consultora.id, nome: rs.consultora.nome, fone: fmtWa(rs.consultora.whatsapp), wa: rs.consultora.whatsapp, foto: rs.consultora.foto || null, email: rs.consultora.email || null };
+      trocaPara = { id: rs.consultora.id, nome: rs.consultora.nome, artigo: rs.consultora.artigo === 'o' ? 'o' : 'a', fone: fmtWa(rs.consultora.whatsapp), wa: rs.consultora.whatsapp, foto: rs.consultora.foto || null, email: rs.consultora.email || null };
     } else if (!rs) {
       const dona = BASE_EXISTENTE[digits(L.whatsapp).slice(-8)];
       if (dona && dona !== C.id) { const t = CFG.team.find(x => x.id === dona); trocaPara = { id: t.id, nome: t.nome, fone: t.fone, wa: t.wa, foto: null }; }
@@ -894,13 +894,13 @@
     const conhecido = rs && rs.ok ? rs.conhecido : null;
     const ehCliente = !!(conhecido && conhecido.cliente);
     if (trocaPara) {
-      const anterior = C.nome;
+      const anterior = C.nome, artAnt = (C.artigo || 'a') === 'o' ? 'O' : 'A', art = trocaPara.artigo || 'a', pron = art === 'o' ? 'ele' : 'ela';
       await bot(ehCliente
-        ? 'Ah, você já é cliente da casa e fala com a <b>' + esc(trocaPara.nome) + '</b>! Vou passar para ela continuar com você.'
-        : 'Ah, você já conversou com a <b>' + esc(trocaPara.nome) + '</b> aqui na RVB! Vou passar para ela continuar com você.');
+        ? 'Ah, você já é cliente da casa e fala com ' + art + ' <b>' + esc(trocaPara.nome) + '</b>! Vou passar para ' + pron + ' continuar com você.'
+        : 'Ah, você já conversou com ' + art + ' <b>' + esc(trocaPara.nome) + '</b> aqui na RVB! Vou passar para ' + pron + ' continuar com você.');
       C = trocaPara; D = { c: C, motivo: (rs && rs.motivo) || ('pessoa já na base → ' + C.nome) }; L.dist = D;
       await definirConsultora(C.nome, C.foto || null);
-      await bot('Oi, <b>' + esc(nome) + '</b>! Aqui é a <b>' + esc(C.nome) + '</b>. ' + (ehCliente ? 'Que bom falar com você de novo! Cliente da casa tem passagem rápida por aqui.' : 'Que bom que você voltou! Vou aproveitar o que a gente já conversou.') + ' A ' + esc(anterior) + ' me passou o que você já contou, sigo daqui.', 700);
+      await bot('Oi, <b>' + esc(nome) + '</b>! Aqui é ' + (C.artigo || 'a') + ' <b>' + esc(C.nome) + '</b>. ' + (ehCliente ? 'Que bom falar com você de novo! Cliente da casa tem passagem rápida por aqui.' : 'Que bom que você voltou! Vou aproveitar o que a gente já conversou.') + ' ' + artAnt + ' ' + esc(anterior) + ' me passou o que você já contou, sigo daqui.', 700);
     } else if (conhecido) {
       await bot(ehCliente
         ? 'Que bom falar com você de novo, <b>' + esc(nome) + '</b>! Cliente da casa tem passagem rápida por aqui.'
@@ -1062,11 +1062,13 @@
 
     if (PROTOTIPO || TESTE || /debug/.test(location.hash)) renderCard(L);
 
-    const msg = encodeURIComponent('Oi' + (C === CENTRAL ? '' : ', ' + C.nome) + '! Sou ' + nome + ', da ' + L.empresa + '. Acabei de preencher o orçamento' + (L.produto ? ' de ' + L.produto.label : '') + ' no site da RVB.');
+    const nomeOk = /\?|\b(gostaria|orçamento|orcamento|vocês|voces|preciso|quero|fazem|atendem|quanto)\b/i.test(L.nome || '') || (L.nome || '').split(/\s+/).length > 5 ? '' : nome;
+    const empresaOk = /^(pf|cpf|pessoa f|particular|não tenho|nao tenho|sem cnpj|uso pessoal|eu mesm)/i.test((L.empresa || '').trim()) || /\?/.test(L.empresa || '') ? '' : L.empresa;
+    const msg = encodeURIComponent('Oi' + (C === CENTRAL ? '' : ', ' + C.nome) + '! ' + (nomeOk ? 'Sou ' + nomeOk + (empresaOk ? ', da ' + empresaOk : '') + '. ' : '') + 'Acabei de preencher o orçamento' + (L.produto ? ' de ' + L.produto.label : '') + ' no site da RVB.');
     const assuntoMail = 'Orçamento' + (L.produto ? ' · ' + L.produto.label : '') + ' · ' + L.empresa;
     const corpoMail = 'Olá' + (C === CENTRAL ? '' : ', ' + C.nome) + '!\n\nSou ' + L.nome + ', da ' + L.empresa + '. Acabei de preencher o orçamento' + (L.produto ? ' de ' + L.produto.label : '') + ' no site da RVB e quero seguir por e-mail.\n\n';
     dock.innerHTML =
-      '<div class="choices"><a class="cta" href="https://wa.me/' + C.wa + '?text=' + msg + '" target="_blank" rel="noopener">' + WA_ICON + (C === CENTRAL ? 'Falar com a RVB no WhatsApp' : 'Falar com a ' + C.nome + ' no WhatsApp') + '</a>' +
+      '<div class="choices"><a class="cta" href="https://wa.me/' + C.wa + '?text=' + msg + '" target="_blank" rel="noopener">' + WA_ICON + (C === CENTRAL ? 'Falar com a RVB no WhatsApp' : 'Falar com ' + (C.artigo || 'a') + ' ' + C.nome + ' no WhatsApp') + '</a>' +
         botaoEmail(C.email, assuntoMail, corpoMail) + '</div>' +
       '<div class="foot">WhatsApp oficial da RVB: ' + C.fone + ' · <button type="button" class="restart" id="restart">Recomeçar</button></div>';
     document.getElementById('restart').addEventListener('click', run);
@@ -1100,7 +1102,7 @@
       texto = 'Oi! Sou cliente da RVB e quero falar sobre um pedido.';
     }
     dock.innerHTML =
-      '<div class="choices"><a class="cta" href="https://wa.me/' + alvo.wa + '?text=' + encodeURIComponent(texto) + '" target="_blank" rel="noopener">' + WA_ICON + (alvo === CENTRAL ? 'Falar com a RVB no WhatsApp' : 'Falar com a ' + alvo.nome + ' no WhatsApp') + '</a>' +
+      '<div class="choices"><a class="cta" href="https://wa.me/' + alvo.wa + '?text=' + encodeURIComponent(texto) + '" target="_blank" rel="noopener">' + WA_ICON + (alvo === CENTRAL ? 'Falar com a RVB no WhatsApp' : 'Falar com ' + (alvo.artigo || 'a') + ' ' + alvo.nome + ' no WhatsApp') + '</a>' +
         botaoEmail(alvo.email || CENTRAL.email, 'Sobre um pedido · cliente RVB', texto + '\n\n') + '</div>' +
       '<div class="foot">WhatsApp oficial da RVB: ' + CENTRAL.fone + ' · <button type="button" class="restart" id="restart">Recomeçar</button></div>';
     document.getElementById('restart').addEventListener('click', run);
