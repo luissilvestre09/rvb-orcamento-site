@@ -77,6 +77,7 @@
   .inp { border:1px solid var(--line); border-radius:8px; padding:6px 8px; width:100%; }
   h3 { margin:18px 0 8px; font-size:16px; }
   @media (max-width:700px) { .top-in { flex-wrap:wrap; } th.oc, td.oc { display:none; } .barra { grid-template-columns:100px 1fr 40px; } }
+.apagar{margin-top:18px;padding-top:12px;border-top:1px solid #eee}.btn-apagar{background:#fff;border:1px solid #c33;color:#c33;border-radius:6px;padding:5px 10px;cursor:pointer;font:inherit;font-size:13px}.btn-apagar.sim{background:#c33;color:#fff}
 </style>
 </head>
 <body>
@@ -166,7 +167,8 @@ const fone = (d) => { d = String(d || '').replace(/\D/g, ''); return d.length ==
 const dt = (s) => s ? new Date(s).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }) : '';
 const PERGUNTAS = { 0:'abriu', 1:'nome (parou no WhatsApp)', 2:'WhatsApp/e-mail (parou na empresa)', 3:'empresa (parou no objetivo)', 4:'objetivo (parou no prazo)', 5:'prazo (parou no CNPJ)', 6:'CNPJ (parou na cidade)', 7:'cidade (parou no resumo)', 8:'completo' };
 const PD = 'https://rvb.pipedrive.com';
-let CONS = [], LEADS = [], DEPS = [];
+let CONS = [], LEADS = [], DEPS = [], PODE_APAGAR = false;
+const APAGADORES = ['luis@rvb.com.br', 'silvestre@rvb.com.br'];
 
 /* ---------- login ---------- */
 async function entrar() {
@@ -182,6 +184,7 @@ sb.auth.onAuthStateChange((_e, sess) => {
   $('#p-login').classList.toggle('on', !ok);
   $('#tabs').hidden = !ok; $('#sair').hidden = !ok;
   $('#who').textContent = ok ? sess.user.email : '';
+  PODE_APAGAR = ok && APAGADORES.includes((sess.user.email || '').toLowerCase());
   if (ok) { mostrar('leads'); carregarTudo(); } else { document.querySelectorAll('.painel').forEach(p => p.classList.toggle('on', p.id === 'p-login')); }
 });
 
@@ -274,9 +277,21 @@ function abrirLead(id) {
     ${Q.oportunidade ? `<h3>Jogada</h3><div>${esc(Q.oportunidade)}</div>` : ''}
     ${(Q.falta_descobrir || []).length ? `<h3>Falta descobrir</h3><ul>${Q.falta_descobrir.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
     ${(Q.atencao || []).length ? `<h3>Atenção</h3><ul>${Q.atencao.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
-    <p class="muted small">sessão ${esc(L.session_id)}</p>`;
+    <p class="muted small">sessão ${esc(L.session_id)}</p>
+    ${PODE_APAGAR ? `<p class="apagar"><button class="btn-apagar" id="apagar1">Apagar este lead</button><span id="apagar2" hidden> Some do painel, mas <b>não</b> apaga o negócio no Pipedrive. <button class="btn-apagar sim" id="apagarSim">Confirmar</button> <button class="btn-apagar" id="apagarNao">Cancelar</button></span><span id="apagarErro" class="erro"></span></p>` : ''}`;
   $('#drawer').classList.add('on');
   $('#fechaD').addEventListener('click', () => $('#drawer').classList.remove('on'));
+  if (PODE_APAGAR) {
+    $('#apagar1').addEventListener('click', () => { $('#apagar1').hidden = true; $('#apagar2').hidden = false; });
+    $('#apagarNao').addEventListener('click', () => { $('#apagar1').hidden = false; $('#apagar2').hidden = true; });
+    $('#apagarSim').addEventListener('click', async () => {
+      $('#apagarSim').disabled = true;
+      const { error } = await sb.from('leads').delete().eq('session_id', L.session_id);
+      if (error) { $('#apagarErro').textContent = ' Não deu: ' + error.message; $('#apagarSim').disabled = false; return; }
+      LEADS = LEADS.filter(x => x.session_id !== L.session_id);
+      $('#drawer').classList.remove('on'); renderLeads(); renderNumeros();
+    });
+  }
 }
 $('#drawer').addEventListener('click', e => { if (e.target === $('#drawer')) $('#drawer').classList.remove('on'); });
 
