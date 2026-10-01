@@ -65,6 +65,14 @@
   .m.in { background:#fff; align-self:flex-start; } .m.out { background:#D9FDD3; align-self:flex-end; } .m.sis { background:#FFF3D6; align-self:center; font-size:12px; color:#7A5200; }
   .m .q { font-size:11px; color:var(--muted); margin-bottom:2px; } .m .h { font-size:10.5px; color:var(--muted); text-align:right; margin-top:2px; }
   .compor { display:flex; gap:8px; padding:10px; border-top:1px solid var(--line); }
+  .coach { border-bottom:1px solid var(--line); background:#FFFBEF; max-height:42%; display:flex; flex-direction:column; }
+  .coach-bar { display:flex; gap:6px; align-items:center; padding:8px 10px; flex-wrap:wrap; }
+  .coach-bar input { flex:1; min-width:160px; border:1px solid var(--line); border-radius:8px; padding:6px 8px; font:inherit; font-size:13px; }
+  .coach-bar .btn { padding:5px 10px; font-size:12.5px; }
+  .coach-out { overflow:auto; padding:6px 12px 10px; font-size:13px; }
+  .coach-out h4 { margin:8px 0 2px; font-size:11.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
+  .coach-out ul { margin:0; padding-left:18px; } .coach-out .msg { background:#fff; border:1px solid var(--line); border-radius:8px; padding:8px; white-space:pre-wrap; }
+  .thead .kbtn { margin-left:auto; }
   .compor textarea { flex:1; border:1px solid var(--line); border-radius:10px; padding:8px 10px; font:inherit; resize:vertical; }
   .dados { font-size:12.5px; color:var(--muted); padding:6px 12px; border-bottom:1px solid var(--line); background:#FAFCFF; }
   @media (max-width:760px) { .chat { grid-template-columns:1fr; height:calc(100vh - 100px); } .chat .lista { display:block; } .chat .thread { display:none; } .chat.aberta .lista { display:none; } .chat.aberta .thread { display:flex; } .thead .voltar { display:inline-block; } }
@@ -159,6 +167,10 @@
       <div class="lista" id="cLista"><div class="muted small" style="padding:12px">Carregando…</div></div>
       <div class="thread" id="cThread">
         <div class="thead" id="cHead"><button class="btn voltar" id="cVoltar">‹</button><div class="muted">Escolha uma conversa</div></div>
+        <div class="coach" id="coach" hidden>
+          <div class="coach-bar"><b>🎯 Coach</b><button class="btn" id="kAnalisar">Analisar</button><button class="btn" id="kRascunho">Rascunho</button><input id="kPergunta" placeholder="Pergunta ao coach (ex.: como respondo o desconto?)"><button class="btn" id="kIr">Ir</button><button class="btn" id="kFechar">×</button></div>
+          <div class="coach-out" id="kOut"><span class="muted small">Analisar lê a conversa e sugere a jogada; Rascunho escreve a próxima mensagem e coloca na caixa para você ajustar.</span></div>
+        </div>
         <div class="msgs" id="cMsgs"></div>
         <div class="compor" id="cCompor" hidden>
           <textarea id="cTexto" rows="2" placeholder="Escreva como no WhatsApp… (Enter envia, Shift+Enter quebra linha)"></textarea>
@@ -383,9 +395,10 @@ async function abrirConversa(t) {
   const dadosTxt = ['empresa', 'produto', 'uso', 'data_evento', 'quando', 'cidade', 'quem_aprova', 'verba', 'historico', 'observacoes'].filter(k => d[k]).map(k => `<b>${k.replace('_', ' ')}:</b> ${esc(d[k])}`).join(' · ');
   $('#cHead').innerHTML = `<button class="btn voltar" id="cVoltar2">‹</button><div><b>${esc(CONV.nome || foneCurto(CONV.telefone))}</b> <span class="muted small">${esc(foneCurto(CONV.telefone))}</span>${CONV.temperatura ? ` <span class="tag">${esc(CONV.temperatura)}</span>` : ''}
       ${CONV.pipedrive_deal_id ? ` · <a href="${PD}/deal/${CONV.pipedrive_deal_id}" target="_blank" rel="noopener">negócio</a>` : CONV.pipedrive_person_id ? ` · <a href="${PD}/person/${CONV.pipedrive_person_id}" target="_blank" rel="noopener">pessoa</a>` : ''}</div>
-    <div class="modo"><span class="muted">Quem atende:</span>${['agente', 'humano', 'pausado'].map(m => `<button data-modo="${m}" class="${CONV.modo === m ? 'on' : ''}">${m === 'agente' ? '🤖 Agente' : m === 'humano' ? '👤 Humano' : '⏸ Pausado'}</button>`).join('')}</div>`
+    <button class="btn kbtn" id="kAbrir">🎯 Coach</button><div class="modo"><span class="muted">Quem atende:</span>${['agente', 'humano', 'pausado'].map(m => `<button data-modo="${m}" class="${CONV.modo === m ? 'on' : ''}">${m === 'agente' ? '🤖 Agente' : m === 'humano' ? '👤 Humano' : '⏸ Pausado'}</button>`).join('')}</div>`
     + (dadosTxt ? `<div class="dados" style="flex-basis:100%">${dadosTxt}${CONV.motivo_transbordo ? ` · <b>transbordo:</b> ${esc(CONV.motivo_transbordo)}` : ''}</div>` : '');
   $('#cVoltar2').addEventListener('click', () => document.querySelector('.chat').classList.remove('aberta'));
+  $('#kAbrir').addEventListener('click', () => { $('#coach').hidden = !$('#coach').hidden; });
   $('#cHead').querySelectorAll('[data-modo]').forEach(b => b.addEventListener('click', async () => {
     const r = await chamarFn({ acao: 'modo', telefone: CONV.telefone, modo: b.dataset.modo });
     if (!r.ok) $('#cErro').textContent = r.erro || 'não deu'; else { CONV.modo = b.dataset.modo; abrirConversa(CONV.telefone); }
@@ -416,6 +429,41 @@ async function enviarMsg() {
   $('#cTexto').value = '';
 }
 $('#cEnviar').addEventListener('click', enviarMsg);
+
+/* ---------- coach dentro da conversa ---------- */
+const COACH_FN = SUPABASE_URL + '/functions/v1/coach';
+async function coach(acao, pergunta) {
+  if (!CONV) return;
+  $('#kOut').innerHTML = '<span class="muted small">Pensando…</span>';
+  const { data: msgs } = await sb.from('wa_mensagens').select('*').eq('telefone', CONV.telefone).order('criado_em').limit(80);
+  const mensagens = (msgs || []).filter(m => m.autor !== 'sistema').map(m => ({
+    de: m.direcao === 'in' ? 'lead' : 'consultora', hora: hora(m.criado_em),
+    tipo: m.tipo === 'audio' ? 'audio' : m.tipo === 'image' ? 'imagem' : m.tipo === 'document' ? 'documento' : 'texto',
+    texto: m.texto || '', transcricao: m.tipo === 'audio' ? m.texto : undefined, descricao: m.tipo === 'image' ? m.texto : undefined,
+  }));
+  const dono = CONS.find(c => c.id === CONV.dono);
+  const { data: { session } } = await sb.auth.getSession();
+  const r = await fetch(COACH_FN, { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + (session?.access_token || '') },
+    body: JSON.stringify({ acao, telefone: CONV.telefone, contato: CONV.nome || '', consultora: dono ? dono.nome : '', mensagens, pergunta: pergunta || '' }) }).then(x => x.json()).catch(() => ({ ok: false, erro: 'falhou' }));
+  if (!r.ok) { $('#kOut').innerHTML = `<span class="erro small">${esc(r.erro || 'não deu')}</span>`; return; }
+  const li = (a) => (a || []).length ? `<ul>${a.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : '';
+  if (acao === 'rascunho') {
+    $('#kOut').innerHTML = `<h4>Rascunho (já está na caixa; ajuste e envie)</h4><div class="msg">${esc(r.rascunho || '')}</div>${r.por_que ? `<h4>Por quê</h4>${esc(r.por_que)}` : ''}`;
+    $('#cTexto').value = r.rascunho || ''; $('#cTexto').focus();
+  } else if (acao === 'perguntar') {
+    $('#kOut').innerHTML = `<div class="msg">${esc(r.resposta || '')}</div>`;
+  } else {
+    $('#kOut').innerHTML = (r.quem ? `<h4>Quem</h4>${esc(r.quem)}` : '') + (r.prioridade ? ` <span class="tag">${esc(r.prioridade)}</span>` : '') +
+      (r.sinais?.length ? `<h4>O que o cliente sinalizou</h4>${li(r.sinais)}` : '') + (r.jogada ? `<h4>Jogada</h4>${esc(r.jogada)}` : '') +
+      (r.proximo_passo ? `<h4>Próximo passo</h4><b>${esc(r.proximo_passo)}</b>` : '') + (r.alertas?.length ? `<h4>Atenção</h4>${li(r.alertas)}` : '') +
+      (r.nao_fazer?.length ? `<h4>Não fazer agora</h4>${li(r.nao_fazer)}` : '');
+  }
+}
+$('#kAnalisar').addEventListener('click', () => coach('analisar'));
+$('#kRascunho').addEventListener('click', () => coach('rascunho'));
+$('#kIr').addEventListener('click', () => { const q = $('#kPergunta').value.trim(); if (q) coach('perguntar', q); });
+$('#kPergunta').addEventListener('keydown', e => { if (e.key === 'Enter') { const q = $('#kPergunta').value.trim(); if (q) coach('perguntar', q); } });
+$('#kFechar').addEventListener('click', () => { $('#coach').hidden = true; });
 $('#cTexto').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviarMsg(); } });
 if (location.hash === '#conversas') setTimeout(() => mostrar('conversas'), 300);
 
