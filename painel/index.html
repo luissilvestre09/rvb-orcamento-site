@@ -174,6 +174,7 @@
           <div class="coach-out" id="kOut"><span class="muted small">Analisar lê a conversa e sugere a jogada; Rascunho escreve a próxima mensagem e coloca na caixa para você ajustar.</span></div>
         </div>
         <div class="compor" id="cCompor" hidden>
+          <button class="btn" id="cAnexo" title="Enviar imagem, PDF ou arquivo">📎</button><input type="file" id="cArquivo" hidden accept="image/jpeg,image/png,application/pdf,video/mp4,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt">
           <textarea id="cTexto" rows="2" placeholder="Escreva como no WhatsApp… (Enter envia, Shift+Enter quebra linha)"></textarea>
           <button class="btn primario" id="cEnviar">Enviar</button>
         </div>
@@ -418,7 +419,7 @@ function adicionarMsg(m) {
   const box = $('#cMsgs');
   const cls = m.autor === 'sistema' ? 'sis' : m.direcao === 'in' ? 'in' : 'out';
   const quem = m.direcao === 'in' ? '' : m.autor === 'agente' ? '🤖 agente' : m.autor;
-  const corpo = m.tipo === 'audio' ? '🎤 ' + (m.texto || '(áudio)') : m.tipo === 'image' ? '🖼 ' + (m.texto || '(imagem)') : m.tipo === 'document' ? '📎 ' + (m.texto || '(documento)') : (m.texto || '[' + m.tipo + ']');
+  const corpo = m.tipo === 'audio' ? '🎤 ' + (m.texto || '(áudio)') : m.tipo === 'image' ? (m.direcao === 'out' ? (m.texto || '🖼 imagem') : '🖼 ' + (m.texto || '(imagem)')) : m.tipo === 'document' ? (m.direcao === 'out' ? (m.texto || '📎 documento') : '📎 ' + (m.texto || '(documento)')) : (m.texto || '[' + m.tipo + ']');
   const st = m.direcao === 'out' && m.autor !== 'sistema' ? (m.status === 'read' ? ' ✓✓' : m.status === 'delivered' ? ' ✓✓' : m.status === 'failed' ? ' ⚠ ' + esc(m.erro || 'falhou') : ' ✓') : '';
   const el = document.createElement('div'); el.className = 'm ' + cls;
   el.innerHTML = (quem && cls !== 'sis' ? `<div class="q">${esc(quem)}</div>` : '') + esc(corpo) + `<div class="h">${hora(m.criado_em)}${st}</div>`;
@@ -433,6 +434,18 @@ async function enviarMsg() {
   $('#cTexto').value = '';
 }
 $('#cEnviar').addEventListener('click', enviarMsg);
+$('#cAnexo').addEventListener('click', () => $('#cArquivo').click());
+$('#cArquivo').addEventListener('change', async () => {
+  const f = $('#cArquivo').files[0]; $('#cArquivo').value = ''; if (!f || !CONV) return;
+  if (f.size > 15 * 1024 * 1024) { $('#cErro').textContent = 'Arquivo maior que 15 MB.'; return; }
+  const legenda = $('#cTexto').value.trim();
+  $('#cErro').textContent = 'Enviando ' + f.name + '…'; $('#cEnviar').disabled = true;
+  const base64 = await new Promise((ok, erro) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(',')[1]); r.onerror = erro; r.readAsDataURL(f); });
+  const r = await chamarFn({ acao: 'midia', telefone: CONV.telefone, nome: f.name, mime: f.type || 'application/octet-stream', base64, legenda });
+  $('#cEnviar').disabled = false;
+  if (!r.ok) { $('#cErro').textContent = r.erro || 'não deu'; return; }
+  $('#cErro').textContent = ''; $('#cTexto').value = '';
+});
 
 /* ---------- coach dentro da conversa ---------- */
 const COACH_FN = SUPABASE_URL + '/functions/v1/coach';
