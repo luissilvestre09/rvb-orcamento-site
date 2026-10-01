@@ -198,6 +198,7 @@
 
   <div class="painel" id="p-equipe">
     <div class="card" style="margin-bottom:12px"><span id="fila"></span></div>
+    <div class="card" style="margin-bottom:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><b>💬 Quem abre o chat:</b> <select id="abreChat"><option value="">a consultora do rodízio</option></select> <span class="muted small">Nome e foto que o cliente vê do começo ao fim. Se o lead for de outra consultora, o chat apresenta a troca no final ("quem vai cuidar do seu projeto é a X"). Lead QUENTE que vai para quem abriu não troca nunca.</span> <span id="abreOk" class="muted small"></span></div>
     <div class="card" style="margin-bottom:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><b>🔥 Lead QUENTE vai para:</b> <select id="quentePara"><option value="">segue o rodízio</option></select> <span class="muted small">Vale para lead novo do site (urgência + IE ativa ou e-mail corporativo, indicação). Cliente que já tem dona da conta continua com ela.</span> <span id="quenteOk" class="muted small"></span></div>
     <div class="grade" id="consultoras"></div>
     <p class="muted small">Desligar tira o consultor do rodízio na hora. Peso 2 = recebe o dobro. Cliente que já está na base continua com quem é dono da conta.</p>
@@ -529,6 +530,13 @@ async function renderConsultoras() {
   sel.onchange = async () => {
     const { error } = await sb.from('config').upsert({ chave: 'quente_para', valor: sel.value || null, atualizado_em: new Date().toISOString() });
     $('#quenteOk').textContent = error ? 'Não deu: ' + error.message : 'salvo ✓'; setTimeout(() => $('#quenteOk').textContent = '', 2500);
+  };
+  const { data: cfgA } = await sb.from('config').select('valor').eq('chave', 'abre_chat').maybeSingle();
+  const selA = $('#abreChat');
+  selA.innerHTML = '<option value="">a consultora do rodízio</option>' + CONS.filter(c => c.id !== 'central' && c.ativa).map(c => `<option value="${esc(c.id)}" ${cfgA && cfgA.valor === c.id ? 'selected' : ''}>${esc(c.nome)}</option>`).join('');
+  selA.onchange = async () => {
+    const { error } = await sb.from('config').upsert({ chave: 'abre_chat', valor: selA.value || null, atualizado_em: new Date().toISOString() });
+    $('#abreOk').textContent = error ? 'Não deu: ' + error.message : 'salvo ✓'; setTimeout(() => $('#abreOk').textContent = '', 2500);
   };
   $('#consultoras').innerHTML = CONS.filter(c => c.id !== 'central').map(c => `
     <div class="card cons">

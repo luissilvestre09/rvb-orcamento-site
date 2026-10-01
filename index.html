@@ -779,8 +779,10 @@
       const FORCAR = (location.hash.match(/consultora=([a-z0-9_-]{1,20})/i) || [])[1] || null;
       const r0 = await salvar(0, FORCAR ? { distribuir: true, forcar: FORCAR } : { distribuir: true });
       if (r0 && r0.ok && r0.consultora && r0.consultora.id !== 'central') {
-        C = { id: r0.consultora.id, nome: r0.consultora.nome, artigo: r0.consultora.artigo === 'o' ? 'o' : 'a', fone: fmtWa(r0.consultora.whatsapp), wa: r0.consultora.whatsapp, foto: r0.consultora.foto || null, email: r0.consultora.email || null };
-        D = { c: C, motivo: r0.motivo || 'rodízio (servidor)' };
+        const mk = (c) => ({ id: c.id, nome: c.nome, artigo: c.artigo === 'o' ? 'o' : 'a', fone: fmtWa(c.whatsapp), wa: c.whatsapp, foto: c.foto || null, email: c.email || null });
+        // L.dist.c = quem fica com o lead (rodízio); C = quem fala no chat (quem abre, ex. Laís). Se forem diferentes, a troca é apresentada no final como delegação.
+        D = { c: mk(r0.consultora), motivo: r0.motivo || 'rodízio (servidor)' };
+        C = r0.persona && r0.persona.id !== 'central' ? mk(r0.persona) : D.c;
       } else { D = distribuir(''); C = D.c; }
       L.dist = D;
       if (C !== CENTRAL) await definirConsultora(C.nome, C.foto || null);
@@ -896,7 +898,13 @@
     }
     const conhecido = rs && rs.ok ? rs.conhecido : null;
     const ehCliente = !!(conhecido && conhecido.cliente);
-    if (trocaPara) {
+    if (trocaPara && trocaPara.id === C.id) {
+      // a dona da conta é quem já está falando (ex. Laís abriu o chat): só confirma a atribuição, sem "vou passar"
+      D = { c: C, motivo: (rs && rs.motivo) || ('pessoa já na base → ' + C.nome) }; L.dist = D;
+      await bot(ehCliente
+        ? 'Que bom falar com você de novo, <b>' + esc(nome) + '</b>! Cliente da casa tem passagem rápida por aqui.'
+        : 'Que bom que você voltou, <b>' + esc(nome) + '</b>! Vou aproveitar o que a gente já conversou.', 500);
+    } else if (trocaPara) {
       const anterior = C.nome, artAnt = (C.artigo || 'a') === 'o' ? 'O' : 'A', art = trocaPara.artigo || 'a', pron = art === 'o' ? 'ele' : 'ela';
       await bot(ehCliente
         ? 'Ah, você já é cliente da casa e fala com ' + art + ' <b>' + esc(trocaPara.nome) + '</b>! Vou passar para ' + pron + ' continuar com você.'
@@ -1053,8 +1061,11 @@
     } else if (rf && !rf.ok) { C = CENTRAL; L.dist = { c: C, motivo: 'falha no servidor, lead gravado para reprocessar: ' + (rf.erro || '') }; }
     if (trocouNoFim) {
       const art = C.artigo || 'a', pron = art === 'o' ? 'ele' : 'ela';
-      const porque = /QUENTE/i.test(L.dist.motivo || '') ? 'Pela data do seu projeto' : 'Pelo seu histórico com a gente';
-      await bot(porque + ', quem vai continuar com você é ' + art + ' <b>' + esc(C.nome) + '</b>, que cuida desses casos. ' + (pron === 'ele' ? 'Ele' : 'Ela') + ' já recebeu tudo que a gente conversou.', 600);
+      // quem abriu o chat delega: conta com dona → "quem já cuida de você"; senão → "quem vai cuidar do seu projeto"
+      const jaCuida = /dona|continuidade|já na base|follow-up/i.test(L.dist.motivo || '');
+      await bot(jaCuida
+        ? 'Quem já cuida de você aqui na RVB é ' + art + ' <b>' + esc(C.nome) + '</b>, então ' + pron + ' continua com você. Já passei tudo que a gente conversou.'
+        : 'Pelo que você me contou, quem vai cuidar do seu projeto é ' + art + ' <b>' + esc(C.nome) + '</b>, aqui da equipe. ' + (pron === 'ele' ? 'Ele' : 'Ela') + ' já recebeu tudo que a gente conversou.', 600);
       await definirConsultora(C.nome, C.foto || null);
     }
 
