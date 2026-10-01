@@ -324,7 +324,7 @@
   }
   .legal svg { width: 12px; height: 12px; flex: none; }
   .legal a { color: var(--blue); font-weight: 600; }
-  .legal a.outro { color: var(--muted); font-weight: 500; margin-left: 4px; }
+  .legal a.outro { display: inline-block; margin-top: 6px; font-size: 13.5px; font-weight: 700; color: var(--blue); text-decoration: underline; text-underline-offset: 3px; padding: 4px 0; }
   .proto {
     font-size: 11px; color: var(--muted); text-align: center;
     padding: 6px 16px 0; letter-spacing: .04em;
@@ -419,6 +419,7 @@
       <span class="pill google"><span class="stars" aria-hidden="true">★★★★★</span> <b>5.0</b> no <b>Google</b></span>
       <span class="pill"><b>+540</b> avaliações</span>
       <span class="pill"><b>+26</b> anos de mercado</span>
+      <span class="pill"><b>+100 mil</b> projetos entregues</span>
     </div>
   </header>
   <button type="button" class="fechar" id="fechar" aria-label="Fechar">×</button>
@@ -1040,11 +1041,22 @@
 
     /* finalização: cria tudo no Pipedrive e confirma a consultora */
     const rf = await api('finalizar-lead', payload({ passo: 8 }));
+    let trocouNoFim = null;   // a regra do QUENTE (ou a continuidade) pode mudar quem atende só no final
     if (rf && rf.ok && rf.consultora) {
       if (rf.central) C = CENTRAL;
-      else C = { id: rf.consultora.id, nome: rf.consultora.nome, fone: fmtWa(rf.consultora.whatsapp), wa: rf.consultora.whatsapp, foto: rf.consultora.foto || C.foto || null, email: rf.consultora.email || null };
+      else {
+        const nova = { id: rf.consultora.id, nome: rf.consultora.nome, artigo: rf.consultora.artigo === 'o' ? 'o' : 'a', fone: fmtWa(rf.consultora.whatsapp), wa: rf.consultora.whatsapp, foto: rf.consultora.foto || null, email: rf.consultora.email || null };
+        if (C !== CENTRAL && nova.id !== C.id) trocouNoFim = { de: C, para: nova };
+        C = nova;
+      }
       L.dist = { c: C, motivo: rf.distribuicao || L.dist.motivo }; L.negocioId = rf.negocio_id;
     } else if (rf && !rf.ok) { C = CENTRAL; L.dist = { c: C, motivo: 'falha no servidor, lead gravado para reprocessar: ' + (rf.erro || '') }; }
+    if (trocouNoFim) {
+      const art = C.artigo || 'a', pron = art === 'o' ? 'ele' : 'ela';
+      const porque = /QUENTE/i.test(L.dist.motivo || '') ? 'Pela data do seu projeto' : 'Pelo seu histórico com a gente';
+      await bot(porque + ', quem vai continuar com você é ' + art + ' <b>' + esc(C.nome) + '</b>, que cuida desses casos. ' + (pron === 'ele' ? 'Ele' : 'Ela') + ' já recebeu tudo que a gente conversou.', 600);
+      await definirConsultora(C.nome, C.foto || null);
+    }
 
     /* ---------- Closing ---------- */
     const objTxt = L.objetivo.id === 'evento' ? 'um evento, feira ou exposição' :
@@ -1055,11 +1067,13 @@
     await bot('Pronto, <b>' + esc(nome) + '</b>! Resumindo: você está buscando um <b>' + esc(prodTxt) + '</b> para ' + objTxt + ', com uso em <b>' + esc(L.cidade) + '</b>' + whenTxt + '.');
     const qc = quandoChamo();
     if (qc) {
-      await bot((C === CENTRAL ? 'A equipe da <b>RVB</b> continua' : 'Eu continuo') + ' seu atendimento pelo WhatsApp <b>' + qc + '</b>, já com as principais informações do projeto. Se quiser deixar alguma mensagem, é só chamar pelo botão abaixo que ' + (C === CENTRAL ? 'a equipe responde' : 'eu respondo') + ' assim que começar o expediente.');
+      const quem = C === CENTRAL ? 'A equipe da <b>RVB</b> continua' : trocouNoFim ? ((C.artigo === 'o' ? 'O ' : 'A ') + '<b>' + esc(C.nome) + '</b> continua') : 'Eu continuo';
+      const resp = C === CENTRAL ? 'a equipe responde' : trocouNoFim ? (C.artigo === 'o' ? 'ele responde' : 'ela responde') : 'eu respondo';
+      await bot(quem + ' seu atendimento pelo WhatsApp <b>' + qc + '</b>, já com as principais informações do projeto. Se quiser deixar alguma mensagem, é só chamar pelo botão abaixo que ' + resp + ' assim que começar o expediente.');
     } else if (C === CENTRAL) {
       await bot('A equipe da <b>RVB</b> vai continuar seu atendimento pelo WhatsApp, já com as principais informações do projeto. Se quiser adiantar a conversa, é só chamar pelo botão abaixo.');
     } else {
-      await bot('Vou continuar seu atendimento pelo WhatsApp, já com as principais informações do projeto. Se quiser adiantar a conversa, é só me chamar pelo botão abaixo.');
+      await bot(trocouNoFim ? ((C.artigo === 'o' ? 'O ' : 'A ') + '<b>' + esc(C.nome) + '</b> continua seu atendimento pelo WhatsApp, já com as principais informações do projeto. Se quiser adiantar a conversa, é só chamar pelo botão abaixo.') : 'Vou continuar seu atendimento pelo WhatsApp, já com as principais informações do projeto. Se quiser adiantar a conversa, é só me chamar pelo botão abaixo.');
     }
 
     if (PROTOTIPO || TESTE || /debug/.test(location.hash)) renderCard(L);
