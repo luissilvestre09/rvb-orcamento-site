@@ -775,7 +775,8 @@
     /* consultora definida na abertura (rodízio no servidor; simulação local no protótipo) */
     let D, C = CENTRAL;
     const escolherConsultora = async () => {
-      const r0 = await salvar(0, { distribuir: true });
+      const FORCAR = (location.hash.match(/consultora=([a-z0-9_-]{1,20})/i) || [])[1] || null;
+      const r0 = await salvar(0, FORCAR ? { distribuir: true, forcar: FORCAR } : { distribuir: true });
       if (r0 && r0.ok && r0.consultora && r0.consultora.id !== 'central') {
         C = { id: r0.consultora.id, nome: r0.consultora.nome, artigo: r0.consultora.artigo === 'o' ? 'o' : 'a', fone: fmtWa(r0.consultora.whatsapp), wa: r0.consultora.whatsapp, foto: r0.consultora.foto || null, email: r0.consultora.email || null };
         D = { c: C, motivo: r0.motivo || 'rodízio (servidor)' };
@@ -883,7 +884,8 @@
       if (ne && L.nome.trim().split(/\s+/).length === 1 && semAcento(ne.split(' ')[0]) === semAcento(L.nome.trim())) { L.nome = capNome(L.nome.trim()) + ' ' + ne.split(' ').slice(1).join(' '); nome = firstName(L.nome); } }
 
     /* WhatsApp e e-mail conhecidos: se a pessoa já fala com alguém da RVB, a consultora passa a conversa para ela */
-    const rs = await salvar(2, { verificar_conta: true });
+    const FORCAR2 = (location.hash.match(/consultora=([a-z0-9_-]{1,20})/i) || [])[1] || null;
+    const rs = await salvar(2, FORCAR2 ? { verificar_conta: true, forcar: FORCAR2 } : { verificar_conta: true });
     let trocaPara = null;
     if (rs && rs.ok && rs.trocou && rs.consultora) {
       trocaPara = { id: rs.consultora.id, nome: rs.consultora.nome, artigo: rs.consultora.artigo === 'o' ? 'o' : 'a', fone: fmtWa(rs.consultora.whatsapp), wa: rs.consultora.whatsapp, foto: rs.consultora.foto || null, email: rs.consultora.email || null };
