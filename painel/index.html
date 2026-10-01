@@ -46,6 +46,28 @@
   .tag { display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; font-weight:700; background:var(--soft); color:var(--blue); white-space:nowrap; }
   .tag.ok { background:#E3F6EA; color:#146C3B; } .tag.parcial { background:#FFF3D6; color:#7A5200; } .tag.resg { background:#FCE4EA; color:#9B0026; } .tag.cont { background:#EEE; color:#444; } .tag.rep { background:#EAE6FF; color:#4B3A9E; } .aviso { color:#B25B00; font-size:11px; display:block; }
   .muted { color:var(--muted); } .small { font-size:12.5px; }
+  .badge { background:#c33; color:#fff; border-radius:999px; font-size:11px; padding:1px 6px; margin-left:4px; vertical-align:middle; }
+  .chat { display:grid; grid-template-columns:340px 1fr; gap:12px; height:calc(100vh - 110px); min-height:420px; }
+  .chat .lista { background:#fff; border:1px solid var(--line); border-radius:14px; overflow:auto; }
+  .conv { padding:10px 12px; border-bottom:1px solid var(--line); cursor:pointer; display:grid; grid-template-columns:1fr auto; gap:2px 8px; }
+  .conv:hover, .conv.on { background:#F3F7FF; }
+  .conv .n { font-weight:700; } .conv .p { color:var(--muted); font-size:12.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; grid-column:1/3; }
+  .conv .h { font-size:11.5px; color:var(--muted); text-align:right; }
+  .conv.nl .n::before { content:"● "; color:#c33; }
+  .chat .thread { background:#fff; border:1px solid var(--line); border-radius:14px; display:flex; flex-direction:column; min-width:0; }
+  .thead { display:flex; align-items:center; gap:10px; padding:10px 12px; border-bottom:1px solid var(--line); flex-wrap:wrap; }
+  .thead .voltar { display:none; padding:4px 10px; }
+  .thead .modo { margin-left:auto; display:flex; gap:6px; align-items:center; font-size:12.5px; }
+  .thead .modo button { border:1px solid var(--line); background:#fff; border-radius:999px; padding:4px 10px; cursor:pointer; font-size:12.5px; }
+  .thead .modo button.on { background:var(--blue); color:#fff; border-color:var(--blue); }
+  .msgs { flex:1; overflow:auto; padding:14px; background:#EFE7DD; display:flex; flex-direction:column; gap:6px; }
+  .m { max-width:78%; padding:7px 10px; border-radius:10px; font-size:14px; white-space:pre-wrap; word-break:break-word; box-shadow:0 1px 0 rgba(0,0,0,.06); }
+  .m.in { background:#fff; align-self:flex-start; } .m.out { background:#D9FDD3; align-self:flex-end; } .m.sis { background:#FFF3D6; align-self:center; font-size:12px; color:#7A5200; }
+  .m .q { font-size:11px; color:var(--muted); margin-bottom:2px; } .m .h { font-size:10.5px; color:var(--muted); text-align:right; margin-top:2px; }
+  .compor { display:flex; gap:8px; padding:10px; border-top:1px solid var(--line); }
+  .compor textarea { flex:1; border:1px solid var(--line); border-radius:10px; padding:8px 10px; font:inherit; resize:vertical; }
+  .dados { font-size:12.5px; color:var(--muted); padding:6px 12px; border-bottom:1px solid var(--line); background:#FAFCFF; }
+  @media (max-width:760px) { .chat { grid-template-columns:1fr; height:calc(100vh - 100px); } .chat .lista { display:block; } .chat .thread { display:none; } .chat.aberta .lista { display:none; } .chat.aberta .thread { display:flex; } .thead .voltar { display:inline-block; } }
   .drawer { position:fixed; inset:0; background:rgba(20,26,51,.45); display:none; z-index:20; }
   .drawer.on { display:block; }
   .drawer .box { position:absolute; right:0; top:0; bottom:0; width:min(560px,100%); background:#fff; overflow:auto; padding:20px; }
@@ -87,6 +109,7 @@
   <div class="t">Painel RVB</div>
   <div class="tabs" id="tabs" hidden>
     <button class="tab on" data-p="leads">Leads</button>
+    <button class="tab" data-p="conversas">Conversas <span class="badge" id="bConv" hidden>0</span></button>
     <button class="tab" data-p="numeros">Números</button>
     <button class="tab" data-p="equipe">Consultoras</button>
     <button class="tab" data-p="deptos">Departamentos</button>
@@ -131,6 +154,20 @@
     </table></div>
   </div>
 
+  <div class="painel" id="p-conversas">
+    <div class="chat">
+      <div class="lista" id="cLista"><div class="muted small" style="padding:12px">Carregando…</div></div>
+      <div class="thread" id="cThread">
+        <div class="thead" id="cHead"><button class="btn voltar" id="cVoltar">‹</button><div class="muted">Escolha uma conversa</div></div>
+        <div class="msgs" id="cMsgs"></div>
+        <div class="compor" id="cCompor" hidden>
+          <textarea id="cTexto" rows="2" placeholder="Escreva como no WhatsApp… (Enter envia, Shift+Enter quebra linha)"></textarea>
+          <button class="btn primario" id="cEnviar">Enviar</button>
+        </div>
+        <div class="erro small" id="cErro"></div>
+      </div>
+    </div>
+  </div>
   <div class="painel" id="p-numeros">
     <div class="cards" id="kpis2"></div>
     <div class="grade">
@@ -200,6 +237,7 @@ $('#tabs').addEventListener('click', e => { const t = e.target.closest('.tab'); 
 async function carregarTudo() {
   const [c, d] = await Promise.all([sb.from('consultoras').select('*').order('ordem'), sb.from('departamentos').select('*').order('ordem')]);
   CONS = c.data || []; DEPS = d.data || [];
+  carregarConversas();
   $('#fCons').innerHTML = '<option value="">Todas as consultoras</option>' + CONS.filter(x => x.id !== 'central').map(x => `<option value="${x.id}">${esc(x.nome)}</option>`).join('');
   await carregarLeads();
   renderConsultoras(); renderDeps();
@@ -303,6 +341,83 @@ $('#csv').addEventListener('click', () => {
   const blob = new Blob(['﻿' + linhas.join('\n')], { type: 'text/csv;charset=utf-8' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'leads-rvb.csv'; a.click();
 });
+
+/* ---------- conversas (WhatsApp oficial) ---------- */
+let CONVS = [], CONV = null, convCanal = null;
+const FN = SUPABASE_URL + '/functions/v1/whatsapp-enviar';
+const hora = (s) => new Date(s).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+const diaHora = (s) => { const d = new Date(s), h = new Date(); return d.toDateString() === h.toDateString() ? hora(s) : d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) + ' ' + hora(s); };
+const foneCurto = (t) => fone(String(t || '').replace(/^55/, ''));
+async function chamarFn(body) {
+  const { data: { session } } = await sb.auth.getSession();
+  const r = await fetch(FN, { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + (session?.access_token || '') }, body: JSON.stringify(body) });
+  return r.json().catch(() => ({ ok: false, erro: 'resposta inválida' }));
+}
+async function carregarConversas() {
+  const { data, error } = await sb.from('wa_conversas').select('*').order('ultima_msg_em', { ascending: false, nullsFirst: false }).limit(300);
+  if (error) { $('#cLista').innerHTML = `<div class="erro small" style="padding:12px">${esc(error.message)}</div>`; return; }
+  CONVS = data || []; renderConversas();
+  if (!convCanal) {
+    convCanal = sb.channel('wa-painel')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'wa_conversas' }, () => carregarConversas())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'wa_mensagens' }, (p) => { if (CONV && p.new.telefone === CONV.telefone) { adicionarMsg(p.new); if (p.new.direcao === 'in') chamarFn({ acao: 'lida', telefone: CONV.telefone }); } })
+      .subscribe();
+  }
+}
+function renderConversas() {
+  const nl = CONVS.filter(c => c.nao_lida).length;
+  $('#bConv').textContent = nl; $('#bConv').hidden = !nl;
+  $('#cLista').innerHTML = CONVS.map(c => `<div class="conv ${c.nao_lida ? 'nl' : ''} ${CONV && CONV.telefone === c.telefone ? 'on' : ''}" data-t="${esc(c.telefone)}">
+      <div class="n">${esc(c.nome || foneCurto(c.telefone))}${c.temperatura ? ` <span class="tag">${esc(c.temperatura)}</span>` : ''}</div>
+      <div class="h">${c.ultima_msg_em ? diaHora(c.ultima_msg_em) : ''}</div>
+      <div class="p">${c.modo === 'agente' ? '🤖 agente' : c.modo === 'pausado' ? '⏸ pausado' : '👤 ' + esc(c.dono || 'humano')}${c.dados && c.dados.empresa ? ' · ' + esc(c.dados.empresa) : ''}${c.dados && c.dados.produto ? ' · ' + esc(c.dados.produto) : ''}</div>
+    </div>`).join('') || '<div class="muted small" style="padding:12px">Nenhuma conversa ainda. Quando alguém escrever no número oficial, aparece aqui.</div>';
+}
+$('#cLista').addEventListener('click', e => { const el = e.target.closest('.conv'); if (el) abrirConversa(el.dataset.t); });
+$('#cVoltar').addEventListener('click', () => { document.querySelector('.chat').classList.remove('aberta'); });
+async function abrirConversa(t) {
+  CONV = CONVS.find(c => c.telefone === t); if (!CONV) return;
+  document.querySelector('.chat').classList.add('aberta');
+  renderConversas();
+  const d = CONV.dados || {};
+  const dadosTxt = ['empresa', 'produto', 'uso', 'data_evento', 'quando', 'cidade', 'quem_aprova', 'verba', 'historico', 'observacoes'].filter(k => d[k]).map(k => `<b>${k.replace('_', ' ')}:</b> ${esc(d[k])}`).join(' · ');
+  $('#cHead').innerHTML = `<button class="btn voltar" id="cVoltar2">‹</button><div><b>${esc(CONV.nome || foneCurto(CONV.telefone))}</b> <span class="muted small">${esc(foneCurto(CONV.telefone))}</span>${CONV.temperatura ? ` <span class="tag">${esc(CONV.temperatura)}</span>` : ''}
+      ${CONV.pipedrive_deal_id ? ` · <a href="${PD}/deal/${CONV.pipedrive_deal_id}" target="_blank" rel="noopener">negócio</a>` : CONV.pipedrive_person_id ? ` · <a href="${PD}/person/${CONV.pipedrive_person_id}" target="_blank" rel="noopener">pessoa</a>` : ''}</div>
+    <div class="modo"><span class="muted">Quem atende:</span>${['agente', 'humano', 'pausado'].map(m => `<button data-modo="${m}" class="${CONV.modo === m ? 'on' : ''}">${m === 'agente' ? '🤖 Agente' : m === 'humano' ? '👤 Humano' : '⏸ Pausado'}</button>`).join('')}</div>`
+    + (dadosTxt ? `<div class="dados" style="flex-basis:100%">${dadosTxt}${CONV.motivo_transbordo ? ` · <b>transbordo:</b> ${esc(CONV.motivo_transbordo)}` : ''}</div>` : '');
+  $('#cVoltar2').addEventListener('click', () => document.querySelector('.chat').classList.remove('aberta'));
+  $('#cHead').querySelectorAll('[data-modo]').forEach(b => b.addEventListener('click', async () => {
+    const r = await chamarFn({ acao: 'modo', telefone: CONV.telefone, modo: b.dataset.modo });
+    if (!r.ok) $('#cErro').textContent = r.erro || 'não deu'; else { CONV.modo = b.dataset.modo; abrirConversa(CONV.telefone); }
+  }));
+  const { data: msgs } = await sb.from('wa_mensagens').select('*').eq('telefone', t).order('criado_em').limit(500);
+  $('#cMsgs').innerHTML = ''; (msgs || []).forEach(adicionarMsg);
+  $('#cCompor').hidden = false; $('#cErro').textContent = '';
+  const janelaAberta = CONV.ultima_do_cliente_em && (Date.now() - new Date(CONV.ultima_do_cliente_em).getTime()) < 24 * 3600 * 1000;
+  $('#cTexto').placeholder = janelaAberta ? 'Escreva como no WhatsApp… (Enter envia, Shift+Enter quebra linha)' : 'Janela de 24h fechada: só dá para reabrir com template aprovado.';
+  if (CONV.nao_lida) { chamarFn({ acao: 'lida', telefone: t }); CONV.nao_lida = false; renderConversas(); }
+}
+function adicionarMsg(m) {
+  const box = $('#cMsgs');
+  const cls = m.autor === 'sistema' ? 'sis' : m.direcao === 'in' ? 'in' : 'out';
+  const quem = m.direcao === 'in' ? '' : m.autor === 'agente' ? '🤖 agente' : m.autor;
+  const corpo = m.tipo === 'audio' ? '🎤 ' + (m.texto || '(áudio)') : m.tipo === 'image' ? '🖼 ' + (m.texto || '(imagem)') : m.tipo === 'document' ? '📎 ' + (m.texto || '(documento)') : (m.texto || '[' + m.tipo + ']');
+  const st = m.direcao === 'out' && m.autor !== 'sistema' ? (m.status === 'read' ? ' ✓✓' : m.status === 'delivered' ? ' ✓✓' : m.status === 'failed' ? ' ⚠ ' + esc(m.erro || 'falhou') : ' ✓') : '';
+  const el = document.createElement('div'); el.className = 'm ' + cls;
+  el.innerHTML = (quem && cls !== 'sis' ? `<div class="q">${esc(quem)}</div>` : '') + esc(corpo) + `<div class="h">${hora(m.criado_em)}${st}</div>`;
+  box.appendChild(el); box.scrollTop = box.scrollHeight;
+}
+async function enviarMsg() {
+  const texto = $('#cTexto').value.trim(); if (!texto || !CONV) return;
+  $('#cEnviar').disabled = true; $('#cErro').textContent = '';
+  const r = await chamarFn({ acao: 'enviar', telefone: CONV.telefone, texto });
+  $('#cEnviar').disabled = false;
+  if (!r.ok) { $('#cErro').textContent = r.erro || 'não deu'; return; }
+  $('#cTexto').value = '';
+}
+$('#cEnviar').addEventListener('click', enviarMsg);
+$('#cTexto').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviarMsg(); } });
+if (location.hash === '#conversas') setTimeout(() => mostrar('conversas'), 300);
 
 /* ---------- números ---------- */
 function barras(el, pares, total) {
