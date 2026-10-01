@@ -122,7 +122,7 @@
     <button class="tab on" data-p="leads">Leads</button>
     <button class="tab" data-p="conversas">Conversas <span class="badge" id="bConv" hidden>0</span></button>
     <button class="tab" data-p="numeros">Números</button>
-    <button class="tab" data-p="equipe">Consultoras</button>
+    <button class="tab" data-p="equipe">Consultores</button>
     <button class="tab" data-p="deptos">Departamentos</button>
   </div>
   <div class="sp"></div>
@@ -153,14 +153,14 @@
         <option value="contato">Contatos (departamentos)</option>
         <option value="repetido">Repetidos (mesmo cliente)</option>
       </select>
-      <select id="fCons"><option value="">Todas as consultoras</option></select>
+      <select id="fCons"><option value="">Todos os consultores</option></select>
       <select id="fDias"><option value="7">7 dias</option><option value="30" selected>30 dias</option><option value="90">90 dias</option><option value="365">1 ano</option></select>
       <input type="search" id="fBusca" placeholder="Buscar nome, empresa, telefone, e-mail…">
       <button class="btn" id="csv">Exportar CSV</button>
       <span class="muted small" id="cont"></span>
     </div>
     <div style="overflow:auto"><table>
-      <thead><tr><th>Quando</th><th>Nome</th><th>Empresa</th><th class="oc">WhatsApp</th><th class="oc">Produto</th><th>Status</th><th class="oc">Score</th><th>Consultora</th><th class="oc">Origem</th><th>Pipedrive</th></tr></thead>
+      <thead><tr><th>Quando</th><th>Nome</th><th>Empresa</th><th class="oc">WhatsApp</th><th class="oc">Produto</th><th>Status</th><th class="oc">Score</th><th>Consultor</th><th class="oc">Origem</th><th>Pipedrive</th></tr></thead>
       <tbody id="tb"></tbody>
     </table></div>
   </div>
@@ -257,7 +257,7 @@ async function carregarTudo() {
   const [c, d] = await Promise.all([sb.from('consultoras').select('*').order('ordem'), sb.from('departamentos').select('*').order('ordem')]);
   CONS = c.data || []; DEPS = d.data || [];
   carregarConversas();
-  $('#fCons').innerHTML = '<option value="">Todas as consultoras</option>' + CONS.filter(x => x.id !== 'central').map(x => `<option value="${x.id}">${esc(x.nome)}</option>`).join('');
+  $('#fCons').innerHTML = '<option value="">Todos os consultores</option>' + CONS.filter(x => x.id !== 'central').map(x => `<option value="${x.id}">${esc(x.nome)}</option>`).join('');
   await carregarLeads();
   renderConsultoras(); renderDeps();
 }
@@ -324,7 +324,7 @@ function abrirLead(id) {
     ['Produto', L.produto_nome + (L.detalhe ? ' (' + L.detalhe + ')' : '')], ['Objetivo', L.objetivo_label], ['Quando precisa', (L.quando_label || '') + (L.data_evento ? ' · ' + L.data_evento.split('-').reverse().join('/') : '')],
     ['Cidade', L.cidade_uso + (L.cidade_cnpj && L.cidade_cnpj !== L.cidade_uso ? ' (CNPJ em ' + L.cidade_cnpj + ')' : '')],
     ['CNPJ', L.cnpj ? L.cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5') + (R.ie ? (R.ie.tem ? ' · IE ' + (R.ie.ativa ? 'ativa' : 'não ativa') + ' (' + R.ie.uf + ')' : ' · sem IE') : '') + (R.porte ? ' · ' + R.porte : '') : ''],
-    ['Consultora', (cons ? cons.nome : L.consultora_id || '') + (L.distribuicao ? ' · ' + L.distribuicao : '')],
+    ['Consultor', (cons ? cons.nome : L.consultora_id || '') + (L.distribuicao ? ' · ' + L.distribuicao : '')],
     ['Origem', `<a href="${esc(L.origem_url && /^https?:\/\//.test(L.origem_url) ? L.origem_url : 'https://rvb.com.br' + (L.origem_pagina || '/'))}" target="_blank" rel="noopener">${esc(L.origem_pagina && L.origem_pagina !== '/' ? L.origem_pagina : 'página inicial')}</a>` + (L.utms && Object.keys(L.utms).length ? ' · ' + esc(Object.entries(L.utms).map(([k, v]) => k.replace('utm_', '') + '=' + v).join(' ')) : '')],
     ['Score', Q.potencial ? Q.potencial + (Q.potencial_motivo ? ' · ' + Q.potencial_motivo : '') : ''],
     ['Perfil', Q.perfil ? Q.perfil + (Q.rede ? ' · REDE: ' + Q.unidades : '') : ''],
@@ -518,7 +518,7 @@ async function renderConsultoras() {
   const { data: rod } = await sb.from('rodizio').select('contador').eq('id', 1).maybeSingle();
   const fila = CONS.filter(c => c.ativa && c.id !== 'central').flatMap(c => Array(c.peso || 1).fill(c));
   const prox = fila.length ? fila[(rod?.contador || 0) % fila.length] : null;
-  $('#fila').innerHTML = fila.length ? `Fila agora: <b>${fila.map(c => esc(c.nome)).join(' → ')}</b> · próxima a receber: <b>${esc(prox.nome)}</b> · ${rod?.contador || 0} leads distribuídos` : '<b>Ninguém ativa: leads vão para o número central.</b>';
+  $('#fila').innerHTML = fila.length ? `Fila agora: <b>${fila.map(c => esc(c.nome)).join(' → ')}</b> · próxima a receber: <b>${esc(prox.nome)}</b> · ${rod?.contador || 0} leads distribuídos` : '<b>Ninguém ativo: leads vão para o número central.</b>';
   const { data: cfg } = await sb.from('config').select('valor').eq('chave', 'quente_para').maybeSingle();
   const sel = $('#quentePara');
   sel.innerHTML = '<option value="">segue o rodízio</option>' + CONS.filter(c => c.id !== 'central').map(c => `<option value="${esc(c.id)}" ${cfg && cfg.valor === c.id ? 'selected' : ''}>${esc(c.nome)}${c.ativa ? '' : ' (desligada)'}</option>`).join('');
