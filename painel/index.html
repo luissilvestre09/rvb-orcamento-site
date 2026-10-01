@@ -65,7 +65,7 @@
   .m.in { background:#fff; align-self:flex-start; } .m.out { background:#D9FDD3; align-self:flex-end; } .m.sis { background:#FFF3D6; align-self:center; font-size:12px; color:#7A5200; }
   .m .q { font-size:11px; color:var(--muted); margin-bottom:2px; } .m .h { font-size:10.5px; color:var(--muted); text-align:right; margin-top:2px; }
   .compor { display:flex; gap:8px; padding:10px; border-top:1px solid var(--line); }
-  .coach { border-bottom:1px solid var(--line); background:#FFFBEF; max-height:42%; display:flex; flex-direction:column; } .coach[hidden] { display:none; }
+  .coach { border-top:1px solid var(--line); background:#FFFBEF; max-height:45%; display:flex; flex-direction:column; } .coach[hidden] { display:none; }
   .coach-bar { display:flex; gap:6px; align-items:center; padding:8px 10px; flex-wrap:wrap; }
   .coach-bar input { flex:1; min-width:160px; border:1px solid var(--line); border-radius:8px; padding:6px 8px; font:inherit; font-size:13px; }
   .coach-bar .btn { padding:5px 10px; font-size:12.5px; }
@@ -74,7 +74,7 @@
   .coach-out ul { margin:0; padding-left:18px; } .coach-out .msg { background:#fff; border:1px solid var(--line); border-radius:8px; padding:8px; white-space:pre-wrap; }
   .thead .kbtn { margin-left:auto; }
   .compor textarea { flex:1; border:1px solid var(--line); border-radius:10px; padding:8px 10px; font:inherit; resize:vertical; }
-  .dados { font-size:12.5px; color:var(--muted); padding:6px 12px; border-bottom:1px solid var(--line); background:#FAFCFF; }
+  .dados { font-size:12.5px; color:#333; padding:8px 12px; border-top:1px solid var(--line); background:#FAFCFF; max-height:30%; overflow:auto; } .dados[hidden] { display:none; } .dados b { color:var(--muted); font-weight:600; }
   @media (max-width:760px) { .chat { grid-template-columns:1fr; height:calc(100vh - 100px); } .chat .lista { display:block; } .chat .thread { display:none; } .chat.aberta .lista { display:none; } .chat.aberta .thread { display:flex; } .thead .voltar { display:inline-block; } }
   .drawer { position:fixed; inset:0; background:rgba(20,26,51,.45); display:none; z-index:20; }
   .drawer.on { display:block; }
@@ -167,11 +167,12 @@
       <div class="lista" id="cLista"><div class="muted small" style="padding:12px">Carregando…</div></div>
       <div class="thread" id="cThread">
         <div class="thead" id="cHead"><button class="btn voltar" id="cVoltar">‹</button><div class="muted">Escolha uma conversa</div></div>
+        <div class="msgs" id="cMsgs"></div>
+        <div class="dados" id="cDados" hidden></div>
         <div class="coach" id="coach" hidden>
           <div class="coach-bar"><b>🎯 Coach</b><button class="btn" id="kAnalisar">Analisar</button><button class="btn" id="kRascunho">Rascunho</button><input id="kPergunta" placeholder="Pergunta ao coach (ex.: como respondo o desconto?)"><button class="btn" id="kIr">Ir</button><button class="btn" id="kFechar">×</button></div>
           <div class="coach-out" id="kOut"><span class="muted small">Analisar lê a conversa e sugere a jogada; Rascunho escreve a próxima mensagem e coloca na caixa para você ajustar.</span></div>
         </div>
-        <div class="msgs" id="cMsgs"></div>
         <div class="compor" id="cCompor" hidden>
           <textarea id="cTexto" rows="2" placeholder="Escreva como no WhatsApp… (Enter envia, Shift+Enter quebra linha)"></textarea>
           <button class="btn primario" id="cEnviar">Enviar</button>
@@ -392,11 +393,14 @@ async function abrirConversa(t) {
   document.querySelector('.chat').classList.add('aberta');
   renderConversas();
   const d = CONV.dados || {};
-  const dadosTxt = ['empresa', 'produto', 'uso', 'data_evento', 'quando', 'cidade', 'quem_aprova', 'verba', 'historico', 'observacoes'].filter(k => d[k]).map(k => `<b>${k.replace('_', ' ')}:</b> ${esc(d[k])}`).join(' · ');
+  const rot = { empresa: 'Empresa', produto: 'Produto', uso: 'Uso', data_evento: 'Data', quando: 'Quando', cidade: 'Cidade', quem_aprova: 'Quem aprova', verba: 'Verba', historico: 'Histórico', observacoes: 'Obs.' };
+  const dadosTxt = Object.keys(rot).filter(k => d[k]).map(k => `<div><b>${rot[k]}:</b> ${esc(k === 'data_evento' ? String(d[k]).split('-').reverse().join('/') : d[k])}</div>`).join('');
   $('#cHead').innerHTML = `<button class="btn voltar" id="cVoltar2">‹</button><div><b>${esc(CONV.nome || foneCurto(CONV.telefone))}</b> <span class="muted small">${esc(foneCurto(CONV.telefone))}</span>${CONV.temperatura ? ` <span class="tag">${esc(CONV.temperatura)}</span>` : ''}
       ${CONV.pipedrive_deal_id ? ` · <a href="${PD}/deal/${CONV.pipedrive_deal_id}" target="_blank" rel="noopener">negócio</a>` : CONV.pipedrive_person_id ? ` · <a href="${PD}/person/${CONV.pipedrive_person_id}" target="_blank" rel="noopener">pessoa</a>` : ''}</div>
-    <button class="btn kbtn" id="kAbrir">🎯 Coach</button><div class="modo"><span class="muted">Quem atende:</span>${['agente', 'humano', 'pausado'].map(m => `<button data-modo="${m}" class="${CONV.modo === m ? 'on' : ''}">${m === 'agente' ? '🤖 Agente' : m === 'humano' ? '👤 Humano' : '⏸ Pausado'}</button>`).join('')}</div>`
-    + (dadosTxt ? `<div class="dados" style="flex-basis:100%">${dadosTxt}${CONV.motivo_transbordo ? ` · <b>transbordo:</b> ${esc(CONV.motivo_transbordo)}` : ''}</div>` : '');
+    <button class="btn kbtn" id="kAbrir">🎯 Coach</button>${dadosTxt ? `<button class="btn" id="dAbrir">📋 Briefing</button>` : ''}<div class="modo"><span class="muted">Quem atende:</span>${['agente', 'humano', 'pausado'].map(m => `<button data-modo="${m}" class="${CONV.modo === m ? 'on' : ''}">${m === 'agente' ? '🤖 Agente' : m === 'humano' ? '👤 Humano' : '⏸ Pausado'}</button>`).join('')}</div>`;
+  $('#cDados').innerHTML = dadosTxt + (CONV.motivo_transbordo ? `<div><b>Agente parou porque:</b> ${esc(CONV.motivo_transbordo)}</div>` : '');
+  $('#cDados').hidden = true;
+  if (dadosTxt) $('#dAbrir').addEventListener('click', () => { $('#cDados').hidden = !$('#cDados').hidden; });
   $('#cVoltar2').addEventListener('click', () => document.querySelector('.chat').classList.remove('aberta'));
   $('#kAbrir').addEventListener('click', () => { $('#coach').hidden = !$('#coach').hidden; });
   $('#cHead').querySelectorAll('[data-modo]').forEach(b => b.addEventListener('click', async () => {
