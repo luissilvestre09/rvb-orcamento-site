@@ -154,7 +154,7 @@
         <option value="repetido">Repetidos (mesmo cliente)</option>
       </select>
       <select id="fCons"><option value="">Todos os consultores</option></select>
-      <select id="fDias"><option value="7">7 dias</option><option value="30" selected>30 dias</option><option value="90">90 dias</option><option value="365">1 ano</option></select>
+      <select id="fDias"><option value="hoje">Hoje</option><option value="ontem">Ontem</option><option value="30" selected>30 dias</option><option value="90">90 dias</option><option value="365">1 ano</option></select>
       <input type="search" id="fBusca" placeholder="Buscar nome, empresa, telefone, e-mail…">
       <button class="btn" id="csv">Exportar CSV</button>
       <span class="muted small" id="cont"></span>
@@ -262,9 +262,13 @@ async function carregarTudo() {
   renderConsultoras(); renderDeps();
 }
 async function carregarLeads() {
-  const dias = Number($('#fDias').value);
-  const desde = new Date(Date.now() - dias * 86400000).toISOString();
-  const { data, error } = await sb.from('leads').select('*').gte('criado_em', desde).order('criado_em', { ascending: false }).limit(2000);
+  const v = $('#fDias').value;
+  const meiaNoite = (d) => { const x = new Date(); x.setHours(0, 0, 0, 0); x.setDate(x.getDate() - d); return x.toISOString(); };
+  let q = sb.from('leads').select('*');
+  if (v === 'hoje') q = q.gte('criado_em', meiaNoite(0));
+  else if (v === 'ontem') q = q.gte('criado_em', meiaNoite(1)).lt('criado_em', meiaNoite(0));
+  else q = q.gte('criado_em', new Date(Date.now() - Number(v) * 86400000).toISOString());
+  const { data, error } = await q.order('criado_em', { ascending: false }).limit(2000);
   if (error) { $('#tb').innerHTML = `<tr><td colspan="10" class="erro">${esc(error.message)}</td></tr>`; return; }
   LEADS = data || [];
   renderLeads(); renderNumeros();
