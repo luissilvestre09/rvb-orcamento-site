@@ -72,7 +72,10 @@
   .coach-out { overflow:auto; padding:6px 12px 10px; font-size:13px; }
   .coach-out h4 { margin:8px 0 2px; font-size:11.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
   .coach-out ul { margin:0; padding-left:18px; } .coach-out .msg { background:#fff; border:1px solid var(--line); border-radius:8px; padding:8px; white-space:pre-wrap; }
-  .thead .kbtn { margin-left:auto; }
+  .ferr { display:flex; gap:6px; align-items:center; flex-wrap:wrap; padding:8px 10px; border-top:1px solid var(--line); background:#fff; }
+  .ferr[hidden] { display:none; } .ferr .modo { margin-left:auto; display:flex; gap:6px; align-items:center; font-size:12.5px; }
+  .ferr .modo button { border:1px solid var(--line); background:#fff; border-radius:999px; padding:4px 10px; cursor:pointer; font-size:12.5px; } .ferr .modo button.on { background:var(--blue); color:#fff; border-color:var(--blue); }
+  .ferr .btn { padding:5px 10px; font-size:12.5px; }
   .compor textarea { flex:1; border:1px solid var(--line); border-radius:10px; padding:8px 10px; font:inherit; resize:vertical; }
   .dados { font-size:12.5px; color:#333; padding:8px 12px; border-top:1px solid var(--line); background:#FAFCFF; max-height:30%; overflow:auto; } .dados[hidden] { display:none; } .dados b { color:var(--muted); font-weight:600; }
   @media (max-width:760px) { .chat { grid-template-columns:1fr; height:calc(100vh - 100px); } .chat .lista { display:block; } .chat .thread { display:none; } .chat.aberta .lista { display:none; } .chat.aberta .thread { display:flex; } .thead .voltar { display:inline-block; } }
@@ -173,6 +176,7 @@
           <div class="coach-bar"><b>🎯 Coach</b><button class="btn" id="kAnalisar">Analisar</button><button class="btn" id="kRascunho">Rascunho</button><input id="kPergunta" placeholder="Pergunta ao coach (ex.: como respondo o desconto?)"><button class="btn" id="kIr">Ir</button><button class="btn" id="kFechar">×</button></div>
           <div class="coach-out" id="kOut"><span class="muted small">Analisar lê a conversa e sugere a jogada; Rascunho escreve a próxima mensagem e coloca na caixa para você ajustar.</span></div>
         </div>
+        <div class="ferr" id="cFerr" hidden></div>
         <div class="compor" id="cCompor" hidden>
           <button class="btn" id="cAnexo" title="Enviar imagem, PDF ou arquivo">📎</button><input type="file" id="cArquivo" hidden accept="image/jpeg,image/png,application/pdf,video/mp4,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt">
           <textarea id="cTexto" rows="2" placeholder="Escreva como no WhatsApp… (Enter envia, Shift+Enter quebra linha)"></textarea>
@@ -397,14 +401,15 @@ async function abrirConversa(t) {
   const rot = { empresa: 'Empresa', produto: 'Produto', uso: 'Uso', data_evento: 'Data', quando: 'Quando', cidade: 'Cidade', quem_aprova: 'Quem aprova', verba: 'Verba', historico: 'Histórico', observacoes: 'Obs.' };
   const dadosTxt = Object.keys(rot).filter(k => d[k]).map(k => `<div><b>${rot[k]}:</b> ${esc(k === 'data_evento' ? String(d[k]).split('-').reverse().join('/') : d[k])}</div>`).join('');
   $('#cHead').innerHTML = `<button class="btn voltar" id="cVoltar2">‹</button><div><b>${esc(CONV.nome || foneCurto(CONV.telefone))}</b> <span class="muted small">${esc(foneCurto(CONV.telefone))}</span>${CONV.temperatura ? ` <span class="tag">${esc(CONV.temperatura)}</span>` : ''}
-      ${CONV.pipedrive_deal_id ? ` · <a href="${PD}/deal/${CONV.pipedrive_deal_id}" target="_blank" rel="noopener">negócio</a>` : CONV.pipedrive_person_id ? ` · <a href="${PD}/person/${CONV.pipedrive_person_id}" target="_blank" rel="noopener">pessoa</a>` : ''}</div>
-    <button class="btn kbtn" id="kAbrir">🎯 Coach</button>${dadosTxt ? `<button class="btn" id="dAbrir">📋 Briefing</button>` : ''}<div class="modo"><span class="muted">Quem atende:</span>${['agente', 'humano', 'pausado'].map(m => `<button data-modo="${m}" class="${CONV.modo === m ? 'on' : ''}">${m === 'agente' ? '🤖 Agente' : m === 'humano' ? '👤 Humano' : '⏸ Pausado'}</button>`).join('')}</div>`;
+      ${CONV.pipedrive_deal_id ? ` · <a href="${PD}/deal/${CONV.pipedrive_deal_id}" target="_blank" rel="noopener">negócio</a>` : CONV.pipedrive_person_id ? ` · <a href="${PD}/person/${CONV.pipedrive_person_id}" target="_blank" rel="noopener">pessoa</a>` : ''}</div>`;
+  $('#cFerr').innerHTML = `<button class="btn" id="kAbrir">🎯 Coach</button>${dadosTxt ? `<button class="btn" id="dAbrir">📋 Briefing</button>` : ''}<div class="modo"><span class="muted">Quem atende:</span>${['agente', 'humano', 'pausado'].map(m => `<button data-modo="${m}" class="${CONV.modo === m ? 'on' : ''}">${m === 'agente' ? '🤖 Agente' : m === 'humano' ? '👤 Humano' : '⏸ Pausado'}</button>`).join('')}</div>`;
+  $('#cFerr').hidden = false;
   $('#cDados').innerHTML = dadosTxt + (CONV.motivo_transbordo ? `<div><b>Agente parou porque:</b> ${esc(CONV.motivo_transbordo)}</div>` : '');
   $('#cDados').hidden = true;
   if (dadosTxt) $('#dAbrir').addEventListener('click', () => { $('#cDados').hidden = !$('#cDados').hidden; });
   $('#cVoltar2').addEventListener('click', () => document.querySelector('.chat').classList.remove('aberta'));
   $('#kAbrir').addEventListener('click', () => { $('#coach').hidden = !$('#coach').hidden; });
-  $('#cHead').querySelectorAll('[data-modo]').forEach(b => b.addEventListener('click', async () => {
+  $('#cFerr').querySelectorAll('[data-modo]').forEach(b => b.addEventListener('click', async () => {
     const r = await chamarFn({ acao: 'modo', telefone: CONV.telefone, modo: b.dataset.modo });
     if (!r.ok) $('#cErro').textContent = r.erro || 'não deu'; else { CONV.modo = b.dataset.modo; abrirConversa(CONV.telefone); }
   }));
