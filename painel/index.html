@@ -205,7 +205,7 @@
     <div class="card" style="margin-bottom:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><b>💬 Quem abre o chat:</b> <select id="abreChat"><option value="">a consultora do rodízio</option></select> <span class="muted small">Nome e foto que o cliente vê do começo ao fim. Se o lead for de outra consultora, o chat apresenta a troca no final ("quem vai cuidar do seu projeto é a X"). Lead QUENTE que vai para quem abriu não troca nunca.</span> <span id="abreOk" class="muted small"></span></div>
     <div class="card" style="margin-bottom:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><b>🔥 Lead QUENTE vai para:</b> <select id="quentePara"><option value="">segue o rodízio</option></select> <span class="muted small">Vale para lead novo do site (urgência + IE ativa ou e-mail corporativo, indicação). Cliente que já tem dona da conta continua com ela.</span> <span id="quenteOk" class="muted small"></span></div>
     <div class="grade" id="consultoras"></div>
-    <p class="muted small">Desligar tira o consultor do rodízio na hora. Peso 2 = recebe o dobro. Cliente que já está na base continua com quem é dono da conta.</p>
+    <p class="muted small">Desligar tira o consultor de tudo (rodízio, QUENTE, chat). Peso 0 = fica ativo mas fora do rodízio: só recebe lead QUENTE (se for a escolhida acima), cliente da casa dele e abre o chat. Peso 2 = recebe o dobro. Cliente que já está na base continua com quem é dono da conta.</p>
   </div>
 
   <div class="painel" id="p-deptos">
@@ -547,7 +547,7 @@ function renderNumeros() {
 /* ---------- consultoras ---------- */
 async function renderConsultoras() {
   const { data: rod } = await sb.from('rodizio').select('contador').eq('id', 1).maybeSingle();
-  const fila = CONS.filter(c => c.ativa && c.id !== 'central').flatMap(c => Array(c.peso || 1).fill(c));
+  const fila = CONS.filter(c => c.ativa && c.id !== 'central' && (c.peso ?? 1) > 0).flatMap(c => Array(c.peso ?? 1).fill(c));
   const prox = fila.length ? fila[(rod?.contador || 0) % fila.length] : null;
   $('#fila').innerHTML = fila.length ? `Fila agora: <b>${fila.map(c => esc(c.nome)).join(' → ')}</b> · próxima a receber: <b>${esc(prox.nome)}</b> · ${rod?.contador || 0} leads distribuídos` : '<b>Ninguém ativo: leads vão para o número central.</b>';
   const { data: cfg } = await sb.from('config').select('valor').eq('chave', 'quente_para').maybeSingle();
@@ -587,7 +587,7 @@ async function renderConsultoras() {
     <div class="card cons">
       <img src="${esc(c.foto_url || '')}" alt="" referrerpolicy="no-referrer" onerror="this.style.visibility='hidden'">
       <div style="flex:1"><div class="nome">${esc(c.nome)}</div><div class="muted small">${esc(fone((c.whatsapp || '').replace(/^55/, '')))}${c.email ? ' · ' + esc(c.email) : ''}${c.pipedrive_user_id ? '' : ' · <span style="color:var(--coral)">sem ID no Pipedrive</span>'}</div>
-        <div class="small" style="margin-top:6px">Peso <select data-peso="${c.id}"><option ${c.peso == 1 ? 'selected' : ''}>1</option><option ${c.peso == 2 ? 'selected' : ''}>2</option><option ${c.peso == 3 ? 'selected' : ''}>3</option></select></div></div>
+        <div class="small" style="margin-top:6px">Peso <select data-peso="${c.id}"><option value="0" ${c.peso === 0 ? 'selected' : ''}>0 · fora do rodízio</option><option value="1" ${c.peso == null || c.peso == 1 ? 'selected' : ''}>1</option><option value="2" ${c.peso == 2 ? 'selected' : ''}>2</option><option value="3" ${c.peso == 3 ? 'selected' : ''}>3</option></select></div></div>
       <button class="switch ${c.ativa ? 'on' : ''}" data-ativa="${c.id}" title="${c.ativa ? 'Ativa — clique para desligar' : 'Desligada — clique para ligar'}"></button>
     </div>`).join('');
   document.querySelectorAll('[data-ativa]').forEach(b => b.addEventListener('click', async () => {
