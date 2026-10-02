@@ -169,7 +169,7 @@
   <div class="painel" id="p-conversas">
     <div class="chat">
       <div class="lista" id="cListaWrap"><div class="nova" id="cNovaBar"><button class="btn" id="cNovaBtn">＋ Nova conversa</button><span class="muted small">Puxar papo com um número (usa template aprovado)</span></div>
-        <div class="nova" id="cNova" hidden><input id="nTel" placeholder="WhatsApp (DDD + número)" inputmode="tel" style="width:170px"><input id="nNome" placeholder="Nome (opcional)" style="width:150px"><button class="btn primario" id="nEnviar">Enviar</button><button class="btn" id="nCancel">Cancelar</button><span class="small" id="nMsg"></span></div>
+        <div class="nova" id="cNova" hidden><input id="nTel" placeholder="WhatsApp (DDD + número)" inputmode="tel" style="width:170px"><input id="nNome" placeholder="Nome do cliente" style="width:150px"><button class="btn primario" id="nEnviar">Enviar</button><button class="btn" id="nCancel">Cancelar</button><span class="small" id="nMsg"></span></div>
         <div id="cLista"><div class="muted small" style="padding:12px">Carregando…</div></div></div>
       <div class="thread" id="cThread">
         <div class="thead" id="cHead"><button class="btn voltar" id="cVoltar">‹</button><div class="muted">Escolha uma conversa</div></div>
@@ -410,6 +410,7 @@ $('#nCancel').addEventListener('click', () => { $('#cNova').hidden = true; });
 $('#nEnviar').addEventListener('click', async () => {
   const tel = ($('#nTel').value || '').replace(/\D/g, '');
   if (tel.length < 10) { $('#nMsg').textContent = 'Número incompleto (DDD + número).'; return; }
+  if (!($('#nNome').value || '').trim()) { $('#nMsg').textContent = 'Põe o nome do cliente: a mensagem começa com "Oi, Nome!".'; return; }
   $('#nEnviar').disabled = true; $('#nMsg').textContent = 'Enviando…';
   const r = await chamarFn({ acao: 'nova', telefone: tel, nome: $('#nNome').value || '' });
   $('#nEnviar').disabled = false;
