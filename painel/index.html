@@ -198,6 +198,7 @@
 
   <div class="painel" id="p-equipe">
     <div class="card" style="margin-bottom:12px"><span id="fila"></span></div>
+    <div class="card" style="margin-bottom:12px"><b>📱 Números do WhatsApp no agente</b> <span class="muted small">Por qual número a conversa chega. "Agente" responde sozinho; "Pausado" só escuta (a pessoa atende pelo celular ou pelo painel). "Fala como" é em nome de quem o agente se apresenta nesse número.</span><div id="numeros" style="margin-top:8px"></div></div>
     <div class="card" style="margin-bottom:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><b>💬 Quem abre o chat:</b> <select id="abreChat"><option value="">a consultora do rodízio</option></select> <span class="muted small">Nome e foto que o cliente vê do começo ao fim. Se o lead for de outra consultora, o chat apresenta a troca no final ("quem vai cuidar do seu projeto é a X"). Lead QUENTE que vai para quem abriu não troca nunca.</span> <span id="abreOk" class="muted small"></span></div>
     <div class="card" style="margin-bottom:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><b>🔥 Lead QUENTE vai para:</b> <select id="quentePara"><option value="">segue o rodízio</option></select> <span class="muted small">Vale para lead novo do site (urgência + IE ativa ou e-mail corporativo, indicação). Cliente que já tem dona da conta continua com ela.</span> <span id="quenteOk" class="muted small"></span></div>
     <div class="grade" id="consultoras"></div>
@@ -367,7 +368,8 @@ $('#csv').addEventListener('click', () => {
 });
 
 /* ---------- conversas (WhatsApp oficial) ---------- */
-let CONVS = [], CONV = null, convCanal = null;
+let CONVS = [], CONV = null, convCanal = null, NUMS = [];
+const numeroDe = (c) => { const n = NUMS.find(x => x.phone_id === c.phone_id); return n ? (n.nome || foneCurto(n.telefone)) : ''; };
 const FN = SUPABASE_URL + '/functions/v1/whatsapp-enviar';
 const hora = (s) => new Date(s).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 const diaHora = (s) => { const d = new Date(s), h = new Date(); return d.toDateString() === h.toDateString() ? hora(s) : d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) + ' ' + hora(s); };
@@ -380,7 +382,9 @@ async function chamarFn(body) {
 async function carregarConversas() {
   const { data, error } = await sb.from('wa_conversas').select('*').order('ultima_msg_em', { ascending: false, nullsFirst: false }).limit(300);
   if (error) { $('#cLista').innerHTML = `<div class="erro small" style="padding:12px">${esc(error.message)}</div>`; return; }
-  CONVS = data || []; renderConversas();
+  CONVS = data || [];
+  if (!NUMS.length) { const { data: n } = await sb.from('wa_numeros').select('*'); NUMS = n || []; }
+  renderConversas();
   if (!convCanal) {
     convCanal = sb.channel('wa-painel')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'wa_conversas' }, () => carregarConversas())
@@ -394,7 +398,7 @@ function renderConversas() {
   $('#cLista').innerHTML = CONVS.map(c => `<div class="conv ${c.nao_lida ? 'nl' : ''} ${CONV && CONV.telefone === c.telefone ? 'on' : ''}" data-t="${esc(c.telefone)}">
       <div class="n">${esc(c.nome || foneCurto(c.telefone))}${c.temperatura ? ` <span class="tag">${esc(c.temperatura)}</span>` : ''}</div>
       <div class="h">${c.ultima_msg_em ? diaHora(c.ultima_msg_em) : ''}</div>
-      <div class="p">${c.modo === 'agente' ? '🤖 agente' : c.modo === 'pausado' ? '⏸ pausado' : '👤 ' + esc(c.dono || 'humano')}${c.dados && c.dados.empresa ? ' · ' + esc(c.dados.empresa) : ''}${c.dados && c.dados.produto ? ' · ' + esc(c.dados.produto) : ''}</div>
+      <div class="p">${c.modo === 'agente' ? '🤖 agente' : c.modo === 'pausado' ? '⏸ pausado' : '👤 ' + esc(c.dono || 'humano')}${NUMS.length > 1 && numeroDe(c) ? ' · 📱 ' + esc(numeroDe(c)) : ''}${c.dados && c.dados.empresa ? ' · ' + esc(c.dados.empresa) : ''}${c.dados && c.dados.produto ? ' · ' + esc(c.dados.produto) : ''}</div>
     </div>`).join('') || '<div class="muted small" style="padding:12px">Nenhuma conversa ainda. Quando alguém escrever no número oficial, aparece aqui.</div>';
 }
 $('#cLista').addEventListener('click', e => { const el = e.target.closest('.conv'); if (el) abrirConversa(el.dataset.t); });
@@ -406,7 +410,7 @@ async function abrirConversa(t) {
   const d = CONV.dados || {};
   const rot = { empresa: 'Empresa', produto: 'Produto', uso: 'Uso', data_evento: 'Data', quando: 'Quando', cidade: 'Cidade', quem_aprova: 'Quem aprova', verba: 'Verba', historico: 'Histórico', observacoes: 'Obs.' };
   const dadosTxt = Object.keys(rot).filter(k => d[k]).map(k => `<div><b>${rot[k]}:</b> ${esc(k === 'data_evento' ? String(d[k]).split('-').reverse().join('/') : d[k])}</div>`).join('');
-  $('#cHead').innerHTML = `<button class="btn voltar" id="cVoltar2">‹</button><div><b>${esc(CONV.nome || foneCurto(CONV.telefone))}</b> <span class="muted small">${esc(foneCurto(CONV.telefone))}</span>${CONV.temperatura ? ` <span class="tag">${esc(CONV.temperatura)}</span>` : ''}
+  $('#cHead').innerHTML = `<button class="btn voltar" id="cVoltar2">‹</button><div><b>${esc(CONV.nome || foneCurto(CONV.telefone))}</b> <span class="muted small">${esc(foneCurto(CONV.telefone))}${NUMS.length > 1 && numeroDe(CONV) ? ' · via ' + esc(numeroDe(CONV)) : ''}</span>${CONV.temperatura ? ` <span class="tag">${esc(CONV.temperatura)}</span>` : ''}
       ${CONV.pipedrive_deal_id ? ` · <a href="${PD}/deal/${CONV.pipedrive_deal_id}" target="_blank" rel="noopener">negócio</a>` : CONV.pipedrive_person_id ? ` · <a href="${PD}/person/${CONV.pipedrive_person_id}" target="_blank" rel="noopener">pessoa</a>` : ''}</div>`;
   $('#cFerr').innerHTML = `<button class="btn" id="kAbrir">🎯 Coach</button>${dadosTxt ? `<button class="btn" id="dAbrir">📋 Briefing</button>` : ''}<div class="modo"><span class="muted">Quem atende:</span>${['agente', 'humano', 'pausado'].map(m => `<button data-modo="${m}" class="${CONV.modo === m ? 'on' : ''}">${m === 'agente' ? '🤖 Agente' : m === 'humano' ? '👤 Humano' : '⏸ Pausado'}</button>`).join('')}</div>`;
   $('#cFerr').hidden = false;
@@ -531,6 +535,20 @@ async function renderConsultoras() {
     const { error } = await sb.from('config').upsert({ chave: 'quente_para', valor: sel.value || null, atualizado_em: new Date().toISOString() });
     $('#quenteOk').textContent = error ? 'Não deu: ' + error.message : 'salvo ✓'; setTimeout(() => $('#quenteOk').textContent = '', 2500);
   };
+  const { data: nums } = await sb.from('wa_numeros').select('*').order('criado_em');
+  NUMS = nums || [];
+  const opCons = (sel) => '<option value="">' + 'regra padrão' + '</option>' + CONS.filter(c => c.id !== 'central').map(c => `<option value="${esc(c.id)}" ${sel === c.id ? 'selected' : ''}>${esc(c.nome)}</option>`).join('');
+  $('#numeros').innerHTML = NUMS.length ? NUMS.map(n => `<div class="small" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:6px 0;border-top:1px solid #eee">
+      <b>${esc(n.nome || foneCurto(n.telefone) || n.phone_id)}</b> <span class="muted">${esc(foneCurto(n.telefone))}${n.coexistencia ? ' · coexistência (também no celular)' : ''}</span>
+      <label>Modo <select data-num-modo="${esc(n.phone_id)}"><option value="agente" ${n.modo_padrao === 'agente' ? 'selected' : ''}>🤖 Agente</option><option value="pausado" ${n.modo_padrao === 'pausado' ? 'selected' : ''}>⏸ Pausado</option></select></label>
+      <label>Fala como <select data-num-dono="${esc(n.phone_id)}">${opCons(n.dono)}</select></label>
+      <span class="muted" data-num-ok="${esc(n.phone_id)}"></span></div>`).join('') : '<div class="muted small">Nenhum número cadastrado ainda. O primeiro contato por um número novo cadastra ele aqui (pausado).</div>';
+  $('#numeros').querySelectorAll('select[data-num-modo], select[data-num-dono]').forEach(sel => sel.addEventListener('change', async () => {
+    const id = sel.dataset.numModo || sel.dataset.numDono;
+    const patch = sel.dataset.numModo ? { modo_padrao: sel.value } : { dono: sel.value || null };
+    const { error } = await sb.from('wa_numeros').update(patch).eq('phone_id', id);
+    const ok = $('#numeros').querySelector(`[data-num-ok="${id}"]`); ok.textContent = error ? 'Não deu: ' + error.message : 'salvo ✓'; setTimeout(() => ok.textContent = '', 2500);
+  }));
   const { data: cfgA } = await sb.from('config').select('valor').eq('chave', 'abre_chat').maybeSingle();
   const selA = $('#abreChat');
   selA.innerHTML = '<option value="">a consultora do rodízio</option>' + CONS.filter(c => c.id !== 'central' && c.ativa).map(c => `<option value="${esc(c.id)}" ${cfgA && cfgA.valor === c.id ? 'selected' : ''}>${esc(c.nome)}</option>`).join('');
