@@ -478,8 +478,7 @@
   ];
   const WHEN = [
     { id: 'data',    label: 'Tenho uma data definida' },
-    { id: '15',      label: 'Nos próximos 15 dias' },
-    { id: '60',      label: 'Em 1 ou 2 meses' },
+    { id: '15',      label: 'Nos próximos 20 dias' },
     { id: 'semdata', label: 'Mais pra frente, ainda sem data' }
   ];
   /* ---------- Distribuição (simulada no protótipo; na versão final fica no Supabase) ---------- */
@@ -1072,7 +1071,7 @@
                    L.objetivo.id === 'inaug'  ? 'uma inauguração ou ação de loja' :
                    L.objetivo.id === 'promo'  ? 'uma ação promocional' :
                    L.objetivo.id === 'recorrente' ? 'uso recorrente' : 'o seu projeto';
-    const whenTxt = L.data ? ' no dia <b>' + fmtDate(L.data) + '</b>' : (L.quando.id === 'semdata' ? ', ainda sem data definida' : L.quando.id === '60' ? ', previsto para daqui a 1 ou 2 meses' : ', previsto para os próximos 15 dias');
+    const whenTxt = L.data ? ' no dia <b>' + fmtDate(L.data) + '</b>' : (L.quando.id === 'semdata' ? ', ainda sem data definida' : ', previsto para os próximos 20 dias');
     await bot('Pronto, <b>' + esc(nome) + '</b>! Resumindo: você está buscando um <b>' + esc(prodTxt) + '</b> para ' + objTxt + ', com uso em <b>' + esc(L.cidade) + '</b>' + whenTxt + '.');
     const qc = quandoChamo();
     if (qc) {
@@ -1193,7 +1192,7 @@
 
   function renderCard(L) {
     const p1 = !!L.data || L.quando.id === '15';
-    const prioTxt = L.data ? 'P1 · evento ' + fmtDate(L.data) : (L.quando.id === '15' ? 'P1 · próximos 15 dias' : 'P4 · sem data');
+    const prioTxt = L.data ? 'P1 · evento ' + fmtDate(L.data) : (L.quando.id === '15' ? 'P1 · próximos 20 dias' : 'P4 · sem data');
     const sinais = [];
     if (L.data) sinais.push('Data marcada em ' + L.dias + ' dias: fazer a conta produção (9 a 11 dias úteis) + frete para ' + L.regiao + ' e devolver até quando precisa aprovar o layout. Nada foi prometido ao cliente sobre prazo.');
     if (L.quando.id === 'semdata') sinais.push('Sem data: perguntar o uso e a data na primeira mensagem, o campo do formulário não prioriza.');
