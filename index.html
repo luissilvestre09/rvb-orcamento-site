@@ -1072,7 +1072,7 @@
                    L.objetivo.id === 'inaug'  ? 'uma inauguração ou ação de loja' :
                    L.objetivo.id === 'promo'  ? 'uma ação promocional' :
                    L.objetivo.id === 'recorrente' ? 'uso recorrente' : 'o seu projeto';
-    const whenTxt = L.data ? ' no dia <b>' + fmtDate(L.data) + '</b>' : (L.quando.id === 'semdata' ? ', ainda sem data definida' : ', previsto para ' + L.quando.label.toLowerCase().replace('nos ', 'os ').replace('entre ', ''));
+    const whenTxt = L.data ? ' no dia <b>' + fmtDate(L.data) + '</b>' : (L.quando.id === 'semdata' ? ', ainda sem data definida' : L.quando.id === '60' ? ', previsto para daqui a 1 ou 2 meses' : ', previsto para os próximos 15 dias');
     await bot('Pronto, <b>' + esc(nome) + '</b>! Resumindo: você está buscando um <b>' + esc(prodTxt) + '</b> para ' + objTxt + ', com uso em <b>' + esc(L.cidade) + '</b>' + whenTxt + '.');
     const qc = quandoChamo();
     if (qc) {
