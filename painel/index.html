@@ -64,7 +64,8 @@
   .m { max-width:78%; padding:7px 10px; border-radius:10px; font-size:14px; white-space:pre-wrap; word-break:break-word; box-shadow:0 1px 0 rgba(0,0,0,.06); }
   .m.in { background:#fff; align-self:flex-start; } .m.out { background:#D9FDD3; align-self:flex-end; } .m.sis { background:#FFF3D6; align-self:center; font-size:12px; color:#7A5200; }
   .m .q { font-size:11px; color:var(--muted); margin-bottom:2px; } .m .h { font-size:10.5px; color:var(--muted); text-align:right; margin-top:2px; }
-  .compor { display:flex; gap:8px; padding:10px; border-top:1px solid var(--line); }
+  .compor { display:flex; gap:8px; padding:10px; border-top:1px solid var(--line); } .compor[hidden] { display:none; }
+  .nova { padding:8px 10px; border-bottom:1px solid var(--line); background:#fff; display:flex; gap:6px; flex-wrap:wrap; align-items:center; } .nova input { border:1px solid var(--line); border-radius:8px; padding:6px 8px; font:inherit; font-size:13px; } .nova[hidden] { display:none; }
   .coach { border-top:1px solid var(--line); background:#FFFBEF; max-height:45%; display:flex; flex-direction:column; } .coach[hidden] { display:none; }
   .coach-bar { display:flex; gap:6px; align-items:center; padding:8px 10px; flex-wrap:wrap; }
   .coach-bar input { flex:1; min-width:160px; border:1px solid var(--line); border-radius:8px; padding:6px 8px; font:inherit; font-size:13px; }
@@ -167,7 +168,9 @@
 
   <div class="painel" id="p-conversas">
     <div class="chat">
-      <div class="lista" id="cLista"><div class="muted small" style="padding:12px">Carregando…</div></div>
+      <div class="lista" id="cListaWrap"><div class="nova" id="cNovaBar"><button class="btn" id="cNovaBtn">＋ Nova conversa</button><span class="muted small">Puxar papo com um número (usa template aprovado)</span></div>
+        <div class="nova" id="cNova" hidden><input id="nTel" placeholder="WhatsApp (DDD + número)" inputmode="tel" style="width:170px"><input id="nNome" placeholder="Nome (opcional)" style="width:150px"><button class="btn primario" id="nEnviar">Enviar</button><button class="btn" id="nCancel">Cancelar</button><span class="small" id="nMsg"></span></div>
+        <div id="cLista"><div class="muted small" style="padding:12px">Carregando…</div></div></div>
       <div class="thread" id="cThread">
         <div class="thead" id="cHead"><button class="btn voltar" id="cVoltar">‹</button><div class="muted">Escolha uma conversa</div></div>
         <div class="msgs" id="cMsgs"></div>
@@ -402,6 +405,18 @@ function renderConversas() {
     </div>`).join('') || '<div class="muted small" style="padding:12px">Nenhuma conversa ainda. Quando alguém escrever no número oficial, aparece aqui.</div>';
 }
 $('#cLista').addEventListener('click', e => { const el = e.target.closest('.conv'); if (el) abrirConversa(el.dataset.t); });
+$('#cNovaBtn').addEventListener('click', () => { $('#cNova').hidden = !$('#cNova').hidden; $('#nMsg').textContent = ''; });
+$('#nCancel').addEventListener('click', () => { $('#cNova').hidden = true; });
+$('#nEnviar').addEventListener('click', async () => {
+  const tel = ($('#nTel').value || '').replace(/\D/g, '');
+  if (tel.length < 10) { $('#nMsg').textContent = 'Número incompleto (DDD + número).'; return; }
+  $('#nEnviar').disabled = true; $('#nMsg').textContent = 'Enviando…';
+  const r = await chamarFn({ acao: 'nova', telefone: tel, nome: $('#nNome').value || '' });
+  $('#nEnviar').disabled = false;
+  if (!r.ok) { $('#nMsg').textContent = r.erro || 'não deu'; return; }
+  $('#nMsg').textContent = 'Enviado ✓'; $('#nTel').value = ''; $('#nNome').value = '';
+  setTimeout(async () => { $('#cNova').hidden = true; await carregarConversas(); abrirConversa(r.telefone); }, 800);
+});
 $('#cVoltar').addEventListener('click', () => { document.querySelector('.chat').classList.remove('aberta'); });
 async function abrirConversa(t) {
   CONV = CONVS.find(c => c.telefone === t); if (!CONV) return;
@@ -412,13 +427,20 @@ async function abrirConversa(t) {
   const dadosTxt = Object.keys(rot).filter(k => d[k]).map(k => `<div><b>${rot[k]}:</b> ${esc(k === 'data_evento' ? String(d[k]).split('-').reverse().join('/') : d[k])}</div>`).join('');
   $('#cHead').innerHTML = `<button class="btn voltar" id="cVoltar2">‹</button><div><b>${esc(CONV.nome || foneCurto(CONV.telefone))}</b> <span class="muted small">${esc(foneCurto(CONV.telefone))}${NUMS.length > 1 && numeroDe(CONV) ? ' · via ' + esc(numeroDe(CONV)) : ''}</span>${CONV.temperatura ? ` <span class="tag">${esc(CONV.temperatura)}</span>` : ''}
       ${CONV.pipedrive_deal_id ? ` · <a href="${PD}/deal/${CONV.pipedrive_deal_id}" target="_blank" rel="noopener">negócio</a>` : CONV.pipedrive_person_id ? ` · <a href="${PD}/person/${CONV.pipedrive_person_id}" target="_blank" rel="noopener">pessoa</a>` : ''}</div>`;
-  $('#cFerr').innerHTML = `<button class="btn" id="kAbrir">🎯 Coach</button>${dadosTxt ? `<button class="btn" id="dAbrir">📋 Briefing</button>` : ''}<div class="modo"><span class="muted">Quem atende:</span>${['agente', 'humano', 'pausado'].map(m => `<button data-modo="${m}" class="${CONV.modo === m ? 'on' : ''}">${m === 'agente' ? '🤖 Agente' : m === 'humano' ? '👤 Humano' : '⏸ Pausado'}</button>`).join('')}</div>`;
+  $('#cFerr').innerHTML = `<button class="btn" id="kAbrir">🎯 Coach</button>${dadosTxt ? `<button class="btn" id="dAbrir">📋 Briefing</button>` : ''}${PODE_APAGAR ? `<button class="btn" id="cApagar" title="Apaga a conversa do painel (não mexe no Pipedrive nem no WhatsApp do cliente)">🗑</button>` : ''}<div class="modo"><span class="muted">Quem atende:</span>${['agente', 'humano', 'pausado'].map(m => `<button data-modo="${m}" class="${CONV.modo === m ? 'on' : ''}">${m === 'agente' ? '🤖 Agente' : m === 'humano' ? '👤 Humano' : '⏸ Pausado'}</button>`).join('')}</div>`;
   $('#cFerr').hidden = false;
   $('#cDados').innerHTML = dadosTxt + (CONV.motivo_transbordo ? `<div><b>Agente parou porque:</b> ${esc(CONV.motivo_transbordo)}</div>` : '');
   $('#cDados').hidden = true;
   if (dadosTxt) $('#dAbrir').addEventListener('click', () => { $('#cDados').hidden = !$('#cDados').hidden; });
   $('#cVoltar2').addEventListener('click', () => document.querySelector('.chat').classList.remove('aberta'));
   $('#kAbrir').addEventListener('click', () => { $('#coach').hidden = !$('#coach').hidden; });
+  if (PODE_APAGAR) $('#cApagar').addEventListener('click', async () => {
+    if (!confirm('Apagar esta conversa do painel? Some daqui (mensagens incluídas), mas não apaga nada no Pipedrive nem no WhatsApp do cliente.')) return;
+    const r = await chamarFn({ acao: 'apagar', telefone: CONV.telefone });
+    if (!r.ok) { $('#cErro').textContent = r.erro || 'não deu'; return; }
+    CONV = null; $('#cHead').innerHTML = '<button class="btn voltar" id="cVoltar">‹</button><div class="muted">Escolha uma conversa</div>'; $('#cMsgs').innerHTML = ''; $('#cFerr').hidden = true; $('#cCompor').hidden = true; $('#cDados').hidden = true; $('#coach').hidden = true;
+    document.querySelector('.chat').classList.remove('aberta'); carregarConversas();
+  });
   $('#cFerr').querySelectorAll('[data-modo]').forEach(b => b.addEventListener('click', async () => {
     const r = await chamarFn({ acao: 'modo', telefone: CONV.telefone, modo: b.dataset.modo });
     if (!r.ok) $('#cErro').textContent = r.erro || 'não deu'; else { CONV.modo = b.dataset.modo; abrirConversa(CONV.telefone); }
@@ -542,12 +564,17 @@ async function renderConsultoras() {
       <b>${esc(n.nome || foneCurto(n.telefone) || n.phone_id)}</b> <span class="muted">${esc(foneCurto(n.telefone))}${n.coexistencia ? ' · coexistência (também no celular)' : ''}</span>
       <label>Modo <select data-num-modo="${esc(n.phone_id)}"><option value="agente" ${n.modo_padrao === 'agente' ? 'selected' : ''}>🤖 Agente</option><option value="pausado" ${n.modo_padrao === 'pausado' ? 'selected' : ''}>⏸ Pausado</option></select></label>
       <label>Fala como <select data-num-dono="${esc(n.phone_id)}">${opCons(n.dono)}</select></label>
-      <span class="muted" data-num-ok="${esc(n.phone_id)}"></span></div>`).join('') : '<div class="muted small">Nenhum número cadastrado ainda. O primeiro contato por um número novo cadastra ele aqui (pausado).</div>';
+      ${n.waba_id ? `<button class="btn" data-num-tpl="${esc(n.phone_id)}" style="padding:3px 8px;font-size:12px">Templates</button>` : ''}<span class="muted" data-num-ok="${esc(n.phone_id)}"></span></div>`).join('') : '<div class="muted small">Nenhum número cadastrado ainda. O primeiro contato por um número novo cadastra ele aqui (pausado).</div>';
   $('#numeros').querySelectorAll('select[data-num-modo], select[data-num-dono]').forEach(sel => sel.addEventListener('change', async () => {
     const id = sel.dataset.numModo || sel.dataset.numDono;
     const patch = sel.dataset.numModo ? { modo_padrao: sel.value } : { dono: sel.value || null };
     const { error } = await sb.from('wa_numeros').update(patch).eq('phone_id', id);
     const ok = $('#numeros').querySelector(`[data-num-ok="${id}"]`); ok.textContent = error ? 'Não deu: ' + error.message : 'salvo ✓'; setTimeout(() => ok.textContent = '', 2500);
+  }));
+  $('#numeros').querySelectorAll('button[data-num-tpl]').forEach(bt => bt.addEventListener('click', async () => {
+    const id = bt.dataset.numTpl; const ok = $('#numeros').querySelector(`[data-num-ok="${id}"]`); ok.textContent = 'consultando a Meta…';
+    const r = await chamarFn({ acao: 'templates', phone_id: id, criar_padrao: true });
+    ok.textContent = r.ok ? (r.templates.length ? r.templates.map(t => `${t.nome}: ${t.status}`).join(' · ') : 'nenhum template') : ('Não deu: ' + (r.erro || ''));
   }));
   const { data: cfgA } = await sb.from('config').select('valor').eq('chave', 'abre_chat').maybeSingle();
   const selA = $('#abreChat');
