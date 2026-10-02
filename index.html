@@ -786,12 +786,12 @@
     };
     const quemSou = () => C === CENTRAL ? 'Aqui é a <b>RVB Balões</b>.' : 'Eu sou ' + (C.artigo || 'a') + ' <b>' + esc(C.nome) + '</b>, da RVB Balões.';
     // Expediente comercial (Brasília): seg–sex, 8h às 17h30. Fora dele, o chat avisa quando a consultora chama.
-    const EXPEDIENTE = { inicio: 8 * 60, fim: 17 * 60 + 30 };
+    const EXPEDIENTE = { inicio: 8 * 60, fim: 17 * 60 + 30, fimSexta: 17 * 60 };   // sexta fecha às 17h
     const quandoChamo = () => {   // null = dentro do expediente; senão o texto "amanhã a partir das 8h" etc.
       const agora = new Date(Date.now() - 3 * 3600 * 1000);   // relógio de Brasília lido como UTC
       const dia = agora.getUTCDay(), min = agora.getUTCHours() * 60 + agora.getUTCMinutes();
       const util = dia >= 1 && dia <= 5;
-      if (util && min >= EXPEDIENTE.inicio && min < EXPEDIENTE.fim) return null;
+      if (util && min >= EXPEDIENTE.inicio && min < (dia === 5 ? EXPEDIENTE.fimSexta : EXPEDIENTE.fim)) return null;
       const h = Math.floor(EXPEDIENTE.inicio / 60) + 'h';
       if (util && min < EXPEDIENTE.inicio) return 'hoje a partir das ' + h;
       if (dia === 5 || dia === 6 || dia === 0) return 'na segunda-feira a partir das ' + h;
