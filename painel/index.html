@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Painel RVB</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1533A3">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Painel RVB">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap">
 <style>
   :root {
@@ -128,6 +133,7 @@
   </div>
   <div class="sp"></div>
   <span class="who" id="who"></span>
+  <button class="sair" id="avisos" hidden title="Recebe no celular quando o agente passar uma conversa para você ou um cliente responder">🔔 Ativar avisos no celular</button>
   <button class="sair" id="sair" hidden>Sair</button>
 </div></div>
 
@@ -244,10 +250,10 @@ $('#sair').addEventListener('click', () => sb.auth.signOut());
 sb.auth.onAuthStateChange((_e, sess) => {
   const ok = !!sess && /@rvb\.com\.br$/i.test(sess.user.email || '');
   $('#p-login').classList.toggle('on', !ok);
-  $('#tabs').hidden = !ok; $('#sair').hidden = !ok;
+  $('#tabs').hidden = !ok; $('#sair').hidden = !ok; if (!ok) $('#avisos').hidden = true;
   $('#who').textContent = ok ? sess.user.email : '';
   PODE_APAGAR = ok && APAGADORES.includes((sess.user.email || '').toLowerCase());
-  if (ok) { mostrar('leads'); carregarTudo(); } else { document.querySelectorAll('.painel').forEach(p => p.classList.toggle('on', p.id === 'p-login')); }
+  if (ok) { mostrar(location.hash.startsWith('#conversas') ? 'conversas' : 'leads'); carregarTudo(); avisosEstado().catch(e => console.warn('avisos:', e)); } else { document.querySelectorAll('.painel').forEach(p => p.classList.toggle('on', p.id === 'p-login')); }
 });
 
 /* ---------- abas ---------- */
@@ -255,7 +261,7 @@ function mostrar(p) {
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.p === p));
   document.querySelectorAll('.painel').forEach(x => x.classList.toggle('on', x.id === 'p-' + p));
 }
-$('#tabs').addEventListener('click', e => { const t = e.target.closest('.tab'); if (t) mostrar(t.dataset.p); });
+$('#tabs').addEventListener('click', e => { const t = e.target.closest('.tab'); if (!t) return; mostrar(t.dataset.p); if (location.hash) history.replaceState(null, '', t.dataset.p === 'conversas' ? '#conversas' : location.pathname + location.search); });
 
 /* ---------- dados ---------- */
 async function carregarTudo() {
@@ -387,7 +393,7 @@ async function carregarConversas() {
   if (error) { $('#cLista').innerHTML = `<div class="erro small" style="padding:12px">${esc(error.message)}</div>`; return; }
   CONVS = data || [];
   if (!NUMS.length) { const { data: n } = await sb.from('wa_numeros').select('*'); NUMS = n || []; }
-  renderConversas();
+  renderConversas(); abrirPendente();
   if (!convCanal) {
     convCanal = sb.channel('wa-painel')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'wa_conversas' }, () => carregarConversas())
@@ -520,7 +526,72 @@ $('#kIr').addEventListener('click', () => { const q = $('#kPergunta').value.trim
 $('#kPergunta').addEventListener('keydown', e => { if (e.key === 'Enter') { const q = $('#kPergunta').value.trim(); if (q) coach('perguntar', q); } });
 $('#kFechar').addEventListener('click', () => { $('#coach').hidden = true; });
 $('#cTexto').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviarMsg(); } });
-if (location.hash === '#conversas') setTimeout(() => mostrar('conversas'), 300);
+
+/* ---------- link direto (#conversas ou #conversas/5511…, usado pelos avisos e pelo Pipedrive) ---------- */
+let ABRIR = null;   // telefone a abrir assim que as conversas carregarem
+function irPeloLink() {
+  const m = location.hash.match(/^#conversas(?:\/(\d+))?$/); if (!m) return;
+  if (!$('#tabs').hidden) mostrar('conversas');
+  if (m[1]) { ABRIR = m[1]; abrirPendente(); }
+}
+function abrirPendente() { if (ABRIR && CONVS.some(c => c.telefone === ABRIR)) { const t = ABRIR; ABRIR = null; mostrar('conversas'); abrirConversa(t); } }
+window.addEventListener('hashchange', irPeloLink);
+irPeloLink();
+
+/* ---------- app instalável + avisos no celular (Web Push; ver sw.js e a função push) ---------- */
+const PUSH_FN = SUPABASE_URL + '/functions/v1/push';
+const temPush = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+const ehIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+async function chamarPush(body) {
+  const { data: { session } } = await sb.auth.getSession();
+  const r = await fetch(PUSH_FN, { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + (session?.access_token || '') }, body: JSON.stringify(body) });
+  return r.json().catch(() => ({ ok: false, erro: 'resposta inválida' }));
+}
+// service worker pronto; se o sw.js não estiver no servidor, desiste em 8 s em vez de travar o botão
+const swPronto = () => Promise.race([navigator.serviceWorker.ready, new Promise((_, nao) => setTimeout(() => nao(new Error('o painel está sem o sw.js no servidor.')), 8000))]);
+const chaveBytes = (b64) => { const s = atob(b64.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((b64.length + 3) % 4)); return Uint8Array.from(s, c => c.charCodeAt(0)); };
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(e => console.warn('service worker:', e));
+  // aviso tocado com o painel já aberto: o sw.js manda o link da conversa
+  navigator.serviceWorker.addEventListener('message', e => { const h = e.data && e.data.abrir; if (!h) return; if (location.hash === h) irPeloLink(); else location.hash = h; });
+}
+async function avisosEstado() {
+  const b = $('#avisos');
+  // iPhone só tem push no painel instalado (Adicionar à Tela de Início); fora dele, o botão explica como fazer
+  if (!temPush) { b.hidden = !ehIOS; b.textContent = '🔔 Avisos no celular'; b.dataset.e = 'ios'; return; }
+  b.hidden = false;
+  if (Notification.permission === 'denied') { b.textContent = '🔕 Avisos bloqueados'; b.dataset.e = 'bloqueado'; return; }
+  const s = await (await swPronto()).pushManager.getSubscription();
+  if (s && Notification.permission === 'granted') {
+    b.textContent = '🔔 Avisos ligados'; b.dataset.e = 'ligado';
+    chamarPush({ acao: 'inscrever', subscription: s.toJSON() });   // reenvia: a inscrição fica em nome de quem está logado
+  } else { b.textContent = '🔔 Ativar avisos no celular'; b.dataset.e = 'desligado'; }
+}
+$('#avisos').addEventListener('click', async () => {
+  const b = $('#avisos'), e = b.dataset.e;
+  if (e === 'ios') { alert('No iPhone, os avisos só funcionam com o painel instalado: no Safari, toque em Compartilhar → "Adicionar à Tela de Início", abra o Painel RVB pelo ícone, entre e toque aqui de novo.'); return; }
+  if (e === 'bloqueado') { alert('Os avisos estão bloqueados neste aparelho. Libere as notificações deste site (no cadeado ao lado do endereço, ou nos Ajustes do celular → Notificações) e toque aqui de novo.'); return; }
+  if (e === 'ligado') {
+    if (!confirm('Desligar os avisos neste aparelho?')) return;
+    const s = await (await swPronto()).pushManager.getSubscription();
+    if (s) { await chamarPush({ acao: 'sair', endpoint: s.endpoint }); await s.unsubscribe(); }
+    return avisosEstado();
+  }
+  const permissao = Notification.requestPermission();   // primeiro, ainda dentro do toque (o iPhone exige)
+  b.disabled = true; b.textContent = 'Ativando…';
+  try {
+    if (await permissao !== 'granted') throw new Error('a permissão de notificações não foi dada.');
+    const k = await chamarPush({ acao: 'chave' });
+    if (!k.ok) throw new Error(k.erro || 'sem chave');
+    const reg = await swPronto();
+    const velha = await reg.pushManager.getSubscription(); if (velha) await velha.unsubscribe();   // inscrição de outra chave impede a nova
+    const s = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: chaveBytes(k.chave) });
+    const r = await chamarPush({ acao: 'inscrever', subscription: s.toJSON() });
+    if (!r.ok) throw new Error(r.erro || 'não gravou');
+    chamarPush({ acao: 'teste' });
+  } catch (err) { alert('Não deu para ativar os avisos: ' + (err.message || err)); }
+  finally { b.disabled = false; avisosEstado(); }
+});
 
 /* ---------- números ---------- */
 function barras(el, pares, total) {

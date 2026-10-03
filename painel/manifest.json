@@ -1,0 +1,17 @@
+{
+  "name": "Painel RVB",
+  "short_name": "Painel RVB",
+  "description": "Leads e conversas do WhatsApp da RVB Balões, com avisos no celular.",
+  "lang": "pt-BR",
+  "id": "./",
+  "start_url": "./#conversas",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F4F7FB",
+  "theme_color": "#1533A3",
+  "icons": [
+    { "src": "icone-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icone-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
