@@ -15,7 +15,8 @@
       "produto": "tenda inflável",
       "segmento": "farmácia, drogaria, rede de varejo",
       "descricao": "Tenda inflável azul da Droga Raia na frente da farmácia, testeira branca com a marca, montada no estacionamento da loja",
-      "legenda": "Tenda que fizemos para a Droga Raia, na frente da loja."
+      "legenda": "Tenda que fizemos para a Droga Raia, na frente da loja.",
+      "medida": "3x3 m"
     },
     {
       "id": "tenda-fiat",
@@ -143,7 +144,8 @@
       "produto": "portal inflável",
       "segmento": "corrida, ciclismo, evento esportivo, largada e chegada",
       "descricao": "Portal inflável verde de 6x4 m da Oggi em prova de ciclismo, ciclista passando embaixo, colunas com redes sociais",
-      "legenda": "Portal de 6x4 m que fizemos para a Oggi, na largada de uma prova de ciclismo."
+      "legenda": "Portal de 6x4 m que fizemos para a Oggi, na largada de uma prova de ciclismo.",
+      "medida": "6x4 m"
     },
     {
       "id": "chuteagol-padrao-cmpc-evento-verde-pessoa",
@@ -159,7 +161,8 @@
       "produto": "réplica de produto",
       "segmento": "bebidas, ativação em ponto de venda, loja de conveniência",
       "descricao": "Réplica inflável de 3 m da lata Schweppes Mixed Vodka Citrus na frente da loja de conveniência BR Mania, com promotora ao lado",
-      "legenda": "Réplica de 3 m da lata Schweppes, em ativação na frente da loja de conveniência."
+      "legenda": "Réplica de 3 m da lata Schweppes, em ativação na frente da loja de conveniência.",
+      "medida": "3 m de altura"
     },
     {
       "id": "replica-2m-gamalopes-alimento-bege-pessoa",
@@ -167,7 +170,8 @@
       "produto": "réplica de produto, tenda inflável, balão",
       "segmento": "alimentos, feijão, atacado, feira",
       "descricao": "Kit inflável da Gama Lopes: réplica de 2 m do pacote de feijão, tenda amarela e verde e balão rooftop com a marca, em ação de ponto de venda",
-      "legenda": "Kit que fizemos para a Gama Lopes: réplica do pacote, tenda e balão, tudo junto na ação."
+      "legenda": "Kit que fizemos para a Gama Lopes: réplica do pacote, tenda e balão, tudo junto na ação.",
+      "medida": "réplica 2 m"
     }
   ]
 }
