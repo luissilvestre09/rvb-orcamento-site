@@ -343,6 +343,295 @@
       "segmento": "telecom, evento de rua, ação promocional com público",
       "descricao": "Portal inflável azul da Net Now em evento de rua com muito público de camiseta amarela passando por baixo",
       "legenda": "Portal da Net Now em evento de rua, com o público passando por baixo."
+    },
+    {
+      "id": "academia-tenda-smartfit-corrida",
+      "arquivo": "academia-tenda-smartfit-corrida.jpg",
+      "produto": "tenda inflável",
+      "segmento": "academia, rede de academias, corrida, evento fitness",
+      "descricao": "Tenda inflável amarela e preta da Smart Fit em corrida de rua, com equipe de atletas na frente",
+      "legenda": "Tenda que fizemos para a Smart Fit, usada em corrida de rua com a equipe."
+    },
+    {
+      "id": "academia-balao-portal-academia-ct",
+      "arquivo": "academia-balao-portal-academia-ct.jpg",
+      "produto": "balão rooftop, portal inflável",
+      "segmento": "academia, centro de treinamento, fachada",
+      "descricao": "Portal inflável preto e verde e balão rooftop na entrada de academia (Academia F. S. Sadia), em ambiente noturno com neon",
+      "legenda": "Portal e balão que fizemos para a entrada de uma academia."
+    },
+    {
+      "id": "academia-tenda-carneiro",
+      "arquivo": "academia-tenda-carneiro.jpg",
+      "produto": "tenda inflável",
+      "segmento": "loja de suplementos, academia, fachada, noturno",
+      "descricao": "Duas tendas infláveis (preta e vermelha) da Carneiro Suplementos na frente da loja, foto noturna",
+      "legenda": "Tendas da Carneiro Suplementos na frente da loja, à noite.",
+      "medida": "3x3 m"
+    },
+    {
+      "id": "academia-totem-up-suplementos-fitness",
+      "arquivo": "academia-totem-up-suplementos-fitness.jpg",
+      "produto": "totem inflável",
+      "segmento": "loja de suplementos, ponto de venda, interno",
+      "descricao": "Totem inflável verde da Up! Suplementos dentro da loja, com seta 'O melhor preço' e produtos impressos",
+      "legenda": "Totem que fizemos para a Up! Suplementos, dentro da loja."
+    },
+    {
+      "id": "academia-replica-body-action-delicious-whey",
+      "arquivo": "academia-replica-body-action-delicious-whey.jpg",
+      "produto": "réplica de produto",
+      "segmento": "loja de suplementos, moda fitness, fachada",
+      "descricao": "Réplica inflável do pote Delicious Whey (Body Action) na frente da loja Natural Light, com promotoras ao lado",
+      "legenda": "Réplica do pote Delicious Whey na frente da loja, com a equipe ao lado.",
+      "medida": "2 m"
+    },
+    {
+      "id": "academia-tenda-3x3-allp-fit",
+      "arquivo": "academia-tenda-3x3-allp-fit.jpg",
+      "produto": "tenda inflável",
+      "segmento": "academia, rede de academias, inauguração",
+      "descricao": "Tenda inflável 3x3 m roxa da Allp Fit com painel xadrez ao fundo, foto de estúdio",
+      "legenda": "Tenda 3x3 m que fizemos para a Allp Fit.",
+      "medida": "3x3 m"
+    },
+    {
+      "id": "academia-balao-inauguracao-bluefit",
+      "arquivo": "academia-balao-inauguracao-bluefit.jpg",
+      "produto": "balão rooftop",
+      "segmento": "academia, rede de academias, inauguração",
+      "descricao": "Balão inflável rooftop de 4 m azul e branco da Bluefit, foto de estúdio",
+      "legenda": "Balão de 4 m que fizemos para a Bluefit, para inauguração de unidade.",
+      "medida": "4 m"
+    },
+    {
+      "id": "academia-tunel-ryze-fitness",
+      "arquivo": "academia-tunel-ryze-fitness.jpg",
+      "produto": "túnel inflável",
+      "segmento": "academia, corrida, evento fitness, entrada",
+      "descricao": "Túnel inflável preto 4x4x5 m da Ryze Fitness Run, foto de estúdio",
+      "legenda": "Túnel inflável 4x4x5 m que fizemos para a Ryze Fitness.",
+      "medida": "4x4x5 m"
+    },
+    {
+      "id": "academia-balao-vale-fitness",
+      "arquivo": "academia-balao-vale-fitness.jpg",
+      "produto": "balão rooftop",
+      "segmento": "academia, fachada, telhado",
+      "descricao": "Balão inflável rooftop de 3 m preto e amarelo da Vale Fitness, foto de estúdio",
+      "legenda": "Balão de 3 m que fizemos para a Vale Fitness.",
+      "medida": "3 m"
+    },
+    {
+      "id": "academia-gobanners-gavioes",
+      "arquivo": "academia-gobanners-gavioes.jpg",
+      "produto": "wind banner (GoBanners, empresa do grupo)",
+      "segmento": "academia, calçada, campanha",
+      "descricao": "Wind banners pretos da Academia Gaviões com QR code, produto da GoBanners (empresa do grupo)",
+      "legenda": "Wind banners da Academia Gaviões, feitos pela GoBanners, empresa do nosso grupo."
+    },
+    {
+      "id": "academia-gobanners-windbanners-gavioes",
+      "arquivo": "academia-gobanners-windbanners-gavioes.jpg",
+      "produto": "wind banner (GoBanners, empresa do grupo)",
+      "segmento": "academia, calçada, campanha",
+      "descricao": "Conjunto de wind banners pretos e vermelhos da Academia Gaviões, produto da GoBanners (empresa do grupo)",
+      "legenda": "Wind banners da Academia Gaviões, da GoBanners, empresa do nosso grupo."
+    },
+    {
+      "id": "academia-tenda-skyfit-lado",
+      "arquivo": "academia-tenda-skyfit-lado.jpg",
+      "produto": "tenda inflável",
+      "segmento": "academia, rede de academias, fachada",
+      "descricao": "Tenda inflável 3x3 m azul e vermelha da Sky Fit Academia, vista de lado, foto de estúdio",
+      "legenda": "Tenda 3x3 m que fizemos para a Sky Fit.",
+      "medida": "3x3 m"
+    },
+    {
+      "id": "academia-tenda-skyfit-frente",
+      "arquivo": "academia-tenda-skyfit-frente.jpg",
+      "produto": "tenda inflável",
+      "segmento": "academia, rede de academias, fachada",
+      "descricao": "Tenda inflável 3x3 m azul e vermelha da Sky Fit Academia, vista de frente, foto de estúdio",
+      "legenda": "Tenda 3x3 m que fizemos para a Sky Fit.",
+      "medida": "3x3 m"
+    },
+    {
+      "id": "academia-balao-bluefit",
+      "arquivo": "academia-balao-bluefit.jpg",
+      "produto": "balão rooftop",
+      "segmento": "academia, rede de academias, fachada, telhado",
+      "descricao": "Balão inflável rooftop branco e azul da Bluefit instalado ao ar livre, com casal de alunos na frente",
+      "legenda": "Balão da Bluefit instalado, com os alunos fazendo foto na frente."
+    },
+    {
+      "id": "academia-tenda-domfit",
+      "arquivo": "academia-tenda-domfit.jpg",
+      "produto": "tenda inflável",
+      "segmento": "academia, inauguração, fachada",
+      "descricao": "Tenda inflável verde e preta da Dom Fit na entrada da academia, com equipe uniformizada na frente",
+      "legenda": "Tenda da Dom Fit na entrada da academia, na inauguração."
+    },
+    {
+      "id": "academia-tenda-alpfit-1",
+      "arquivo": "academia-tenda-alpfit-1.jpg",
+      "produto": "tenda inflável",
+      "segmento": "academia, rede de academias, fachada",
+      "descricao": "Tenda inflável 3x3 m roxa da Allp Fit com painel xadrez, frente, foto de estúdio",
+      "legenda": "Tenda 3x3 m da Allp Fit.",
+      "medida": "3x3 m"
+    },
+    {
+      "id": "academia-tenda-alpfit-2",
+      "arquivo": "academia-tenda-alpfit-2.jpg",
+      "produto": "tenda inflável",
+      "segmento": "academia, rede de academias, fachada",
+      "descricao": "Tenda inflável 3x3 m roxa da Allp Fit, vista lateral, foto de estúdio",
+      "legenda": "Tenda 3x3 m da Allp Fit, vista de lado.",
+      "medida": "3x3 m"
+    },
+    {
+      "id": "academia-tenda-sgym-4x4",
+      "arquivo": "academia-tenda-sgym-4x4.jpg",
+      "produto": "tenda inflável",
+      "segmento": "academia, fachada, evento",
+      "descricao": "Tenda inflável 4x4 m laranja e preta da SGYM Academia, foto de estúdio",
+      "legenda": "Tenda 4x4 m que fizemos para a SGYM Academia.",
+      "medida": "4x4 m"
+    },
+    {
+      "id": "academia-tenda-idn-labs-vulkanus",
+      "arquivo": "academia-tenda-idn-labs-vulkanus.jpg",
+      "produto": "tenda inflável",
+      "segmento": "suplementos, indústria de suplementos, evento fitness",
+      "descricao": "Tenda inflável 3x3 m preta da IDN Labs com Vulkanus, foto de estúdio",
+      "legenda": "Tenda 3x3 m da IDN Labs (Vulkanus), para eventos fitness.",
+      "medida": "3x3 m"
+    },
+    {
+      "id": "academia-tenda-max-titanium-fitness",
+      "arquivo": "academia-tenda-max-titanium-fitness.jpg",
+      "produto": "tenda inflável",
+      "segmento": "suplementos, academia, evento fitness, fachada",
+      "descricao": "Tenda inflável vermelha da Max Titanium na frente da academia Panobianco, com motos ao lado",
+      "legenda": "Tenda da Max Titanium na frente de uma academia parceira."
+    },
+    {
+      "id": "academia-tenda-maisfit",
+      "arquivo": "academia-tenda-maisfit.jpg",
+      "produto": "tenda inflável",
+      "segmento": "academia, fachada, loja de rua",
+      "descricao": "Tenda inflável laranja da +Fit na entrada da academia, fachada cinza com carros na frente",
+      "legenda": "Tenda da +Fit na entrada da academia."
+    },
+    {
+      "id": "academia-evento-inauguracao-domfit",
+      "arquivo": "academia-evento-inauguracao-domfit.jpg",
+      "produto": "tenda inflável",
+      "segmento": "academia, inauguração, evento com público",
+      "descricao": "Inauguração da Dom Fit: tenda inflável verde e preta ao fundo e dezenas de alunos reunidos na rua",
+      "legenda": "Inauguração da Dom Fit, com a tenda recebendo o pessoal."
+    },
+    {
+      "id": "totem-up-suplementos",
+      "arquivo": "totem-up-suplementos.jpg",
+      "produto": "totem inflável",
+      "segmento": "loja de suplementos, ponto de venda, interno",
+      "descricao": "Totem inflável verde da Up! Suplementos dentro da loja, com seta 'O melhor preço' e vendedor ao lado",
+      "legenda": "Totem da Up! Suplementos dentro da loja."
+    },
+    {
+      "id": "replica-thor-whey",
+      "arquivo": "replica-thor-whey.jpg",
+      "produto": "réplica de produto",
+      "segmento": "loja de suplementos, marca de suplemento, interno",
+      "descricao": "Réplica inflável do pote Thor Whey (Thor Nutrition) dentro de loja de suplementos, com equipe em volta",
+      "legenda": "Réplica do pote Thor Whey, dentro da loja.",
+      "medida": "2 m"
+    },
+    {
+      "id": "replica-max-titanium-top-whey-3w",
+      "arquivo": "replica-max-titanium-top-whey-3w.jpg",
+      "produto": "réplica de produto",
+      "segmento": "suplementos, ação de marca, externo",
+      "descricao": "Réplica inflável do pote Top Whey 3W (Max Titanium) em área externa, com pessoa ao lado para escala",
+      "legenda": "Réplica do pote Top Whey 3W da Max Titanium.",
+      "medida": "2,5 m"
+    },
+    {
+      "id": "replica-max-titanium-100-whey",
+      "arquivo": "replica-max-titanium-100-whey.jpg",
+      "produto": "réplica de produto",
+      "segmento": "suplementos, marca de suplemento",
+      "descricao": "Réplica inflável de 2 m do pote 100% Whey (Max Titanium), foto de estúdio",
+      "legenda": "Réplica de 2 m do pote 100% Whey da Max Titanium.",
+      "medida": "2 m"
+    },
+    {
+      "id": "replica-vulcanus-pre-treino",
+      "arquivo": "replica-vulcanus-pre-treino.jpg",
+      "produto": "réplica de produto",
+      "segmento": "suplementos, pré-treino, marca de suplemento",
+      "descricao": "Réplica inflável de 2,5 m do pote Vulkanus pré-treino (IDN Labs), preta e amarela, foto de estúdio",
+      "legenda": "Réplica de 2,5 m do pote Vulkanus.",
+      "medida": "2,5 m"
+    },
+    {
+      "id": "replica-shark-pro-whey",
+      "arquivo": "replica-shark-pro-whey.jpg",
+      "produto": "réplica de produto",
+      "segmento": "suplementos, marca de suplemento",
+      "descricao": "Réplica inflável de 2 m do pote Shark Pro 100% Whey Protein, foto de estúdio",
+      "legenda": "Réplica de 2 m do pote Shark Pro Whey.",
+      "medida": "2 m"
+    },
+    {
+      "id": "replica-max-titanium-dentro-loja",
+      "arquivo": "replica-max-titanium-dentro-loja.jpg",
+      "produto": "réplica de produto",
+      "segmento": "loja de suplementos, interno, ação promocional",
+      "descricao": "Réplica inflável do pote Top Whey 3W (Max Titanium) dentro de loja, em ação com clientes e bandeirinhas",
+      "legenda": "Réplica da Max Titanium dentro da loja, durante uma ação."
+    },
+    {
+      "id": "portal-max-titanium-evento",
+      "arquivo": "portal-max-titanium-evento.jpg",
+      "produto": "portal inflável",
+      "segmento": "suplementos, evento esportivo, pódio, noturno",
+      "descricao": "Portal inflável preto e vermelho da Max Titanium em evento esportivo noturno, usado como pódio de campeões",
+      "legenda": "Portal da Max Titanium em evento esportivo, como pódio."
+    },
+    {
+      "id": "replica-delicious-whey-entrada-loja",
+      "arquivo": "replica-delicious-whey-entrada-loja.jpg",
+      "produto": "réplica de produto",
+      "segmento": "loja de suplementos, fachada",
+      "descricao": "Réplica inflável do pote Delicious Whey (Body Action) na entrada da loja Natural Light, com promotora",
+      "legenda": "Réplica do pote Delicious Whey na entrada da loja."
+    },
+    {
+      "id": "replica-max-titanium-fachada-carneiro",
+      "arquivo": "replica-max-titanium-fachada-carneiro.jpg",
+      "produto": "réplica de produto",
+      "segmento": "loja de suplementos, fachada",
+      "descricao": "Réplica inflável do pote Top Whey 3W (Max Titanium) na fachada da Carneiro Suplementos",
+      "legenda": "Réplica da Max Titanium na fachada da Carneiro Suplementos."
+    },
+    {
+      "id": "replica-max-titanium-acao-loja",
+      "arquivo": "replica-max-titanium-acao-loja.jpg",
+      "produto": "réplica de produto",
+      "segmento": "loja de suplementos, ação promocional, externo",
+      "descricao": "Réplica inflável do pote Top Whey 3W (Max Titanium) em ação de rua na frente de loja, com degustação",
+      "legenda": "Réplica da Max Titanium em ação na frente da loja."
+    },
+    {
+      "id": "replica-delicious-whey-natural-light",
+      "arquivo": "replica-delicious-whey-natural-light.jpg",
+      "produto": "réplica de produto",
+      "segmento": "loja de suplementos, moda fitness, fachada",
+      "descricao": "Réplica inflável do pote Delicious Whey na porta da loja Natural Light (suplementos e moda fitness)",
+      "legenda": "Réplica do pote Delicious Whey na porta da Natural Light."
     }
   ]
 }
