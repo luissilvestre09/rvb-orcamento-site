@@ -393,6 +393,7 @@ async function carregarConversas() {
   const { data, error } = await sb.from('wa_conversas').select('*').order('ultima_msg_em', { ascending: false, nullsFirst: false }).limit(300);
   if (error) { $('#cLista').innerHTML = `<div class="erro small" style="padding:12px">${esc(error.message)}</div>`; return; }
   CONVS = data || [];
+  if (CONV) { const n = CONVS.find(c => c.telefone === CONV.telefone); if (n) { CONV = n; renderModo(); } }
   if (!NUMS.length) { const { data: n } = await sb.from('wa_numeros').select('*'); NUMS = n || []; }
   renderConversas(); abrirPendente();
   if (!convCanal) {
@@ -426,6 +427,12 @@ $('#nEnviar').addEventListener('click', async () => {
   setTimeout(async () => { $('#cNova').hidden = true; await carregarConversas(); abrirConversa(r.telefone); }, 800);
 });
 $('#cVoltar').addEventListener('click', () => { document.querySelector('.chat').classList.remove('aberta'); });
+function renderModo() {
+  // o modo pode mudar no servidor (agente passa para humano) enquanto a conversa está aberta: os botões seguem o banco, não o clique
+  if (!CONV) return;
+  $('#cFerr').querySelectorAll('[data-modo]').forEach(b => b.classList.toggle('on', b.dataset.modo === CONV.modo));
+  const par = $('#cDados').querySelector('.parou'); if (par) par.innerHTML = CONV.motivo_transbordo ? `<b>Agente parou porque:</b> ${esc(CONV.motivo_transbordo)}` : '';
+}
 async function abrirConversa(t) {
   CONV = CONVS.find(c => c.telefone === t); if (!CONV) return;
   document.querySelector('.chat').classList.add('aberta');
@@ -437,7 +444,7 @@ async function abrirConversa(t) {
       ${CONV.pipedrive_deal_id ? ` · <a href="${PD}/deal/${CONV.pipedrive_deal_id}" target="_blank" rel="noopener">negócio</a>` : CONV.pipedrive_person_id ? ` · <a href="${PD}/person/${CONV.pipedrive_person_id}" target="_blank" rel="noopener">pessoa</a>` : ''}</div>`;
   $('#cFerr').innerHTML = `<button class="btn" id="kAbrir">🎯 Coach</button>${dadosTxt ? `<button class="btn" id="dAbrir">📋 Briefing</button>` : ''}${PODE_APAGAR ? `<button class="btn" id="cApagar" title="Apaga a conversa do painel (não mexe no Pipedrive nem no WhatsApp do cliente)">🗑</button>` : ''}<div class="modo"><span class="muted">Quem atende:</span>${['agente', 'humano', 'pausado'].map(m => `<button data-modo="${m}" class="${CONV.modo === m ? 'on' : ''}">${m === 'agente' ? '🤖 Agente' : m === 'humano' ? '👤 Humano' : '⏸ Pausado'}</button>`).join('')}</div>`;
   $('#cFerr').hidden = false;
-  $('#cDados').innerHTML = dadosTxt + (CONV.motivo_transbordo ? `<div><b>Agente parou porque:</b> ${esc(CONV.motivo_transbordo)}</div>` : '');
+  $('#cDados').innerHTML = dadosTxt + `<div class="parou">${CONV.motivo_transbordo ? `<b>Agente parou porque:</b> ${esc(CONV.motivo_transbordo)}` : ''}</div>`;
   $('#cDados').hidden = true;
   if (dadosTxt) $('#dAbrir').addEventListener('click', () => { $('#cDados').hidden = !$('#cDados').hidden; });
   $('#cVoltar2').addEventListener('click', () => document.querySelector('.chat').classList.remove('aberta'));
