@@ -8,6 +8,166 @@
       "segmento": "ótica, varejo óptico, loja de rua",
       "descricao": "Tenda inflável azul na entrada da ótica Instituto +Visão, com a cabeça do mascote de óculos no topo e a marca na testeira; montada na calçada, na frente da loja",
       "legenda": "Essa é uma tenda que fizemos para a Instituto +Visão, montada na entrada da loja."
+    },
+    {
+      "id": "tenda-droga-raia",
+      "arquivo": "tenda-droga-raia.jpg",
+      "produto": "tenda inflável",
+      "segmento": "farmácia, drogaria, rede de varejo",
+      "descricao": "Tenda inflável azul da Droga Raia na frente da farmácia, testeira branca com a marca, montada no estacionamento da loja",
+      "legenda": "Tenda que fizemos para a Droga Raia, na frente da loja."
+    },
+    {
+      "id": "tenda-fiat",
+      "arquivo": "tenda-fiat.jpg",
+      "produto": "tenda inflável",
+      "segmento": "concessionária, automotivo, veículos",
+      "descricao": "Tenda inflável vermelha e branca da Fiat no pátio da concessionária, com carro exposto embaixo",
+      "legenda": "Tenda que fizemos para uma concessionária Fiat, com o carro em exposição embaixo."
+    },
+    {
+      "id": "tenda-autofix",
+      "arquivo": "tenda-autofix.jpg",
+      "produto": "tenda inflável, réplica",
+      "segmento": "autopeças, automotivo, loja de rua",
+      "descricao": "Tenda inflável azul e vermelha da Autofix na frente da loja de autopeças, com réplica inflável de lata de produto ao lado",
+      "legenda": "Tenda da Autofix com a réplica do produto do lado, na frente da loja de autopeças."
+    },
+    {
+      "id": "tenda-rei-do-oleo",
+      "arquivo": "tenda-rei-do-oleo.jpg",
+      "produto": "tenda inflável",
+      "segmento": "troca de óleo, automotivo, centro automotivo",
+      "descricao": "Tenda inflável preta com detalhes dourados do Rei do Óleo na frente do centro de troca de óleo, foto noturna",
+      "legenda": "Tenda que fizemos para o Rei do Óleo, na frente do centro automotivo."
+    },
+    {
+      "id": "tenda-falcone",
+      "arquivo": "tenda-falcone.jpg",
+      "produto": "tenda inflável",
+      "segmento": "automotivo, estética automotiva, loja de rua",
+      "descricao": "Tenda inflável laranja da Falcone na frente da loja, com carro adesivado embaixo",
+      "legenda": "Tenda da Falcone, laranja, com o carro em exposição embaixo."
+    },
+    {
+      "id": "tenda-wd40-autozone",
+      "arquivo": "tenda-wd40-autozone.jpg",
+      "produto": "tenda inflável, réplica",
+      "segmento": "autopeças, varejo automotivo, ação de marca em loja",
+      "descricao": "Tenda inflável azul e amarela da WD-40 no estacionamento da AutoZone, com réplica gigante da lata WD-40 ao lado",
+      "legenda": "Ação da WD-40 na AutoZone: tenda na entrada e a réplica gigante da lata ao lado."
+    },
+    {
+      "id": "tenda-ortobom",
+      "arquivo": "tenda-ortobom.jpg",
+      "produto": "tenda inflável",
+      "segmento": "loja de colchões, varejo, móveis",
+      "descricao": "Tenda inflável azul da Ortobom na frente da loja, com colchão exposto embaixo e cartaz de saldão",
+      "legenda": "Tenda da Ortobom na frente da loja, com o colchão do saldão exposto embaixo."
+    },
+    {
+      "id": "tenda-arthur-imoveis",
+      "arquivo": "tenda-arthur-imoveis.jpg",
+      "produto": "tenda inflável",
+      "segmento": "imobiliária, lançamento imobiliário, plantão de vendas",
+      "descricao": "Tenda inflável amarela com testeira branca da Arthur Imóveis na calçada, em frente ao plantão, com wind banners ao lado",
+      "legenda": "Tenda da Arthur Imóveis no plantão de vendas, com wind banners do lado."
+    },
+    {
+      "id": "tenda-leroy-merlin",
+      "arquivo": "tenda-leroy-merlin.jpg",
+      "produto": "tenda inflável",
+      "segmento": "home center, material de construção, varejo grande",
+      "descricao": "Tenda inflável roxa do programa de fidelidade Leroy Merlin Com Vc, na entrada da loja, com balcão de atendimento embaixo",
+      "legenda": "Tenda que fizemos para a Leroy Merlin, do programa de fidelidade, na entrada da loja."
+    },
+    {
+      "id": "tenda-simonassi",
+      "arquivo": "tenda-simonassi.jpg",
+      "produto": "tenda inflável",
+      "segmento": "material de construção, telhas, loja de construção, distribuidora",
+      "descricao": "Tenda inflável azul e branca da Simonassi Telhas em frente à loja Disensa, com equipe e produtos expostos embaixo",
+      "legenda": "Tenda da Simonassi Telhas na frente da loja de construção, com a equipe atendendo embaixo."
+    },
+    {
+      "id": "tenda-terra-santa",
+      "arquivo": "tenda-terra-santa.jpg",
+      "produto": "tenda inflável",
+      "segmento": "atacarejo, supermercado, varejo alimentar",
+      "descricao": "Tenda inflável vermelha com testeira branca do Atacarejo Terra Santa na entrada da loja, com clientes em volta",
+      "legenda": "Tenda do Atacarejo Terra Santa na entrada da loja."
+    },
+    {
+      "id": "tenda-tintas-veloz",
+      "arquivo": "tenda-tintas-veloz.jpg",
+      "produto": "tenda inflável",
+      "segmento": "loja de tintas, ação de degustação, lançamento de produto",
+      "descricao": "Tenda inflável azul com testeira branca da Tintas Veloz, usada em ação dentro da loja, com mesa de produtos e equipe embaixo",
+      "legenda": "Tenda da Tintas Veloz em ação de lançamento, com a mesa de produtos embaixo."
+    },
+    {
+      "id": "tenda-lavor",
+      "arquivo": "tenda-lavor.jpg",
+      "produto": "tenda inflável",
+      "segmento": "máquinas de limpeza, loja de equipamentos, loja de rua",
+      "descricao": "Tenda inflável verde-petróleo da Lavor na frente da loja de máquinas de limpeza, com lavadora exposta embaixo",
+      "legenda": "Tenda da Lavor na frente da loja, com a máquina em exposição embaixo."
+    },
+    {
+      "id": "tenda-trapp",
+      "arquivo": "tenda-trapp.jpg",
+      "produto": "tenda inflável",
+      "segmento": "jardinagem, ferramentas e máquinas, loja de equipamentos",
+      "descricao": "Tenda inflável preta com testeira branca da Trapp na frente da loja, com máquinas de jardinagem expostas embaixo e balões",
+      "legenda": "Tenda da Trapp na frente da loja, com os equipamentos de jardinagem expostos embaixo."
+    },
+    {
+      "id": "tenda-macar-nautica",
+      "arquivo": "tenda-macar-nautica.jpg",
+      "produto": "tenda inflável",
+      "segmento": "náutica, escola náutica, concessionária de barcos",
+      "descricao": "Tenda inflável azul-marinho da Macar Náutica na frente da loja, com a marca em todas as colunas",
+      "legenda": "Tenda da Macar Náutica na frente da loja."
+    },
+    {
+      "id": "tenda-cartao-de-todos",
+      "arquivo": "tenda-cartao-de-todos.jpg",
+      "produto": "tenda inflável",
+      "segmento": "benefícios, saúde, serviços, ponto de venda de rua",
+      "descricao": "Tenda inflável verde do Cartão de Todos com balcão de atendimento e equipe uniformizada embaixo, em frente a uma drogaria",
+      "legenda": "Tenda do Cartão de Todos com balcão e equipe atendendo embaixo, em ponto de rua."
+    },
+    {
+      "id": "portal-6x4-oggi-corrida-verde-pessoa",
+      "arquivo": "portal-6x4-oggi-corrida-verde-pessoa.jpg",
+      "produto": "portal inflável",
+      "segmento": "corrida, ciclismo, evento esportivo, largada e chegada",
+      "descricao": "Portal inflável verde de 6x4 m da Oggi em prova de ciclismo, ciclista passando embaixo, colunas com redes sociais",
+      "legenda": "Portal de 6x4 m que fizemos para a Oggi, na largada de uma prova de ciclismo."
+    },
+    {
+      "id": "chuteagol-padrao-cmpc-evento-verde-pessoa",
+      "arquivo": "chuteagol-padrao-cmpc-evento-verde-pessoa.jpg",
+      "produto": "chute a gol inflável",
+      "segmento": "evento, ativação de marca, praia, ação com público",
+      "descricao": "Chute a gol inflável verde da CMPC em evento na praia, com crianças chutando e mascote na lona",
+      "legenda": "Chute a gol inflável que fizemos para a CMPC, em ação na praia."
+    },
+    {
+      "id": "replica-3m-schweppes-bebida-verde-pessoa",
+      "arquivo": "replica-3m-schweppes-bebida-verde-pessoa.jpg",
+      "produto": "réplica de produto",
+      "segmento": "bebidas, ativação em ponto de venda, loja de conveniência",
+      "descricao": "Réplica inflável de 3 m da lata Schweppes Mixed Vodka Citrus na frente da loja de conveniência BR Mania, com promotora ao lado",
+      "legenda": "Réplica de 3 m da lata Schweppes, em ativação na frente da loja de conveniência."
+    },
+    {
+      "id": "replica-2m-gamalopes-alimento-bege-pessoa",
+      "arquivo": "replica-2m-gamalopes-alimento-bege-pessoa.jpg",
+      "produto": "réplica de produto, tenda inflável, balão",
+      "segmento": "alimentos, feijão, atacado, feira",
+      "descricao": "Kit inflável da Gama Lopes: réplica de 2 m do pacote de feijão, tenda amarela e verde e balão rooftop com a marca, em ação de ponto de venda",
+      "legenda": "Kit que fizemos para a Gama Lopes: réplica do pacote, tenda e balão, tudo junto na ação."
     }
   ]
 }

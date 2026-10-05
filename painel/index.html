@@ -467,7 +467,8 @@ function adicionarMsg(m) {
   const corpo = m.tipo === 'audio' ? '🎤 ' + (m.texto || '(áudio)') : m.tipo === 'image' ? (m.direcao === 'out' ? (m.texto || '🖼 imagem') : '🖼 ' + (m.texto || '(imagem)')) : m.tipo === 'document' ? (m.direcao === 'out' ? (m.texto || '📎 documento') : '📎 ' + (m.texto || '(documento)')) : (m.texto || '[' + m.tipo + ']');
   const st = m.direcao === 'out' && m.autor !== 'sistema' ? (m.status === 'read' ? ' ✓✓' : m.status === 'delivered' ? ' ✓✓' : m.status === 'failed' ? ' ⚠ ' + esc(m.erro || 'falhou') : ' ✓') : '';
   const el = document.createElement('div'); el.className = 'm ' + cls;
-  el.innerHTML = (quem && cls !== 'sis' ? `<div class="q">${esc(quem)}</div>` : '') + esc(corpo) + `<div class="h">${hora(m.criado_em)}${st}</div>`;
+  const img = m.tipo === 'image' && /^https:\/\//.test(m.midia_id || '') ? `<a href="${esc(m.midia_id)}" target="_blank" rel="noopener"><img src="${esc(m.midia_id)}" alt="" style="max-width:240px;max-height:300px;border-radius:8px;display:block;margin-bottom:4px"></a>` : '';
+  el.innerHTML = (quem && cls !== 'sis' ? `<div class="q">${esc(quem)}</div>` : '') + img + esc(corpo) + `<div class="h">${hora(m.criado_em)}${st}</div>`;
   box.appendChild(el); box.scrollTop = box.scrollHeight;
 }
 async function enviarMsg() {
