@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Painel RVB</title>
+<link rel="icon" type="image/png" sizes="192x192" href="icone-192.png">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1533A3">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -648,6 +649,15 @@ async function renderConsultoras() {
     const r = await chamarFn({ acao: 'templates', phone_id: id, criar_padrao: true });
     ok.textContent = r.ok ? (r.templates.length ? r.templates.map(t => `${t.nome}: ${t.status}`).join(' · ') : 'nenhum template') : ('Não deu: ' + (r.erro || ''));
   }));
+  // situação do token da Meta (vence quando?) — aparece embaixo da lista de números
+  (async () => {
+    const el = document.createElement('div'); el.className = 'muted small'; el.style.marginTop = '6px'; el.textContent = 'Token da Meta: conferindo…'; $('#numeros').appendChild(el);
+    const r = await chamarFn({ acao: 'token' });
+    if (!r.ok) { el.textContent = 'Token da Meta: não deu para conferir (' + (r.erro || '') + ')'; return; }
+    const dias = r.vence ? Math.floor((new Date(r.vence) - Date.now()) / 864e5) : null;
+    if (!r.valido) { el.innerHTML = '<b style="color:#b42318">🔴 Token da Meta inválido</b> — ' + esc(r.motivo || '') + '. Gerar um novo (estendido) e salvar em WHATSAPP_TOKEN.'; return; }
+    el.innerHTML = (dias !== null && dias <= 7 ? '🟠' : '🟢') + ' Token da Meta válido' + (r.vence ? ` · vence em ${esc(new Date(r.vence).toLocaleDateString('pt-BR'))} (${dias} dia${dias === 1 ? '' : 's'})` : ' · sem vencimento (usuário do sistema)') + (r.tipo ? ` · tipo ${esc(r.tipo)}` : '');
+  })();
   const { data: cfgA } = await sb.from('config').select('valor').eq('chave', 'abre_chat').maybeSingle();
   const selA = $('#abreChat');
   selA.innerHTML = '<option value="">a consultora do rodízio</option>' + CONS.filter(c => c.id !== 'central' && c.ativa).map(c => `<option value="${esc(c.id)}" ${cfgA && cfgA.valor === c.id ? 'selected' : ''}>${esc(c.nome)}</option>`).join('');
