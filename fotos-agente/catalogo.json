@@ -1,0 +1,13 @@
+{
+  "base": "https://atendimento.rvb.com.br/fotos-agente/",
+  "fotos": [
+    {
+      "id": "tenda-otica-instituto-visao",
+      "arquivo": "tenda-otica-instituto-visao.jpg",
+      "produto": "tenda inflável",
+      "segmento": "ótica, varejo óptico, loja de rua",
+      "descricao": "Tenda inflável azul na entrada da ótica Instituto +Visão, com a cabeça do mascote de óculos no topo e a marca na testeira; montada na calçada, na frente da loja",
+      "legenda": "Essa é uma tenda que fizemos para a Instituto +Visão, montada na entrada da loja."
+    }
+  ]
+}
