@@ -118,6 +118,9 @@
   h3 { margin:18px 0 8px; font-size:16px; }
   @media (max-width:700px) { .top-in { flex-wrap:wrap; } th.oc, td.oc { display:none; } .barra { grid-template-columns:100px 1fr 40px; } }
 .apagar{margin-top:18px;padding-top:12px;border-top:1px solid #eee}.btn-apagar{background:#fff;border:1px solid #c33;color:#c33;border-radius:6px;padding:5px 10px;cursor:pointer;font:inherit;font-size:13px}.btn-apagar.sim{background:#c33;color:#fff}
+.previas{padding:10px 12px;border-top:1px solid #e3e8f0;background:#fffbe6}
+.previa{display:flex;gap:12px;align-items:flex-start;margin-bottom:10px}.previa img{width:140px;height:140px;object-fit:cover;border-radius:8px;border:1px solid #e3e8f0}
+.previa .txt{flex:1;font-size:13px}.previa .acoes{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -181,6 +184,7 @@
       <div class="thread" id="cThread">
         <div class="thead" id="cHead"><button class="btn voltar" id="cVoltar">‹</button><div class="muted">Escolha uma conversa</div></div>
         <div class="msgs" id="cMsgs"></div>
+        <div class="previas" id="cPrevias" hidden></div>
         <div class="dados" id="cDados" hidden></div>
         <div class="coach" id="coach" hidden>
           <div class="coach-bar"><b>🎯 Coach</b><button class="btn" id="kAnalisar">Analisar</button><button class="btn" id="kRascunho">Rascunho</button><input id="kPergunta" placeholder="Pergunta ao coach (ex.: como respondo o desconto?)"><button class="btn" id="kIr">Ir</button><button class="btn" id="kFechar">×</button></div>
@@ -400,6 +404,7 @@ async function carregarConversas() {
   if (!convCanal) {
     convCanal = sb.channel('wa-painel')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'wa_conversas' }, () => carregarConversas())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'wa_previas' }, (p) => { const t = (p.new && p.new.telefone) || (p.old && p.old.telefone); if (CONV && t === CONV.telefone) carregarPrevias(CONV.telefone); })
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'wa_mensagens' }, (p) => { if (CONV && p.new.telefone === CONV.telefone) { adicionarMsg(p.new); if (p.new.direcao === 'in') chamarFn({ acao: 'lida', telefone: CONV.telefone }); } })
       .subscribe();
   }
@@ -463,10 +468,58 @@ async function abrirConversa(t) {
   }));
   const { data: msgs } = await sb.from('wa_mensagens').select('*').eq('telefone', t).order('criado_em').limit(500);
   $('#cMsgs').innerHTML = ''; (msgs || []).forEach(adicionarMsg);
+  carregarPrevias(t);
   $('#cCompor').hidden = false; $('#cErro').textContent = '';
   const janelaAberta = CONV.ultima_do_cliente_em && (Date.now() - new Date(CONV.ultima_do_cliente_em).getTime()) < 24 * 3600 * 1000;
   $('#cTexto').placeholder = janelaAberta ? 'Escreva como no WhatsApp… (Enter envia, Shift+Enter quebra linha)' : 'Janela de 24h fechada: só dá para reabrir com template aprovado.';
   if (CONV.nao_lida) { chamarFn({ acao: 'lida', telefone: t }); CONV.nao_lida = false; renderConversas(); }
+}
+/* ---------- prévias visuais (geradas por IA; a equipe aprova antes de ir ao cliente) ---------- */
+async function carregarPrevias(t) {
+  const box = $('#cPrevias');
+  const { data } = await sb.from('wa_previas').select('*').eq('telefone', t).in('status', ['gerando', 'pendente', 'erro']).order('criado_em', { ascending: false }).limit(3);
+  const lista = data || [];
+  if (!lista.length) { box.hidden = true; box.innerHTML = ''; return; }
+  box.hidden = false;
+  box.innerHTML = lista.map(p => `<div class="previa" data-id="${p.id}">
+      ${p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener"><img src="${esc(p.url)}" alt=""></a>` : '<div class="muted small" style="width:140px">gerando…</div>'}
+      <div class="txt"><b>🎨 Prévia visual ${p.status === 'gerando' ? '(gerando)' : p.status === 'erro' ? '(falhou)' : 'pronta para aprovar'}</b><div class="muted small">${esc(p.descricao || '')}</div>
+        ${p.status === 'erro' ? `<div class="erro small">${esc(p.erro || '')}</div>` : ''}
+        ${p.status === 'pendente' ? `<div class="acoes"><button class="btn primario" data-pv-enviar>Enviar ao cliente</button><button class="btn" data-pv-descartar>Descartar</button></div><div class="muted small" style="margin-top:4px">Vai com a marca "prévia conceitual" e a legenda explicando que o layout final vem depois.</div>` : ''}
+      </div></div>`).join('');
+  box.querySelectorAll('[data-pv-descartar]').forEach(b => b.addEventListener('click', async () => {
+    const id = b.closest('.previa').dataset.id; b.disabled = true;
+    const r = await chamarFn({ acao: 'previa', telefone: t, id, decisao: 'descartar' });
+    if (!r.ok) $('#cErro').textContent = r.erro || 'não deu'; carregarPrevias(t);
+  }));
+  box.querySelectorAll('[data-pv-enviar]').forEach(b => b.addEventListener('click', async () => {
+    const el = b.closest('.previa'); const id = el.dataset.id; const url = el.querySelector('img')?.src; if (!url) return;
+    b.disabled = true; $('#cErro').textContent = 'Preparando a imagem…';
+    try {
+      const base64 = await marcarPrevia(url);
+      const r = await chamarFn({ acao: 'previa', telefone: t, id, decisao: 'enviar', base64 });
+      $('#cErro').textContent = r.ok ? '' : (r.erro || 'não deu');
+    } catch (e) { $('#cErro').textContent = 'Não consegui montar a imagem: ' + e; }
+    b.disabled = false; carregarPrevias(t);
+  }));
+}
+/* desenha a marca d'água (faixa inferior + logo) e devolve JPEG base64 */
+async function marcarPrevia(url) {
+  const img = await new Promise((ok, erro) => { const i = new Image(); i.crossOrigin = 'anonymous'; i.onload = () => ok(i); i.onerror = () => erro('imagem não carregou'); i.src = url + (url.includes('?') ? '&' : '?') + 'cb=' + Date.now(); });
+  const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight; const g = c.getContext('2d');
+  g.drawImage(img, 0, 0);
+  const h = Math.round(c.height * 0.085), y = c.height - h;
+  g.fillStyle = 'rgba(16,24,40,0.78)'; g.fillRect(0, y, c.width, h);
+  const fs = Math.round(h * 0.34); g.fillStyle = '#fff'; g.font = `600 ${fs}px Poppins, Arial, sans-serif`; g.textBaseline = 'middle';
+  g.fillText('PRÉVIA CONCEITUAL · RVB Balões', Math.round(c.width * 0.03), y + h * 0.36);
+  g.font = `${Math.round(fs * 0.72)}px Poppins, Arial, sans-serif`; g.fillStyle = 'rgba(255,255,255,0.85)';
+  g.fillText('Imagem ilustrativa gerada por IA. O layout final é feito pela nossa equipe e aprovado por você antes da produção.', Math.round(c.width * 0.03), y + h * 0.72);
+  try {
+    const logo = await new Promise((ok, erro) => { const i = new Image(); i.crossOrigin = 'anonymous'; i.onload = () => ok(i); i.onerror = erro; i.src = 'icone-192.png'; });
+    const lh = Math.round(h * 0.8), lw = Math.round(lh * (logo.naturalWidth / logo.naturalHeight));
+    g.drawImage(logo, c.width - lw - Math.round(c.width * 0.02), y + Math.round(h * 0.1), lw, lh);
+  } catch (e) { /* sem logo, segue */ }
+  return c.toDataURL('image/jpeg', 0.9).split(',')[1];
 }
 function adicionarMsg(m) {
   const box = $('#cMsgs');
