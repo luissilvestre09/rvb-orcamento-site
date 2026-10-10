@@ -236,7 +236,7 @@ const fone = (d) => { d = String(d || '').replace(/\D/g, ''); return d.length ==
 const dt = (s) => s ? new Date(s).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }) : '';
 const PERGUNTAS = { 0:'abriu', 1:'nome (parou no WhatsApp)', 2:'WhatsApp/e-mail (parou na empresa)', 3:'empresa (parou no objetivo)', 4:'objetivo (parou no prazo)', 5:'prazo (parou no CNPJ)', 6:'CNPJ (parou na cidade)', 7:'cidade (parou no resumo)', 8:'completo' };
 const PD = 'https://rvb.pipedrive.com';
-let CONS = [], LEADS = [], DEPS = [], PODE_APAGAR = false;
+let CONS = [], LEADS = [], DEPS = [], PODE_APAGAR = false, SOU_LUIS = false;
 const APAGADORES = ['luis@rvb.com.br', 'silvestre@rvb.com.br'];
 
 /* ---------- login ---------- */
@@ -254,6 +254,7 @@ sb.auth.onAuthStateChange((_e, sess) => {
   $('#tabs').hidden = !ok; $('#sair').hidden = !ok; if (!ok) $('#avisos').hidden = true;
   $('#who').textContent = ok ? sess.user.email : '';
   PODE_APAGAR = ok && APAGADORES.includes((sess.user.email || '').toLowerCase());
+  SOU_LUIS = ok && /^(luis|silvestre)@rvb\.com\.br$/i.test(sess.user.email || '');
   if (ok) { mostrar(location.hash.startsWith('#conversas') ? 'conversas' : 'leads'); carregarTudo(); avisosEstado().catch(e => console.warn('avisos:', e)); } else { document.querySelectorAll('.painel').forEach(p => p.classList.toggle('on', p.id === 'p-login')); }
 });
 
@@ -340,7 +341,7 @@ function abrirLead(id) {
     ['Produto', L.produto_nome + (L.detalhe ? ' (' + L.detalhe + ')' : '')], ['Objetivo', L.objetivo_label], ['Quando precisa', (L.quando_label || '') + (L.data_evento ? ' · ' + L.data_evento.split('-').reverse().join('/') : '')],
     ['Cidade', L.cidade_uso + (L.cidade_cnpj && L.cidade_cnpj !== L.cidade_uso ? ' (CNPJ em ' + L.cidade_cnpj + ')' : '')],
     ['CNPJ', L.cnpj ? L.cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5') + (R.ie ? (R.ie.tem ? ' · IE ' + (R.ie.ativa ? 'ativa' : 'não ativa') + ' (' + R.ie.uf + ')' : ' · sem IE') : '') + (R.porte ? ' · ' + R.porte : '') : ''],
-    ['Consultor', (cons ? cons.nome : L.consultora_id || '') + (L.distribuicao ? ' · ' + L.distribuicao : '')],
+    ['Consultor', (cons ? cons.nome : L.consultora_id || '') + (L.distribuicao && SOU_LUIS ? ' · ' + L.distribuicao : '')],   // motivo da distribuição (rodízio) só o Luis vê
     ['Origem', `<a href="${esc(L.origem_url && /^https?:\/\//.test(L.origem_url) ? L.origem_url : 'https://rvb.com.br' + (L.origem_pagina || '/'))}" target="_blank" rel="noopener">${esc(L.origem_pagina && L.origem_pagina !== '/' ? L.origem_pagina : 'página inicial')}</a>` + (L.utms && Object.keys(L.utms).length ? ' · ' + esc(Object.entries(L.utms).map(([k, v]) => k.replace('utm_', '') + '=' + v).join(' ')) : '')],
     ['Score', Q.potencial ? Q.potencial + (Q.potencial_motivo ? ' · ' + Q.potencial_motivo : '') : ''],
     ['Perfil', Q.perfil ? Q.perfil + (Q.rede ? ' · REDE: ' + Q.unidades : '') : ''],
