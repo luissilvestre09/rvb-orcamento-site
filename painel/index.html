@@ -163,6 +163,7 @@
         <option value="resgatado">Resgatados (Caixa de Leads)</option>
         <option value="contato">Contatos (departamentos)</option>
         <option value="repetido">Repetidos (mesmo cliente)</option>
+        <option value="fora_catalogo">Fora do catálogo (não é inflável)</option>
       </select>
       <select id="fCons"><option value="">Todos os consultores</option></select>
       <select id="fDias"><option value="hoje">Hoje</option><option value="ontem">Ontem</option><option value="30" selected>30 dias</option><option value="90">90 dias</option><option value="365">1 ano</option></select>
@@ -298,6 +299,7 @@ function statusDe(L) {
   if (L.status === 'completo') return ['completo', 'Completo', 'ok'];
   if (L.status === 'resgatado') return ['resgatado', 'Resgatado', 'resg'];
   if (L.status === 'repetido') return ['repetido', 'Repetido · já tinha negócio', 'rep'];
+  if (L.status === 'fora_catalogo') return ['fora_catalogo', 'Fora do catálogo · ' + (L.detalhe || ''), 'rep'];
   return ['parcial', 'Incompleto · ' + (PERGUNTAS[L.passo] || 'passo ' + L.passo), 'parcial'];
 }
 function filtrados() {
@@ -313,7 +315,7 @@ function filtrados() {
 function renderLeads() {
   const rows = filtrados();
   $('#cont').textContent = rows.length + ' de ' + LEADS.length;
-  const tot = LEADS.filter(L => L.tipo !== 'contato' && L.status !== 'repetido'), comp = tot.filter(L => L.status === 'completo');
+  const tot = LEADS.filter(L => L.tipo !== 'contato' && L.status !== 'repetido' && L.status !== 'fora_catalogo'), comp = tot.filter(L => L.status === 'completo');
   $('#kpis').innerHTML = kpi(tot.length, 'orçamentos iniciados') + kpi(comp.length, 'completos') + kpi(tot.length ? Math.round(comp.length / tot.length * 100) + '%' : '–', 'taxa de conclusão') +
     kpi(LEADS.filter(L => L.status === 'resgatado').length, 'resgatados') + kpi(LEADS.filter(L => L.tipo === 'contato').length, 'contatos');
   $('#tb').innerHTML = rows.map(L => {
