@@ -851,7 +851,7 @@
     let nome = firstName(L.nome);
 
     setStep(2);
-    await bot('Prazer, <b>' + esc(nome) + '</b>! Qual é o seu WhatsApp? É por ele que a gente te chama.');
+    await bot('Prazer, <b>' + esc(nome) + '</b>! Qual é o seu WhatsApp? É por ele que continuamos o atendimento.');
     for (;;) {
       DDI = '55';
       const w = await askText({ label: 'WhatsApp', placeholder: '(11) 99999-9999', type: 'tel', inputmode: 'numeric', autocomplete: 'tel-national', mask: maskFone, validate: validFone,
@@ -904,7 +904,7 @@
       D = { c: C, motivo: (rs && rs.motivo) || ('pessoa já na base → ' + C.nome) }; L.dist = D;
       await bot(ehCliente
         ? 'Que bom falar com você de novo, <b>' + esc(nome) + '</b>! Cliente da casa tem passagem rápida por aqui.'
-        : 'Que bom que você voltou, <b>' + esc(nome) + '</b>! Vou aproveitar o que a gente já conversou.', 500);
+        : 'Que bom que você voltou, <b>' + esc(nome) + '</b>! Vou aproveitar o que já conversamos.', 500);
     } else if (trocaPara) {
       const anterior = C.nome, artAnt = (C.artigo || 'a') === 'o' ? 'O' : 'A', art = trocaPara.artigo || 'a', pron = art === 'o' ? 'ele' : 'ela';
       await bot(ehCliente
@@ -912,11 +912,11 @@
         : 'Ah, você já conversou com ' + art + ' <b>' + esc(trocaPara.nome) + '</b> aqui na RVB! Vou passar para ' + pron + ' continuar com você.');
       C = trocaPara; D = { c: C, motivo: (rs && rs.motivo) || ('pessoa já na base → ' + C.nome) }; L.dist = D;
       await definirConsultora(C.nome, C.foto || null);
-      await bot('Oi, <b>' + esc(nome) + '</b>! Aqui é ' + (C.artigo || 'a') + ' <b>' + esc(C.nome) + '</b>. ' + (ehCliente ? 'Que bom falar com você de novo! Cliente da casa tem passagem rápida por aqui.' : 'Que bom que você voltou! Vou aproveitar o que a gente já conversou.') + ' ' + artAnt + ' ' + esc(anterior) + ' me passou o que você já contou, sigo daqui.', 700);
+      await bot('Oi, <b>' + esc(nome) + '</b>! Aqui é ' + (C.artigo || 'a') + ' <b>' + esc(C.nome) + '</b>. ' + (ehCliente ? 'Que bom falar com você de novo! Cliente da casa tem passagem rápida por aqui.' : 'Que bom que você voltou! Vou aproveitar o que já conversamos.') + ' ' + artAnt + ' ' + esc(anterior) + ' me passou o que você já contou, sigo daqui.', 700);
     } else if (conhecido) {
       await bot(ehCliente
         ? 'Que bom falar com você de novo, <b>' + esc(nome) + '</b>! Cliente da casa tem passagem rápida por aqui.'
-        : 'Que bom que você voltou, <b>' + esc(nome) + '</b>! A gente já conversou sobre um projeto antes, vou aproveitar o que já temos.', 500);
+        : 'Que bom que você voltou, <b>' + esc(nome) + '</b>! Já conversamos sobre um projeto antes, vou aproveitar o que já temos.', 500);
     }
 
 
@@ -947,12 +947,12 @@
       user(L.detalhe); salvar(4);
       const fora = foraDoCatalogo(L.detalhe);
       if (fora) {   // bexiga, balão de festa, locação, brinquedo…: avisa na hora, sem gastar consultora (regra do Luis, 11/10/2026)
-        await bot('Só para alinhar antes de seguir: a RVB fabrica <b>infláveis promocionais grandes</b> (tendas, portais, balões de telhado, réplicas de produto, mascotes), feitos sob medida para empresas. A gente <b>não trabalha com ' + esc(fora.toLowerCase()) + '</b>' + (/bexiga|festa|g[áa]s|h[ée]lio|anivers|decora/i.test(fora) ? ', balões de festa nem decoração' : '') + '. É um inflável promocional que você procura?');
+        await bot('Só para alinhar antes de seguir: a RVB fabrica <b>infláveis promocionais grandes</b> (tendas, portais, balões de telhado, réplicas de produto, mascotes), feitos sob medida para empresas. <b>Não trabalhamos com ' + esc(fora.toLowerCase()) + '</b>' + (/bexiga|festa|g[áa]s|h[ée]lio|anivers|decora/i.test(fora) ? ', balões de festa nem decoração' : '') + '. É um inflável promocional que você procura?');
         const r = await askChoice([{ id: 'sim', label: 'Sim, é inflável promocional' }, { id: 'nao', label: 'Não, era ' + fora.toLowerCase() + ' mesmo', quiet: true }]);
         user(r.label);
         if (r.id === 'nao') {
           await api('salvar-passo', payload({ passo: 4, fora_catalogo: true, detalhe: L.detalhe }));
-          await bot('Entendi. Então dessa vez a gente não vai conseguir te ajudar, mas obrigad' + ((C && C.artigo) === 'o' ? 'o' : 'a') + ' por procurar a RVB! Se um dia precisar de um inflável grande para a sua marca, é só voltar aqui.', 400);
+          await bot('Entendi. Então dessa vez não vamos conseguir ajudar, mas obrigad' + ((C && C.artigo) === 'o' ? 'o' : 'a') + ' por procurar a RVB! Se um dia precisar de um inflável grande para a sua marca, é só voltar aqui.', 400);
           clearDock(); return;
         }
       }
@@ -992,12 +992,12 @@
     }
 
     setStep(7);
-    await bot('Quase lá. Para ' + (C === CENTRAL ? 'a equipe' : 'eu') + ' preparar a cotação com os dados corretos da empresa, qual é o CNPJ? É por ele que a gente fatura e libera as condições de pagamento para empresa.');
+    await bot('Quase lá. Para ' + (C === CENTRAL ? 'a equipe' : 'eu') + ' preparar a cotação com os dados corretos da empresa, qual é o CNPJ? É por ele que faturamos e liberamos as condições de pagamento para empresa.');
     let cnpjOk = false;
     while (!cnpjOk) {
       const c = await askText({ label: 'CNPJ da empresa', placeholder: '00.000.000/0001-00', inputmode: 'numeric', mask: maskCnpj, validate: validCnpj,
         skips: [{ id: 'depois', label: 'Não tenho o CNPJ agora' }, { id: 'pf', label: 'Sou pessoa física' }] });
-      if (c && c.skip === 'pf') { user('Sou pessoa física'); L.cnpj = null; L.pessoaFisica = true; cnpjOk = true; salvar(6, { pessoa_fisica: true }); await bot('Sem problema. Para pessoa física a gente trabalha com Pix ou cartão, e o atendimento é o mesmo.', 300); break; }
+      if (c && c.skip === 'pf') { user('Sou pessoa física'); L.cnpj = null; L.pessoaFisica = true; cnpjOk = true; salvar(6, { pessoa_fisica: true }); await bot('Sem problema. Para pessoa física trabalhamos com Pix ou cartão, e o atendimento é o mesmo.', 300); break; }
       if (c && c.skip) { user('Não tenho o CNPJ agora'); L.cnpj = null; cnpjOk = true; salvar(6); break; }
       user(c);
       await bot('Só um instante, consultando…', 300);
@@ -1083,8 +1083,8 @@
       // quem abriu o chat delega: conta com dona → "quem já cuida de você"; senão → "quem vai cuidar do seu projeto"
       const jaCuida = /dona|continuidade|já na base|follow-up/i.test(L.dist.motivo || '');
       await bot(jaCuida
-        ? 'Quem já cuida de você aqui na RVB é ' + art + ' <b>' + esc(C.nome) + '</b>, então ' + pron + ' continua com você. Já passei tudo que a gente conversou.'
-        : 'Pelo que você me contou, quem vai cuidar do seu projeto é ' + art + ' <b>' + esc(C.nome) + '</b>, aqui da equipe. ' + (pron === 'ele' ? 'Ele' : 'Ela') + ' já recebeu tudo que a gente conversou.', 600);
+        ? 'Quem já cuida de você aqui na RVB é ' + art + ' <b>' + esc(C.nome) + '</b>, então ' + pron + ' continua com você. Já passei tudo que conversamos.'
+        : 'Pelo que você me contou, quem vai cuidar do seu projeto é ' + art + ' <b>' + esc(C.nome) + '</b>, aqui da equipe. ' + (pron === 'ele' ? 'Ele' : 'Ela') + ' já recebeu tudo que conversamos.', 600);
       await definirConsultora(C.nome, C.foto || null);
     }
 
