@@ -600,7 +600,7 @@
         '<input id="inp" type="' + (opts.type || 'text') + '" inputmode="' + (opts.inputmode || 'text') + '" autocomplete="' + (opts.autocomplete || 'off') + '" placeholder="' + esc(opts.placeholder || '') + '" aria-label="' + esc(opts.label || '') + '"></div>' +
         '<button class="send" id="send" type="submit" aria-label="Enviar" disabled>' + SEND_ICON + '</button></form>' +
         '<div class="hint" id="hint">' + esc(opts.hint || '') + '</div>' +
-        ((opts.skip || opts.voltar) ? '<div class="choices">' + (opts.skip ? '<button type="button" class="choice quiet" id="skip">' + esc(opts.skip) + '</button>' : '') + (opts.voltar ? '<button type="button" class="choice quiet" id="voltar">↩ ' + esc(opts.voltar) + '</button>' : '') + '</div>' : '');
+        ((opts.skip || opts.voltar || opts.skips) ? '<div class="choices">' + (opts.skip ? '<button type="button" class="choice quiet" id="skip">' + esc(opts.skip) + '</button>' : '') + (opts.skips || []).map(k => '<button type="button" class="choice quiet" data-skip="' + esc(k.id) + '">' + esc(k.label) + '</button>').join('') + (opts.voltar ? '<button type="button" class="choice quiet" id="voltar">↩ ' + esc(opts.voltar) + '</button>' : '') + '</div>' : '');
       const inp = document.getElementById('inp'), send = document.getElementById('send'), hint = document.getElementById('hint');
       const form = document.getElementById('f');
       if (opts.mask) inp.addEventListener('input', () => { inp.value = opts.mask(inp.value); });
@@ -615,6 +615,7 @@
         clearDock(); resolve(v);
       });
       if (opts.skip) document.getElementById('skip').addEventListener('click', () => { clearDock(); resolve(null); });
+      if (opts.skips) dock.querySelectorAll('[data-skip]').forEach(b => b.addEventListener('click', () => { clearDock(); resolve({ skip: b.dataset.skip }); }));
       if (opts.voltar) document.getElementById('voltar').addEventListener('click', () => { clearDock(); resolve(VOLTAR); });
       setTimeout(() => { inp.focus({ preventScroll: true }); scrollDown(); }, 50);
     });
@@ -762,7 +763,7 @@
       produto_id: L.produto ? L.produto.id : null, produto_nome: L.produto ? L.produto.label : null,
       objetivo: L.objetivo ? L.objetivo.id : undefined, objetivo_label: L.objetivo ? L.objetivo.label : undefined, detalhe: L.detalhe,
       quando: L.quando ? L.quando.id : undefined, quando_label: L.quando ? L.quando.label : undefined, data_evento: L.data || null,
-      cnpj: L.cnpj, razao_social: L.razao, cidade_cnpj: L.cidadeCnpj, cidade_uso: L.cidade,
+      cnpj: L.cnpj, razao_social: L.razao, cidade_cnpj: L.cidadeCnpj, cidade_uso: L.cidade, pessoa_fisica: L.pessoaFisica || undefined,
       origem_url: L.origem.url, origem_pagina: L.origem.pagina, utms: L.origem.utms,
       consultora_id: L.dist && L.dist.c && L.dist.c.id !== 'central' ? L.dist.c.id : undefined, distribuicao: L.dist ? L.dist.motivo : undefined
     }, extra || {});
@@ -937,6 +938,11 @@
     else await bot('Legal, <b>' + esc(nome) + '</b>! Para eu orientar certo: o inflável será usado principalmente em qual tipo de ação?');
     L.objetivo = await askChoice(OBJECTIVES);
     user(L.objetivo.label); salvar(4);
+    if (L.objetivo.id === 'outro') {   // quem marcou "Outro" conta o que tem em mente (uma linha, sem lista de produtos): serve para orientar a consultora e para filtrar o que não é inflável
+      await bot('Me conta em poucas palavras o que você tem em mente?');
+      L.detalhe = await askText({ label: 'O que você precisa', placeholder: 'Ex.: algo para chamar atenção na frente da loja' });
+      user(L.detalhe); salvar(4);
+    }
 
     /* adaptações por produto (núcleo comum + uma pergunta específica) */
     if (L.produto && L.produto.id === 'replica') {
@@ -972,11 +978,13 @@
     }
 
     setStep(7);
-    await bot('Quase lá. Para ' + (C === CENTRAL ? 'a equipe' : 'eu') + ' preparar a cotação com os dados corretos da empresa, qual é o CNPJ?');
+    await bot('Quase lá. Para ' + (C === CENTRAL ? 'a equipe' : 'eu') + ' preparar a cotação com os dados corretos da empresa, qual é o CNPJ? É por ele que a gente fatura e libera as condições de pagamento para empresa.');
     let cnpjOk = false;
     while (!cnpjOk) {
-      const c = await askText({ label: 'CNPJ', placeholder: '00.000.000/0001-00', inputmode: 'numeric', mask: maskCnpj, validate: validCnpj, skip: 'Não tenho agora' });
-      if (c === null) { user('Não tenho agora'); L.cnpj = null; cnpjOk = true; salvar(6); break; }
+      const c = await askText({ label: 'CNPJ da empresa', placeholder: '00.000.000/0001-00', inputmode: 'numeric', mask: maskCnpj, validate: validCnpj,
+        skips: [{ id: 'depois', label: 'Não tenho o CNPJ agora' }, { id: 'pf', label: 'Sou pessoa física' }] });
+      if (c && c.skip === 'pf') { user('Sou pessoa física'); L.cnpj = null; L.pessoaFisica = true; cnpjOk = true; salvar(6, { pessoa_fisica: true }); await bot('Sem problema. Para pessoa física a gente trabalha com Pix ou cartão, e o atendimento é o mesmo.', 300); break; }
+      if (c && c.skip) { user('Não tenho o CNPJ agora'); L.cnpj = null; cnpjOk = true; salvar(6); break; }
       user(c);
       await bot('Só um instante, consultando…', 300);
       const rc = await api('consultar-cnpj', { cnpj: c.replace(/\D/g, ''), session_id: L.session_id });
