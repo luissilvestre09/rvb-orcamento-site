@@ -487,12 +487,19 @@ async function carregarPrevias(t) {
       ${p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener"><img src="${esc(p.url)}" alt=""></a>` : '<div class="muted small" style="width:140px">gerando…</div>'}
       <div class="txt"><b>🎨 Prévia visual ${p.status === 'gerando' ? '(gerando)' : p.status === 'erro' ? '(falhou)' : 'pronta para aprovar'}</b><div class="muted small">${esc(p.descricao || '')}</div>
         ${p.status === 'erro' ? `<div class="erro small">${esc(p.erro || '')}</div>` : ''}
-        ${p.status === 'pendente' ? `<div class="acoes"><button class="btn primario" data-pv-enviar>Enviar ao cliente</button><button class="btn" data-pv-descartar>Descartar</button></div><div class="muted small" style="margin-top:4px">Vai com a marca "prévia conceitual" e a legenda explicando que o layout final vem depois.</div>` : ''}
+        ${p.status === 'pendente' ? `<div class="acoes"><button class="btn primario" data-pv-enviar>Enviar ao cliente</button><button class="btn" data-pv-refazer>Refazer com ajuste</button><button class="btn" data-pv-descartar>Descartar</button></div><div class="muted small" style="margin-top:4px">Vai com a marca "prévia conceitual" e a legenda explicando que o layout final vem depois.</div>` : ''}
       </div></div>`).join('');
   box.querySelectorAll('[data-pv-descartar]').forEach(b => b.addEventListener('click', async () => {
     const id = b.closest('.previa').dataset.id; b.disabled = true;
     const r = await chamarFn({ acao: 'previa', telefone: t, id, decisao: 'descartar' });
     if (!r.ok) $('#cErro').textContent = r.erro || 'não deu'; carregarPrevias(t);
+  }));
+  box.querySelectorAll('[data-pv-refazer]').forEach(b => b.addEventListener('click', async () => {
+    const ajuste = prompt('O que mudar na próxima versão? (ex.: "logo maior na testeira", "colunas azuis", "ambiente de rua, não galpão")');
+    if (ajuste === null) return;
+    const id = b.closest('.previa').dataset.id; b.disabled = true; $('#cErro').textContent = 'Gerando outra versão…';
+    const r = await chamarFn({ acao: 'previa', telefone: t, id, decisao: 'refazer', ajuste });
+    $('#cErro').textContent = r.ok ? '' : (r.erro || 'não deu'); carregarPrevias(t);
   }));
   box.querySelectorAll('[data-pv-enviar]').forEach(b => b.addEventListener('click', async () => {
     const el = b.closest('.previa'); const id = el.dataset.id; const url = el.querySelector('img')?.src; if (!url) return;
