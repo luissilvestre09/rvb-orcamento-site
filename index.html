@@ -540,15 +540,30 @@
 
   const AVATAR = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3C8.1 3 5.5 5.9 5.5 9.5c0 3.6 3.7 6.6 5.4 7.9.3.3.9.3 1.2 0 1.7-1.3 5.4-4.3 5.4-7.9C17.5 5.9 15.9 3 12 3z" fill="#F9B233"/><path d="M12 3c-1.4 0-2.5 2.9-2.5 6.5s1.6 6.7 2.5 8c.9-1.3 2.5-4.4 2.5-8S13.4 3 12 3z" fill="#EE3D5D"/><rect x="10.6" y="17.8" width="2.8" height="2.4" rx=".7" fill="#1E2D8C"/></svg>';
   const LOGO = document.querySelector('.brand img').src;
-  let AVATAR_ATUAL = { src: LOGO, foto: false };
+  let AVATAR_ATUAL = { src: LOGO, foto: false }, AVATAR_GERACAO = 0;   // geração muda a cada consultora definida (troca tardia só mexe na geração certa)
   /* a foto da consultora vai só nos balões da conversa; o cabeçalho fica sempre com o logo da RVB */
+  /* Foto da consultora: testa a URL antes de usar (o site bloqueia imagem com referer de outro domínio). Se demorar mais que o
+     limite (celular, rede lenta), segue com o logo para não travar a conversa, mas troca pela foto nos balões já mostrados assim
+     que ela carregar (12/10/2026: a foto da Kátia não apareceu num teste pelo celular). */
   function definirConsultora(nome, fotoUrl) {
     return new Promise(resolve => {
+      const ger = ++AVATAR_GERACAO;
       if (!fotoUrl) { AVATAR_ATUAL = { src: LOGO, foto: false }; return resolve(); }
-      const probe = new Image(); probe.referrerPolicy = 'no-referrer'; let done = false;   // o site bloqueia imagem com referer de outro domínio
-      const fim = ok => { if (done) return; done = true; AVATAR_ATUAL = ok ? { src: fotoUrl, foto: true, perto: !/\.webp(\?|$)/i.test(fotoUrl) } : { src: LOGO, foto: false }; resolve(); };
-      probe.onload = () => fim(true); probe.onerror = () => fim(false); probe.src = fotoUrl;
-      setTimeout(() => fim(probe.complete && probe.naturalWidth > 0), 1500);
+      const probe = new Image(); probe.referrerPolicy = 'no-referrer'; let done = false, tarde = false;
+      const AV = { src: fotoUrl, foto: true, perto: !/\.webp(\?|$)/i.test(fotoUrl) };
+      const fim = ok => {
+        if (done) { if (ok && tarde) trocarAvatarTardio(AV, ger); return; }
+        done = true; tarde = !ok; AVATAR_ATUAL = ok ? AV : { src: LOGO, foto: false }; resolve();
+      };
+      probe.onload = () => fim(true); probe.onerror = () => { done = true; AVATAR_ATUAL = { src: LOGO, foto: false }; resolve(); }; probe.src = fotoUrl;
+      setTimeout(() => fim(probe.complete && probe.naturalWidth > 0), 2500);
+    });
+  }
+  function trocarAvatarTardio(AV, ger) {   // a foto chegou depois do limite: vira o avatar atual e substitui o logo nos balões desta consultora
+    if (ger !== AVATAR_GERACAO) return;   // já trocou de consultora (ou anfitrião do modo contato) depois: não mexe
+    AVATAR_ATUAL = AV;
+    document.querySelectorAll('.avatar:not(.foto)[data-g="' + ger + '"] img').forEach(img => {
+      const av = img.parentElement; img.src = AV.src; av.classList.add('foto'); if (AV.perto) av.classList.add('perto');
     });
   }
   const MAIL_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>';
@@ -566,7 +581,7 @@
   function addBubble(who, html) {
     const row = document.createElement('div');
     row.className = 'row ' + who;
-    if (who === 'bot') row.innerHTML = '<div class="avatar' + (AVATAR_ATUAL.foto ? ' foto' : '') + (AVATAR_ATUAL.perto ? ' perto' : '') + '"><img src="' + AVATAR_ATUAL.src + '" alt="" referrerpolicy="no-referrer"></div><div class="bubble">' + html + '</div>';
+    if (who === 'bot') row.innerHTML = '<div class="avatar' + (AVATAR_ATUAL.foto ? ' foto' : '') + (AVATAR_ATUAL.perto ? ' perto' : '') + '" data-g="' + AVATAR_GERACAO + '"><img src="' + AVATAR_ATUAL.src + '" alt="" referrerpolicy="no-referrer"></div><div class="bubble">' + html + '</div>';
     else row.innerHTML = '<div class="bubble">' + html + '</div>';
     chat.appendChild(row);
     lastSpeaker = who;
