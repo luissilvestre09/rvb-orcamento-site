@@ -464,7 +464,7 @@
     'chute-a-gol':  { label: 'Chute a Gol Inflável', short: 'Chute a Gol' }
   };
   /* mesmo filtro do servidor (comum.ts FORA_CATALOGO): o que a RVB não fabrica */
-  const FORA_CATALOGO = /bexiga|bal[õo]es? (de|para|pra) (festa|anivers|g[áa]s|h[ée]lio|decora)|bal[ãa]o (de|a) g[áa]s|h[ée]lio|arco de bal|decora[çc][ãa]o de festa|buffet|anivers[áa]rio|ch[áa] (de beb[êe]|revela)|casamento|formatura|loca[çc][ãa]o|alugu|aluga|pula[- ]pula|tobog[ãa]|castelo infl[áa]vel|brinquedo|cama el[áa]stica|piscina de bolinha|tenda (de )?circo|estande (de )?madeira|montagem de estande|cen[áa]rio|palco|estrutura met|treli[çc]a|tela de led|painel de led|blimp|dirig[íi]vel|cativo|drone|balonismo|voo de bal|passeio de bal|bal[ãa]o de ar quente/i;
+  const FORA_CATALOGO = /bexiga|bal[õo]es? (de|para|pra) (festa|anivers|g[áa]s|h[ée]lio|decora)|bal[ãa]o (de|a) g[áa]s|h[ée]lio|arco de bal|decora[çc][ãa]o de festa|buffet|anivers[áa]rio|ch[áa] (de beb[êe]|revela)|casamento|formatura|loca[çc][ãa]o|alugu|aluga|pula[- ]pula|tobog[ãa]|castelo infl[áa]vel|brinquedo|cama el[áa]stica|piscina de bolinha|tenda (de )?circo|estande (de )?madeira|montagem de estande|cen[áa]rio|palco|estrutura met|treli[çc]a|tela de led|painel de led|blimp|dirig[íi]vel|drone/i;   /* balonismo (voo cativo, voo de balão, ar quente) NÃO é fora do catálogo: vai para a Laís (servidor) */
   function foraDoCatalogo(t) { const m = FORA_CATALOGO.exec(String(t || '')); return m ? m[0] : null; }
   const OBJECTIVES = [
     { id: 'evento',     label: 'Evento, feira ou exposição' },
