@@ -713,6 +713,24 @@
    "descricao": "Balão inflável de 3 m vermelho da Ademicon (consórcio e investimento), foto de fábrica, apoiado no chão na base preta do motor; a Ademicon usa balão e tenda nas unidades e feirões",
    "legenda": "Balão de 3 m que fizemos para a Ademicon; as unidades usam na frente da loja e nos feirões, junto com a tenda.",
    "medida": "3 m"
+  },
+  {
+   "id": "balao-4m-cooapi-cooperativa",
+   "arquivo": "balao-4m-cooapi-cooperativa.jpg",
+   "produto": "balão inflável (balão promocional, rooftop)",
+   "segmento": "cooperativa, agro, feira agropecuária, fachada",
+   "descricao": "Balão inflável de 4 m verde e branco da Cooapi (cooperativa), foto de fábrica, apoiado no chão na base do motor",
+   "legenda": "Balão de 4 m que fizemos para a Cooapi.",
+   "medida": "4 m"
+  },
+  {
+   "id": "balao-3m-cia-dos-doces-mascote",
+   "arquivo": "balao-3m-cia-dos-doces-mascote.jpg",
+   "produto": "balão inflável (balão promocional, rooftop)",
+   "segmento": "loja de doces, varejo, atacado de doces, fachada, mascote da marca",
+   "descricao": "Balão inflável de 3 m amarelo e branco da Cia dos Doces com o mascote da marca impresso, foto de fábrica, apoiado no chão na base amarela do motor",
+   "legenda": "Balão de 3 m da Cia dos Doces, com o mascote da marca impresso na lona.",
+   "medida": "3 m"
   }
  ]
 }
