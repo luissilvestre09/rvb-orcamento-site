@@ -677,6 +677,33 @@
    "descricao": "Papai Noel inflável de 4 m acenando, fotografado dentro da fábrica da RVB antes da entrega (fundo branco)",
    "legenda": "Esse é o Papai Noel de 4 m, o menor que fabricamos, ainda na fábrica antes de ir para o cliente.",
    "medida": "4 m"
+  },
+  {
+   "id": "balao-4m-damasio-escala",
+   "arquivo": "balao-4m-damasio-escala.jpg",
+   "produto": "balão inflável (balão promocional, rooftop)",
+   "segmento": "posto de gasolina, rede, fachada, pátio",
+   "descricao": "Balão inflável de 4 m amarelo e preto do Auto Posto Damásio, foto de fábrica com uma pessoa ao lado mostrando a escala; apoiado no chão sobre a base do motor",
+   "legenda": "Esse é um balão de 4 m que fizemos para o Posto Damásio. A pessoa ao lado dá a noção do tamanho; ele fica apoiado no chão, na base do motor.",
+   "medida": "4 m"
+  },
+  {
+   "id": "balao-2m-life-usa-base",
+   "arquivo": "balao-2m-life-usa-base.jpg",
+   "produto": "balão inflável (balão promocional, rooftop)",
+   "segmento": "escola de idiomas, loja pequena, calçada estreita",
+   "descricao": "Balão inflável de 2 m branco e azul da Life USA Idiomas, foto de fábrica, apoiado no chão sobre a base preta com o motor; tamanho para calçada ou frente de loja pequena",
+   "legenda": "Balão de 2 m da Life USA Idiomas: fica em pé no chão, apoiado na base do motor, cabe numa calçada.",
+   "medida": "2 m"
+  },
+  {
+   "id": "balao-3m-motopark-honda",
+   "arquivo": "balao-3m-motopark-honda.jpg",
+   "produto": "balão inflável (balão promocional, rooftop)",
+   "segmento": "concessionária, consórcio, loja de motos, fachada",
+   "descricao": "Balão inflável de 3 m vermelho e branco da Motopark Honda (consórcio nacional Honda), foto de fábrica, apoiado no chão na base vermelha do motor",
+   "legenda": "Balão de 3 m que fizemos para a Motopark Honda, o tamanho mais pedido para frente de loja.",
+   "medida": "3 m"
   }
  ]
 }
