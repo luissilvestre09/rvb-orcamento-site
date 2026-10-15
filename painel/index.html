@@ -417,7 +417,7 @@ function renderConversas() {
   $('#cLista').innerHTML = CONVS.map(c => `<div class="conv ${c.nao_lida ? 'nl' : ''} ${CONV && CONV.telefone === c.telefone ? 'on' : ''}" data-t="${esc(c.telefone)}">
       <div class="n">${esc(c.nome || foneCurto(c.telefone))}${c.temperatura ? ` <span class="tag">${esc(c.temperatura)}</span>` : ''}</div>
       <div class="h">${c.ultima_msg_em ? diaHora(c.ultima_msg_em) : ''}</div>
-      <div class="p">${c.modo === 'agente' ? '🤖 agente' : c.modo === 'pausado' ? '⏸ pausado' : '👤 ' + esc(c.dono || 'humano')}${NUMS.length > 1 && numeroDe(c) ? ' · 📱 ' + esc(numeroDe(c)) : ''}${c.dados && c.dados.empresa ? ' · ' + esc(c.dados.empresa) : ''}${c.dados && c.dados.produto ? ' · ' + esc(c.dados.produto) : ''}</div>
+      <div class="p">${c.modo === 'agente' ? '🤖 agente' : c.modo === 'pausado' ? '⏸ pausado' : '👤 ' + esc(c.dono || 'humano')}${NUMS.length > 1 && numeroDe(c) ? ' · 📱 ' + esc(numeroDe(c)) : ''}${c.dados && c.dados.empresa ? ' · ' + esc(c.dados.empresa) : ''}${c.dados && c.dados.produto ? ' · ' + esc(c.dados.produto) : ''}${c.origem && c.origem !== 'direto' ? ' · 📍 ' + esc(c.origem) : ''}</div>
     </div>`).join('') || '<div class="muted small" style="padding:12px">Nenhuma conversa ainda. Quando alguém escrever no número oficial, aparece aqui.</div>';
 }
 $('#cLista').addEventListener('click', e => { const el = e.target.closest('.conv'); if (el) abrirConversa(el.dataset.t); });
