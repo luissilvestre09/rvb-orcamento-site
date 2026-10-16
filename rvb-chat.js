@@ -47,8 +47,13 @@
     try { return m ? JSON.parse(decodeURIComponent(m[1])) : null; } catch (e) { return null; }
   }
   var atuais = utmsDaUrl();
-  if (Object.keys(atuais).length && !lerCookie()) {
+  // gclid sem utm = Google Ads (o Google nem sempre manda utm); referrer externo = de onde a pessoa veio (google.com = busca orgânica,
+  // instagram.com, l.facebook.com...). Guardado no primeiro acesso, para a origem do lead ficar na nota do Pipedrive (16/10/2026).
+  try { if (new URLSearchParams(location.search).get('gclid') && !atuais.utm_source) { atuais.utm_source = 'google'; atuais.utm_medium = 'cpc'; } } catch (e) {}
+  if (!lerCookie()) {
     atuais.landing = location.pathname;
+    var ref = ''; try { ref = new URL(document.referrer).hostname.replace(/^www\./, ''); } catch (e) {}
+    if (ref && ref !== location.hostname.replace(/^www\./, '')) atuais.ref = ref;
     document.cookie = 'rvb_utm=' + encodeURIComponent(JSON.stringify(atuais)) + '; max-age=' + (90 * 86400) + '; path=/; SameSite=Lax';
   }
 
@@ -107,6 +112,7 @@
     var u = Object.assign({}, lerCookie() || {}, utmsDaUrl());
     Object.keys(u).forEach(function (k) { if (k.indexOf('utm_') === 0) p.set(k, u[k]); });
     if (u.landing) p.set('landing', u.landing);
+    if (u.ref) p.set('ref', u.ref);
     return BASE + '?' + p.toString();
   }
 

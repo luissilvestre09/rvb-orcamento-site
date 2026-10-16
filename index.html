@@ -759,6 +759,7 @@
     try { new URLSearchParams(location.search).forEach((v, k) => { q[k] = v; }); } catch (e) {}
     Object.keys(q).forEach(k => { if (k.startsWith('utm_')) o.utms[k] = q[k]; });
     if (q.landing) o.utms.landing = q.landing;   // primeira página visitada (cookie do site)
+    if (q.ref) o.utms.ref = q.ref;   // site de onde a pessoa veio no primeiro acesso (google.com = busca orgânica)
     const hash = (location.hash || '').replace('#', '');
     const pid = q.produto_id || q.produto || hash;
     if (pid && PRODUCTS[pid]) {
