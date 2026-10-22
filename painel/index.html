@@ -129,8 +129,8 @@
   <img src="../logo.png" alt="RVB" onerror="this.style.display='none'">
   <div class="t">Painel RVB</div>
   <div class="tabs" id="tabs" hidden>
-    <button class="tab on" data-p="leads">Leads</button>
-    <button class="tab" data-p="conversas">Conversas <span class="badge" id="bConv" hidden>0</span></button>
+    <button class="tab on" data-p="conversas">Conversas <span class="badge" id="bConv" hidden>0</span></button>
+    <button class="tab" data-p="leads">Leads</button>
     <button class="tab" data-p="numeros">Números</button>
     <button class="tab" data-p="equipe">Consultores</button>
     <button class="tab" data-p="deptos">Departamentos</button>
@@ -260,7 +260,11 @@ sb.auth.onAuthStateChange((_e, sess) => {
   $('#who').textContent = ok ? sess.user.email : '';
   PODE_APAGAR = ok && APAGADORES.includes((sess.user.email || '').toLowerCase());
   SOU_LUIS = ok && /^(luis|silvestre)@rvb\.com\.br$/i.test(sess.user.email || '');
-  if (ok) { mostrar(location.hash.startsWith('#conversas') ? 'conversas' : 'leads'); carregarTudo(); avisosEstado().catch(e => console.warn('avisos:', e)); } else { document.querySelectorAll('.painel').forEach(p => p.classList.toggle('on', p.id === 'p-login')); }
+  // Conversas é a aba inicial e a última conversa aberta volta sozinha (22/10/2026: "quando saio do painel ele volta para os leads
+  // e tenho que entrar de novo na conversa"). O hash guarda a conversa; o app instalado abre sem hash, então também fica no localStorage (12 h).
+  if (ok) {
+    if (!location.hash) { try { const u = JSON.parse(localStorage.getItem('painel_ultima') || 'null'); if (u && u.h && Date.now() - u.ts < 12 * 3600 * 1000) history.replaceState(null, '', u.h); } catch { /* sem localStorage */ } }
+    { const h = location.hash.replace(/^#/, '').split('/')[0]; mostrar(['leads', 'numeros', 'equipe', 'deptos'].includes(h) ? h : 'conversas'); } irPeloLink(); carregarTudo(); avisosEstado().catch(e => console.warn('avisos:', e)); } else { document.querySelectorAll('.painel').forEach(p => p.classList.toggle('on', p.id === 'p-login')); }
 });
 
 /* ---------- abas ---------- */
@@ -268,7 +272,8 @@ function mostrar(p) {
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.p === p));
   document.querySelectorAll('.painel').forEach(x => x.classList.toggle('on', x.id === 'p-' + p));
 }
-$('#tabs').addEventListener('click', e => { const t = e.target.closest('.tab'); if (!t) return; mostrar(t.dataset.p); if (location.hash) history.replaceState(null, '', t.dataset.p === 'conversas' ? '#conversas' : location.pathname + location.search); });
+$('#tabs').addEventListener('click', e => { const t = e.target.closest('.tab'); if (!t) return; mostrar(t.dataset.p); lembrarHash(t.dataset.p === 'conversas' ? (CONV ? '#conversas/' + CONV.telefone : '#conversas') : '#' + t.dataset.p); });
+function lembrarHash(h) { history.replaceState(null, '', h); try { localStorage.setItem('painel_ultima', JSON.stringify({ h, ts: Date.now() })); } catch { /* sem localStorage */ } }
 
 /* ---------- dados ---------- */
 async function carregarTudo() {
@@ -434,7 +439,7 @@ $('#nEnviar').addEventListener('click', async () => {
   $('#nMsg').textContent = 'Enviado ✓'; $('#nTel').value = ''; $('#nNome').value = '';
   setTimeout(async () => { $('#cNova').hidden = true; await carregarConversas(); abrirConversa(r.telefone); }, 800);
 });
-$('#cVoltar').addEventListener('click', () => { document.querySelector('.chat').classList.remove('aberta'); });
+$('#cVoltar').addEventListener('click', () => { document.querySelector('.chat').classList.remove('aberta'); lembrarHash('#conversas'); });
 function renderModo() {
   // o modo pode mudar no servidor (agente passa para humano) enquanto a conversa está aberta: os botões seguem o banco, não o clique
   if (!CONV) return;
@@ -443,6 +448,7 @@ function renderModo() {
 }
 async function abrirConversa(t) {
   CONV = CONVS.find(c => c.telefone === t); if (!CONV) return;
+  lembrarHash('#conversas/' + t);
   document.querySelector('.chat').classList.add('aberta');
   renderConversas();
   const d = CONV.dados || {};
@@ -455,7 +461,7 @@ async function abrirConversa(t) {
   $('#cDados').innerHTML = dadosTxt + `<div class="parou">${CONV.motivo_transbordo ? `<b>Agente parou porque:</b> ${esc(CONV.motivo_transbordo)}` : ''}</div>`;
   $('#cDados').hidden = true;
   if (dadosTxt) $('#dAbrir').addEventListener('click', () => { $('#cDados').hidden = !$('#cDados').hidden; });
-  $('#cVoltar2').addEventListener('click', () => document.querySelector('.chat').classList.remove('aberta'));
+  $('#cVoltar2').addEventListener('click', () => { document.querySelector('.chat').classList.remove('aberta'); lembrarHash('#conversas'); });
   $('#kAbrir').addEventListener('click', () => { $('#coach').hidden = !$('#coach').hidden; });
   if (PODE_APAGAR) $('#cApagar').addEventListener('click', async () => {
     if (!confirm('Apagar esta conversa do painel? Some daqui (mensagens incluídas), mas não apaga nada no Pipedrive nem no WhatsApp do cliente.')) return;
