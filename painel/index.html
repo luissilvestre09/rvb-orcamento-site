@@ -197,6 +197,7 @@
           <textarea id="cTexto" rows="2" placeholder="Escreva como no WhatsApp… (Enter envia, Shift+Enter quebra linha)"></textarea>
           <button class="btn primario" id="cEnviar">Enviar</button>
         </div>
+        <div class="small" id="cJanela" hidden style="padding:6px 0"><span class="muted">Janela de 24h fechada (o cliente não escreve há mais de um dia).</span> <button class="btn" id="cReabrir">🔓 Reabrir com template de retorno</button></div>
         <div class="erro small" id="cErro"></div>
       </div>
     </div>
@@ -440,6 +441,24 @@ $('#nEnviar').addEventListener('click', async () => {
   setTimeout(async () => { $('#cNova').hidden = true; await carregarConversas(); abrirConversa(r.telefone); }, 800);
 });
 $('#cVoltar').addEventListener('click', () => { document.querySelector('.chat').classList.remove('aberta'); lembrarHash('#conversas'); });
+/* janela de 24h fechada: reabre com o template "retorno prometido" ("Oi, Nome! Aqui é o X, da RVB Balões. Conforme combinei com você,
+   já deixei pronto o que você pediu sobre {assunto}. Posso te mandar por aqui?"). Quando o cliente responder, a janela abre e a mensagem completa vai. */
+$('#cReabrir').addEventListener('click', async () => {
+  if (!CONV) return;
+  const d = CONV.dados || {};
+  const sugestao = d.produto ? `${/^(bal|tenda|portal|t[uú]nel|r[eé]plica)/i.test(d.produto) ? (/^tenda|^r[eé]plica/i.test(d.produto) ? 'a ' : 'o ') : ''}${d.produto}${d.medida ? ' ' + d.medida : ''}`.trim() : '';
+  const assunto = prompt('Sobre o quê é o retorno? Completa a frase "já deixei pronto o que você pediu sobre …"', sugestao);
+  if (assunto === null) return;
+  if (!assunto.trim()) { $('#cErro').textContent = 'Precisa do assunto.'; return; }
+  const nome = (CONV.nome || '').trim() || prompt('Nome do cliente (a mensagem começa com "Oi, Nome!"):', '');
+  if (!nome) return;
+  $('#cReabrir').disabled = true; $('#cErro').textContent = 'Enviando template…';
+  const r = await chamarFn({ acao: 'nova', telefone: CONV.telefone, nome, template: 'retorno_prometido', assunto: assunto.trim(), phone_id: CONV.phone_id || undefined });
+  $('#cReabrir').disabled = false;
+  if (!r.ok) { $('#cErro').textContent = r.erro || 'não deu'; return; }
+  $('#cErro').textContent = 'Template enviado ✓ — quando o cliente responder, a janela abre.';
+  await carregarConversas(); abrirConversa(CONV.telefone);
+});
 function renderModo() {
   // o modo pode mudar no servidor (agente passa para humano) enquanto a conversa está aberta: os botões seguem o banco, não o clique
   if (!CONV) return;
@@ -479,7 +498,8 @@ async function abrirConversa(t) {
   carregarPrevias(t);
   $('#cCompor').hidden = false; $('#cErro').textContent = '';
   const janelaAberta = CONV.ultima_do_cliente_em && (Date.now() - new Date(CONV.ultima_do_cliente_em).getTime()) < 24 * 3600 * 1000;
-  $('#cTexto').placeholder = janelaAberta ? 'Escreva como no WhatsApp… (Enter envia, Shift+Enter quebra linha)' : 'Janela de 24h fechada: só dá para reabrir com template aprovado.';
+  $('#cTexto').placeholder = janelaAberta ? 'Escreva como no WhatsApp… (Enter envia, Shift+Enter quebra linha)' : 'Janela de 24h fechada: reabra com o template de retorno e, quando o cliente responder, escreva aqui.';
+  $('#cJanela').hidden = !!janelaAberta;
   if (CONV.nao_lida) { chamarFn({ acao: 'lida', telefone: t }); CONV.nao_lida = false; renderConversas(); }
 }
 /* ---------- prévias visuais (geradas por IA; a equipe aprova antes de ir ao cliente) ---------- */
