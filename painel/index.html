@@ -198,6 +198,7 @@
           <button class="btn primario" id="cEnviar">Enviar</button>
         </div>
         <div class="small" id="cJanela" hidden style="padding:6px 0"><span class="muted">Janela de 24h fechada (o cliente não escreve há mais de um dia).</span> <button class="btn" id="cReabrir">🔓 Reabrir com template de retorno</button></div>
+        <div class="small" id="cAgendado" hidden style="padding:4px 0"></div>
         <div class="erro small" id="cErro"></div>
       </div>
     </div>
@@ -452,13 +453,45 @@ $('#cReabrir').addEventListener('click', async () => {
   if (!assunto.trim()) { $('#cErro').textContent = 'Precisa do assunto.'; return; }
   const nome = (CONV.nome || '').trim() || prompt('Nome do cliente (a mensagem começa com "Oi, Nome!"):', '');
   if (!nome) return;
-  $('#cReabrir').disabled = true; $('#cErro').textContent = 'Enviando template…';
-  const r = await chamarFn({ acao: 'nova', telefone: CONV.telefone, nome, template: 'retorno_prometido', assunto: assunto.trim(), phone_id: CONV.phone_id || undefined });
+  const quandoTxt = prompt('Enviar agora? Deixe em branco para agora, ou digite dia e hora para agendar (ex.: 26/10 08:05)', '');
+  if (quandoTxt === null) return;
+  let enviarEm = null;
+  if (quandoTxt.trim()) {
+    const m = quandoTxt.trim().match(/^(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?\s+(\d{1,2})[:h](\d{2})?$/);
+    if (!m) { $('#cErro').textContent = 'Não entendi a data. Use dia/mês hora:minuto, ex.: 26/10 08:05'; return; }
+    const ano = m[3] ? (m[3].length === 2 ? 2000 + Number(m[3]) : Number(m[3])) : new Date().getFullYear();
+    enviarEm = new Date(ano, Number(m[2]) - 1, Number(m[1]), Number(m[4]), Number(m[5] || 0));
+    if (enviarEm.getTime() < Date.now()) enviarEm.setFullYear(enviarEm.getFullYear() + 1);
+  }
+  $('#cReabrir').disabled = true; $('#cErro').textContent = enviarEm ? 'Agendando…' : 'Enviando template…';
+  const r = enviarEm
+    ? await chamarFn({ acao: 'agendar', telefone: CONV.telefone, nome, template: 'retorno_prometido', assunto: assunto.trim(), enviar_em: enviarEm.toISOString(), phone_id: CONV.phone_id || undefined })
+    : await chamarFn({ acao: 'nova', telefone: CONV.telefone, nome, template: 'retorno_prometido', assunto: assunto.trim(), phone_id: CONV.phone_id || undefined });
   $('#cReabrir').disabled = false;
   if (!r.ok) { $('#cErro').textContent = r.erro || 'não deu'; return; }
-  $('#cErro').textContent = 'Template enviado ✓ — quando o cliente responder, a janela abre.';
+  $('#cErro').textContent = enviarEm ? `Agendado para ${enviarEm.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })} ✓` : 'Template enviado ✓ — quando o cliente responder, a janela abre.';
   await carregarConversas(); abrirConversa(CONV.telefone);
 });
+/* envios agendados pendentes desta conversa (tabela wa_agendamentos; o pg_cron dispara a cada 5 min) */
+async function mostrarAgendados(t) {
+  const el = $('#cAgendado'); el.hidden = true; el.innerHTML = '';
+  const { data } = await sb.from('wa_agendamentos').select('id, enviar_em, template, texto, status, erro').eq('telefone', t).in('status', ['pendente', 'erro']).order('enviar_em');
+  if (!data || !data.length || !CONV || CONV.telefone !== t) return;
+  el.hidden = false;
+  el.innerHTML = data.map(a => {
+    const q = new Date(a.enviar_em).toLocaleString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+    const oque = a.template ? `template <b>${esc(a.template.replace(/_/g, ' '))}</b>` : `texto "${esc((a.texto || '').slice(0, 60))}"`;
+    return a.status === 'erro'
+      ? `<div class="erro">⚠️ Envio agendado de ${q} falhou: ${esc(a.erro || '')}</div>`
+      : `<div>📅 Envio agendado para <b>${q}</b> (${oque}) <button class="btn" data-cancelar-ag="${a.id}" style="padding:2px 8px;font-size:12px">cancelar</button></div>`;
+  }).join('');
+  el.querySelectorAll('[data-cancelar-ag]').forEach(b => b.addEventListener('click', async () => {
+    if (!confirm('Cancelar este envio agendado?')) return;
+    const r = await chamarFn({ acao: 'cancelar_agendamento', telefone: t, id: Number(b.dataset.cancelarAg) });
+    if (!r.ok) { $('#cErro').textContent = r.erro || 'não deu'; return; }
+    mostrarAgendados(t);
+  }));
+}
 function renderModo() {
   // o modo pode mudar no servidor (agente passa para humano) enquanto a conversa está aberta: os botões seguem o banco, não o clique
   if (!CONV) return;
@@ -500,6 +533,7 @@ async function abrirConversa(t) {
   const janelaAberta = CONV.ultima_do_cliente_em && (Date.now() - new Date(CONV.ultima_do_cliente_em).getTime()) < 24 * 3600 * 1000;
   $('#cTexto').placeholder = janelaAberta ? 'Escreva como no WhatsApp… (Enter envia, Shift+Enter quebra linha)' : 'Janela de 24h fechada: reabra com o template de retorno e, quando o cliente responder, escreva aqui.';
   $('#cJanela').hidden = !!janelaAberta;
+  mostrarAgendados(t);
   if (CONV.nao_lida) { chamarFn({ acao: 'lida', telefone: t }); CONV.nao_lida = false; renderConversas(); }
 }
 /* ---------- prévias visuais (geradas por IA; a equipe aprova antes de ir ao cliente) ---------- */
