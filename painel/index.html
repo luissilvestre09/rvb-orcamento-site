@@ -776,11 +776,21 @@ async function renderConsultoras() {
     const { error } = await sb.from('wa_numeros').update(patch).eq('phone_id', id);
     const ok = $('#numeros').querySelector(`[data-num-ok="${id}"]`); ok.textContent = error ? 'Não deu: ' + error.message : 'salvo ✓'; setTimeout(() => ok.textContent = '', 2500);
   }));
-  $('#numeros').querySelectorAll('button[data-num-tpl]').forEach(bt => bt.addEventListener('click', async () => {
-    const id = bt.dataset.numTpl; const ok = $('#numeros').querySelector(`[data-num-ok="${id}"]`); ok.textContent = 'consultando a Meta…';
-    const r = await chamarFn({ acao: 'templates', phone_id: id, criar_padrao: true });
-    ok.textContent = r.ok ? (r.templates.length ? r.templates.map(t => `${t.nome}: ${t.status}`).join(' · ') : 'nenhum template') : ('Não deu: ' + (r.erro || ''));
-  }));
+  /* templates da Meta: primeiro só LISTA (nome, status, texto); os que faltam (primeiro_contato_site, retorno_prometido) aparecem
+     com um botão "criar" separado, para o Luis ver o que já existe antes de criar (24/10/2026) */
+  const PADROES_TPL = ['primeiro_contato_site', 'retorno_prometido'];
+  const STATUS_TPL = { APPROVED: '✅ aprovado', PENDING: '⏳ em análise', REJECTED: '❌ recusado', PAUSED: '⏸ pausado', DISABLED: '🚫 desativado' };
+  async function listarTemplatesNum(id, criar) {
+    const ok = $('#numeros').querySelector(`[data-num-ok="${id}"]`); ok.textContent = criar ? 'criando na Meta…' : 'consultando a Meta…';
+    const r = await chamarFn({ acao: 'templates', phone_id: id, criar_padrao: !!criar });
+    if (!r.ok) { ok.textContent = 'Não deu: ' + (r.erro || ''); return; }
+    const faltam = PADROES_TPL.filter(n => !r.templates.some(t => t.nome === n));
+    ok.innerHTML = '<div style="margin-top:6px">' + (r.templates.length ? r.templates.map(t =>
+      `<div style="margin:3px 0"><b>${esc(t.nome)}</b> · ${STATUS_TPL[t.status] || esc(t.status)} · <span class="muted">${esc(t.idioma || '')} ${esc(t.categoria || '')}</span><br><span class="muted">"${esc(t.corpo || '')}"</span></div>`).join('') : '<div class="muted">nenhum template nesta conta ainda</div>')
+      + (faltam.length ? `<div style="margin-top:6px">Faltam: ${faltam.map(esc).join(', ')} <button class="btn" data-num-tpl-criar="${esc(id)}" style="padding:2px 8px;font-size:12px">Criar os que faltam</button></div>` : '') + '</div>';
+    ok.querySelectorAll('[data-num-tpl-criar]').forEach(b => b.addEventListener('click', () => listarTemplatesNum(id, true)));
+  }
+  $('#numeros').querySelectorAll('button[data-num-tpl]').forEach(bt => bt.addEventListener('click', () => listarTemplatesNum(bt.dataset.numTpl, false)));
   // situação do token da Meta (vence quando?) — aparece embaixo da lista de números
   (async () => {
     const el = document.createElement('div'); el.className = 'muted small'; el.style.marginTop = '6px'; el.textContent = 'Token da Meta: conferindo…'; $('#numeros').appendChild(el);
