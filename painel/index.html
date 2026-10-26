@@ -444,8 +444,13 @@ $('#nEnviar').addEventListener('click', async () => {
 $('#cVoltar').addEventListener('click', () => { document.querySelector('.chat').classList.remove('aberta'); lembrarHash('#conversas'); });
 /* janela de 24h fechada: reabre com o template "retorno prometido" ("Oi, Nome! Aqui é o X, da RVB Balões. Conforme combinei com você,
    já deixei pronto o que você pediu sobre {assunto}. Posso te mandar por aqui?"). Quando o cliente responder, a janela abre e a mensagem completa vai. */
+let reabrindo = false;
 $('#cReabrir').addEventListener('click', async () => {
-  if (!CONV) return;
+  if (!CONV || reabrindo) return;
+  reabrindo = true; $('#cReabrir').disabled = true;   // trava já no clique: um duplo clique mandava o template duas vezes (26/10)
+  try { await reabrirComTemplate(); } finally { reabrindo = false; $('#cReabrir').disabled = false; }
+});
+async function reabrirComTemplate() {
   const d = CONV.dados || {};
   const sugestao = d.produto ? `${/^(bal|tenda|portal|t[uú]nel|r[eé]plica)/i.test(d.produto) ? (/^tenda|^r[eé]plica/i.test(d.produto) ? 'a ' : 'o ') : ''}${d.produto}${d.medida ? ' ' + d.medida : ''}`.trim() : '';
   const assunto = prompt('Sobre o quê é o retorno? Completa a frase "já deixei pronto o que você pediu sobre …"', sugestao);
@@ -463,15 +468,14 @@ $('#cReabrir').addEventListener('click', async () => {
     enviarEm = new Date(ano, Number(m[2]) - 1, Number(m[1]), Number(m[4]), Number(m[5] || 0));
     if (enviarEm.getTime() < Date.now()) enviarEm.setFullYear(enviarEm.getFullYear() + 1);
   }
-  $('#cReabrir').disabled = true; $('#cErro').textContent = enviarEm ? 'Agendando…' : 'Enviando template…';
+  $('#cErro').textContent = enviarEm ? 'Agendando…' : 'Enviando template…';
   const r = enviarEm
     ? await chamarFn({ acao: 'agendar', telefone: CONV.telefone, nome, template: 'retorno_prometido', assunto: assunto.trim(), enviar_em: enviarEm.toISOString(), phone_id: CONV.phone_id || undefined })
     : await chamarFn({ acao: 'nova', telefone: CONV.telefone, nome, template: 'retorno_prometido', assunto: assunto.trim(), phone_id: CONV.phone_id || undefined });
-  $('#cReabrir').disabled = false;
   if (!r.ok) { $('#cErro').textContent = r.erro || 'não deu'; return; }
   $('#cErro').textContent = enviarEm ? `Agendado para ${enviarEm.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })} ✓` : 'Template enviado ✓ — quando o cliente responder, a janela abre.';
   await carregarConversas(); abrirConversa(CONV.telefone);
-});
+}
 /* envios agendados pendentes desta conversa (tabela wa_agendamentos; o pg_cron dispara a cada 5 min) */
 async function mostrarAgendados(t) {
   const el = $('#cAgendado'); el.hidden = true; el.innerHTML = '';
