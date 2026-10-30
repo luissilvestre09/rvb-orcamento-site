@@ -50,10 +50,30 @@
   // gclid sem utm = Google Ads (o Google nem sempre manda utm); referrer externo = de onde a pessoa veio (google.com = busca orgânica,
   // instagram.com, l.facebook.com...). Guardado no primeiro acesso, para a origem do lead ficar na nota do Pipedrive (16/10/2026).
   try { if (new URLSearchParams(location.search).get('gclid') && !atuais.utm_source) { atuais.utm_source = 'google'; atuais.utm_medium = 'cpc'; } } catch (e) {}
-  if (!lerCookie()) {
-    atuais.landing = location.pathname;
-    var ref = ''; try { ref = new URL(document.referrer).hostname.replace(/^www\./, ''); } catch (e) {}
-    if (ref && ref !== location.hostname.replace(/^www\./, '')) atuais.ref = ref;
+  // 30/10/2026: o cookie passa a ser atualizado em toda visita que TEM origem (utm ou site externo) — "último toque identificado".
+  // Antes só gravava no primeiro acesso: quem tinha cookie antigo sem origem (anterior a 16/10) ficava "direto" para sempre.
+  var ref = ''; try { ref = new URL(document.referrer).hostname.replace(/^www\./, ''); } catch (e) {}
+  if (ref === location.hostname.replace(/^www\./, '') || /(^|\.)rvb\.com\.br$/.test(ref)) ref = '';
+  var antigo = lerCookie();
+  var temOrigem = !!(atuais.utm_source || ref);
+  if (!antigo || (temOrigem && !(antigo.utm_source || antigo.ref)) || atuais.utm_source || (ref && !atuais.utm_source && ref !== antigo.ref)) {
+    if (!temOrigem && antigo) atuais = antigo; else {
+      atuais.landing = location.pathname;
+      if (ref && !atuais.utm_source) atuais.ref = ref;
+    }
+    // sem origem nenhuma: tenta o cookie de origem do RD Station (__trf.src), que guarda a 1ª sessão desde antes do nosso
+    if (!atuais.utm_source && !atuais.ref) {
+      try {
+        var trf = (document.cookie.match(/(?:^|; )__trf\.src=([^;]*)/) || [])[1];
+        if (trf) {
+          var j = JSON.parse(atob(decodeURIComponent(trf).replace(/^encoded_/, '')));
+          var v = String((j.first_session && j.first_session.value) || '');
+          if (/^https?:/.test(v)) { var h = new URL(v).hostname.replace(/^www\./, ''); if (!/(^|\.)rvb\.com\.br$/.test(h)) atuais.ref = h; }
+          else if (/utm_source=/.test(v)) new URLSearchParams(v).forEach(function (x, k) { if (k.indexOf('utm_') === 0) atuais[k] = x; });
+          if (atuais.ref || atuais.utm_source) atuais.via = 'rd';
+        }
+      } catch (e) {}
+    }
     document.cookie = 'rvb_utm=' + encodeURIComponent(JSON.stringify(atuais)) + '; max-age=' + (90 * 86400) + '; path=/; SameSite=Lax';
   }
 

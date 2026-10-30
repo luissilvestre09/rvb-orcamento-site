@@ -213,9 +213,10 @@
       <div class="card"><h3 style="margin-top:0">Página de entrada</h3><div class="barras" id="gPagina"></div><p class="muted small">Primeira página que ela abriu no site (produto, início, artigo…). Iniciados em 30 dias.</p></div>
     </div>
     <h2 style="margin:22px 0 4px">Do formulário à venda</h2>
-    <p class="muted small" style="margin:0 0 10px">Só os negócios que nasceram de formulários completos no período do filtro de cima (<span class="fPer"></span>). Vendas de clientes antigos ficam de fora. Qualificada = chegou a Diagnóstico; proposta = chegou a Proposta Enviada (ganhos contam nas duas). Atualiza a cada 15 min.</p>
+    <p class="muted small" style="margin:0 0 10px">Só os negócios que nasceram de formulários completos no período do filtro de cima (<span class="fPer"></span>). Vendas de clientes antigos ficam de fora. Qualificada = chegou a Diagnóstico e não foi perdida por “não consegui contato”, “fora do catálogo” ou “não é cliente”; proposta = chegou a Proposta Enviada (ganhos contam nas duas). Atualiza a cada 15 min.</p>
     <div class="cards" id="kFunil"></div>
     <div class="grade">
+      <div class="card" style="grid-column:1/-1;overflow-x:auto"><h3 style="margin-top:0">Por temperatura (a leitura feita na entrada do lead)</h3><div id="tFunilTemp"></div></div>
       <div class="card" style="grid-column:1/-1;overflow-x:auto"><h3 style="margin-top:0">Por consultora</h3><div id="tFunilCons"></div></div>
       <div class="card" style="grid-column:1/-1;overflow-x:auto"><h3 style="margin-top:0">Por canal de origem</h3><div id="tFunilCanal"></div></div>
       <div class="card" style="grid-column:1/-1;overflow-x:auto"><h3 style="margin-top:0">Por página de entrada</h3><div id="tFunilPagina"></div><p class="muted small" id="tFunilTop"></p></div>
@@ -834,15 +835,16 @@ async function renderFunil() {
   const neg = ids.length ? await emLotes('pd_negocios', 'deal_id', ids, '*') : [];
   const N = new Map(neg.map(n => [Number(n.deal_id), n]));
   const consDe = (L, n) => (n && CONS.find(c => Number(c.pipedrive_user_id) === Number(n.owner_id))?.nome) || CONS.find(c => c.id === L.consultora_id)?.nome || L.consultora_id || 'sem consultora';
-  const G = { cons: {}, canal: {}, pag: {}, url: {} }, tot = { c: 0, q: 0, p: 0, w: 0, v: 0, l: 0 };
+  const G = { cons: {}, canal: {}, pag: {}, url: {}, temp: {} }, tot = { c: 0, q: 0, p: 0, w: 0, v: 0, l: 0 };
   const soma = (obj, k, n) => { const g = obj[k] = obj[k] || { c: 0, q: 0, p: 0, w: 0, v: 0 }; g.c++; if (n?.qualificada) g.q++; if (n?.proposta) g.p++; if (n?.status === 'won') { g.w++; g.v += Number(n.valor) || 0; } };
   comp.forEach(L => {
     const n = N.get(Number(L.pipedrive_deal_id));
     tot.c++; if (n?.qualificada) tot.q++; if (n?.proposta) tot.p++; if (n?.status === 'won') { tot.w++; tot.v += Number(n.valor) || 0; } if (n?.status === 'lost') tot.l++;
-    soma(G.cons, consDe(L, n), n); soma(G.canal, canalDe(L), n); soma(G.pag, tipoPagina(L), n); soma(G.url, paginaDe(L), n);
+    soma(G.cons, consDe(L, n), n); soma(G.temp, ({ QUENTE: '🔥 Quente', MORNO: '🟡 Morno', FRIO: '⚪ Frio' })[L.temperatura] || 'sem temperatura', n); soma(G.canal, canalDe(L), n); soma(G.pag, tipoPagina(L), n); soma(G.url, paginaDe(L), n);
   });
   const p = (a) => tot.c ? ` <span class="muted small">${Math.round(a / tot.c * 100)}%</span>` : '';
   $('#kFunil').innerHTML = kpi(tot.c, 'completos') + kpi(tot.q + p(tot.q), 'oportunidades qualificadas') + kpi(tot.p + p(tot.p), 'propostas') + kpi(tot.w + p(tot.w), 'negócios ganhos') + kpi(tot.v ? fmtR(tot.v) : '–', 'valor ganho' + (tot.w ? ' · ticket ' + fmtR(tot.v / tot.w) : '')) + kpi(tot.l, 'perdidos');
+  $('#tFunilTemp').innerHTML = tabelaFunil(G.temp);
   $('#tFunilCons').innerHTML = tabelaFunil(G.cons);
   $('#tFunilCanal').innerHTML = tabelaFunil(G.canal);
   $('#tFunilPagina').innerHTML = tabelaFunil(G.pag);
