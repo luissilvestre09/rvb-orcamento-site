@@ -209,7 +209,23 @@
       <div class="card"><h3 style="margin-top:0">Leads por dia (30 dias)</h3><div class="dias" id="gDias"></div></div>
       <div class="card"><h3 style="margin-top:0">Onde a conversa para</h3><div class="barras" id="gEtapas"></div><p class="muted small">Incompletos dos últimos 30 dias, pela última pergunta respondida.</p></div>
       <div class="card"><h3 style="margin-top:0">Por consultor (completos)</h3><div class="barras" id="gCons"></div></div>
-      <div class="card"><h3 style="margin-top:0">Por origem</h3><div class="barras" id="gOrigem"></div></div>
+      <div class="card"><h3 style="margin-top:0">Canal de origem</h3><div class="barras" id="gCanal"></div><p class="muted small">De onde a pessoa veio (Google, Instagram, ChatGPT…). Iniciados em 30 dias.</p></div>
+      <div class="card"><h3 style="margin-top:0">Página de entrada</h3><div class="barras" id="gPagina"></div><p class="muted small">Onde ela abriu o chat (produto, início, artigo…). Iniciados em 30 dias.</p></div>
+    </div>
+    <h2 style="margin:22px 0 4px">Do formulário à venda</h2>
+    <p class="muted small" style="margin:0 0 10px">Só os negócios que nasceram de formulários completos no período do filtro de cima (<span class="fPer"></span>). Vendas de clientes antigos ficam de fora. Qualificada = chegou a Diagnóstico; proposta = chegou a Proposta Enviada (ganhos contam nas duas). Atualiza a cada 15 min.</p>
+    <div class="cards" id="kFunil"></div>
+    <div class="grade">
+      <div class="card" style="grid-column:1/-1;overflow-x:auto"><h3 style="margin-top:0">Por consultora</h3><div id="tFunilCons"></div></div>
+      <div class="card" style="grid-column:1/-1;overflow-x:auto"><h3 style="margin-top:0">Por canal de origem</h3><div id="tFunilCanal"></div></div>
+      <div class="card" style="grid-column:1/-1;overflow-x:auto"><h3 style="margin-top:0">Por página de entrada</h3><div id="tFunilPagina"></div><p class="muted small" id="tFunilTop"></p></div>
+    </div>
+    <h2 style="margin:22px 0 4px">Tempo até o atendimento</h2>
+    <p class="muted small" style="margin:0 0 10px">Do fim do formulário até a primeira resposta. <b>Agente</b>: 1ª mensagem do agente no WhatsApp. <b>Humano</b>: 1ª mensagem da consultora pelo painel, ou 1ª ação registrada no Pipedrive (atividade concluída ou mudança de etapa), o que vier antes. Período: <span class="fPer"></span>.</p>
+    <div class="cards" id="kTempo"></div>
+    <div class="grade">
+      <div class="card" style="grid-column:1/-1;overflow-x:auto"><h3 style="margin-top:0">Humano, por consultora</h3><div id="tTempoCons"></div></div>
+      <div class="card" style="grid-column:1/-1;overflow-x:auto"><h3 style="margin-top:0">🔥 Quentes esperando atendimento</h3><div id="tEsperando"></div></div>
     </div>
   </div>
 
@@ -749,8 +765,121 @@ function renderNumeros() {
   barras($('#gEtapas'), Object.entries(etapas).sort((a, b) => b[1] - a[1]), inc.length);
   const pc = {}; comp.forEach(L => { const n = CONS.find(c => c.id === L.consultora_id)?.nome || L.consultora_id || '?'; pc[n] = (pc[n] || 0) + 1; });
   barras($('#gCons'), Object.entries(pc).sort((a, b) => b[1] - a[1]), comp.length);
-  const po = {}; orc.forEach(L => { const k = (L.utms && L.utms.utm_source) ? L.utms.utm_source : ((L.origem_pagina || '').startsWith('/produtos') ? 'página de produto' : (L.origem_pagina || 'site')); po[k] = (po[k] || 0) + 1; });
-  barras($('#gOrigem'), Object.entries(po).sort((a, b) => b[1] - a[1]).slice(0, 8), orc.length);
+  const pcn = {}, ppg = {};
+  orc.forEach(L => { const c = canalDe(L), g = tipoPagina(L); pcn[c] = (pcn[c] || 0) + 1; ppg[g] = (ppg[g] || 0) + 1; });
+  barras($('#gCanal'), Object.entries(pcn).sort((a, b) => b[1] - a[1]).slice(0, 8), orc.length);
+  barras($('#gPagina'), Object.entries(ppg).sort((a, b) => b[1] - a[1]), orc.length);
+  renderFunil().catch(e => { $('#kFunil').innerHTML = `<div class="erro small">${esc(String(e.message || e))}</div>`; });
+}
+
+/* ---------- canal × página (30/10/2026: antes os dois apareciam misturados em "Por origem") ---------- */
+function canalDe(L) {
+  const u = L.utms || {}, s = String(u.utm_source || '').toLowerCase(), m = String(u.utm_medium || '').toLowerCase();
+  if (!s) return 'Direto / sem origem';
+  if (/google/.test(s)) return /cpc|ppc|paid|ads/.test(m) ? 'Google Ads' : 'Google orgânico';
+  if (/instagram|^ig$/.test(s)) return 'Instagram';
+  if (/facebook|^fb$|meta/.test(s)) return 'Facebook';
+  if (/chatgpt|openai/.test(s)) return 'ChatGPT';
+  if (/perplexity|gemini|copilot|claude/.test(s)) return 'Outras IAs';
+  if (/bing|yahoo|duckduck/.test(s)) return 'Outros buscadores';
+  if (/whats/.test(s)) return 'WhatsApp';
+  if (/mail|rdstation|rd_station/.test(s)) return 'E-mail';
+  if (/indica/.test(s)) return 'Indicação';
+  return s.replace(/^www\./, '');
+}
+function paginaDe(L) {
+  let p = String(L.origem_pagina || '').trim().replace(/\/+$/, '');
+  if (!p || p === '/') return '/';
+  if (!p.startsWith('/')) p = '/produtos/' + p;   // o chat grava o produto da página sem barra (ex. tenda-inflavel/3x3m)
+  return p;
+}
+function tipoPagina(L) {
+  const p = paginaDe(L);
+  if (p === '/') return 'Início';
+  if (/instagram|-bio|post$/.test(p)) return 'Link do Instagram';
+  if (p.startsWith('/produtos/')) return 'Página de produto';
+  if (/^\/(solicitar-orcamento|contato|cases|duvidas-frequentes|sobre|quem-somos|clientes)/.test(p)) return 'Institucional';
+  const slug = p.split('/').filter(Boolean).pop() || '';
+  if (/guia|como-|o-que|dicas|quanto-custa|vantagens|tipos-de|ideias|por-que|melhores|passo-a-passo|blog/.test(p) || slug.split('-').length >= 5) return 'Artigo do blog';
+  return 'Página de produto';
+}
+
+/* ---------- funil e tempo de atendimento (30/10/2026) ---------- */
+const fmtR = (v) => 'R$ ' + Math.round(v).toLocaleString('pt-BR');
+const fmtMin = (m) => m == null ? '–' : m < 60 ? Math.round(m) + ' min' : m < 48 * 60 ? (m / 60).toFixed(m < 600 ? 1 : 0).replace('.', ',') + ' h' : Math.round(m / 1440) + ' dias';
+const mediana = (a) => { if (!a.length) return null; const b = [...a].sort((x, y) => x - y), i = Math.floor(b.length / 2); return b.length % 2 ? b[i] : (b[i - 1] + b[i]) / 2; };
+async function emLotes(tabela, col, valores, campos, extra) {
+  const out = [];
+  for (let i = 0; i < valores.length; i += 150) {
+    let q = sb.from(tabela).select(campos).in(col, valores.slice(i, i + 150));
+    if (extra) q = extra(q);
+    const { data, error } = await q.limit(5000);
+    if (error) throw error; out.push(...(data || []));
+  }
+  return out;
+}
+function tabelaFunil(grupos) {
+  const linhas = Object.entries(grupos).sort((a, b) => b[1].c - a[1].c);
+  if (!linhas.length) return '<span class="muted small">Sem dados no período.</span>';
+  const pct = (a, b) => b ? Math.round(a / b * 100) + '%' : '–';
+  return `<table><thead><tr><th></th><th>Completos</th><th>Qualificadas</th><th>Propostas</th><th>Ganhos</th><th>Valor ganho</th><th>Conversão</th><th>Ticket</th></tr></thead><tbody>` +
+    linhas.map(([k, g]) => `<tr><td><b>${esc(k)}</b></td><td>${g.c}</td><td>${g.q} <span class="muted small">${pct(g.q, g.c)}</span></td><td>${g.p} <span class="muted small">${pct(g.p, g.c)}</span></td><td>${g.w}</td><td>${g.v ? fmtR(g.v) : '–'}</td><td>${pct(g.w, g.c)}</td><td>${g.w ? fmtR(g.v / g.w) : '–'}</td></tr>`).join('') + '</tbody></table>';
+}
+async function renderFunil() {
+  const per = { hoje: 'hoje', ontem: 'ontem', '30': 'últimos 30 dias', '90': 'últimos 90 dias', '365': 'último ano' }[$('#fDias').value] || '';
+  document.querySelectorAll('.fPer').forEach(e => e.textContent = per);
+  const comp = LEADS.filter(L => L.tipo !== 'contato' && L.status === 'completo');
+  const ids = [...new Set(comp.map(L => L.pipedrive_deal_id).filter(Boolean))];
+  const neg = ids.length ? await emLotes('pd_negocios', 'deal_id', ids, '*') : [];
+  const N = new Map(neg.map(n => [Number(n.deal_id), n]));
+  const consDe = (L, n) => (n && CONS.find(c => Number(c.pipedrive_user_id) === Number(n.owner_id))?.nome) || CONS.find(c => c.id === L.consultora_id)?.nome || L.consultora_id || 'sem consultora';
+  const G = { cons: {}, canal: {}, pag: {}, url: {} }, tot = { c: 0, q: 0, p: 0, w: 0, v: 0, l: 0 };
+  const soma = (obj, k, n) => { const g = obj[k] = obj[k] || { c: 0, q: 0, p: 0, w: 0, v: 0 }; g.c++; if (n?.qualificada) g.q++; if (n?.proposta) g.p++; if (n?.status === 'won') { g.w++; g.v += Number(n.valor) || 0; } };
+  comp.forEach(L => {
+    const n = N.get(Number(L.pipedrive_deal_id));
+    tot.c++; if (n?.qualificada) tot.q++; if (n?.proposta) tot.p++; if (n?.status === 'won') { tot.w++; tot.v += Number(n.valor) || 0; } if (n?.status === 'lost') tot.l++;
+    soma(G.cons, consDe(L, n), n); soma(G.canal, canalDe(L), n); soma(G.pag, tipoPagina(L), n); soma(G.url, paginaDe(L), n);
+  });
+  const p = (a) => tot.c ? ` <span class="muted small">${Math.round(a / tot.c * 100)}%</span>` : '';
+  $('#kFunil').innerHTML = kpi(tot.c, 'completos') + kpi(tot.q + p(tot.q), 'oportunidades qualificadas') + kpi(tot.p + p(tot.p), 'propostas') + kpi(tot.w + p(tot.w), 'negócios ganhos') + kpi(tot.v ? fmtR(tot.v) : '–', 'valor ganho' + (tot.w ? ' · ticket ' + fmtR(tot.v / tot.w) : '')) + kpi(tot.l, 'perdidos');
+  $('#tFunilCons').innerHTML = tabelaFunil(G.cons);
+  $('#tFunilCanal').innerHTML = tabelaFunil(G.canal);
+  $('#tFunilPagina').innerHTML = tabelaFunil(G.pag);
+  const top = Object.entries(G.url).filter(([, g]) => g.q || g.w).sort((a, b) => (b[1].w - a[1].w) || (b[1].q - a[1].q)).slice(0, 6);
+  $('#tFunilTop').innerHTML = top.length ? 'Páginas que mais geraram oportunidades: ' + top.map(([u, g]) => `<b>${esc(u === '/' ? 'início' : u.replace('/produtos/', ''))}</b> (${g.q} qualif.${g.w ? ', ' + g.w + ' ganho' + (g.w > 1 ? 's' : '') : ''})`).join(' · ') : '';
+  if (!neg.length && ids.length) $('#kFunil').insertAdjacentHTML('beforeend', '<div class="muted small" style="grid-column:1/-1">Os negócios ainda não foram lidos do Pipedrive (a primeira leitura roda em até 15 min).</div>');
+
+  // ---- tempo até o atendimento ----
+  const ses = comp.map(L => L.session_id);
+  const convs = ses.length ? await emLotes('wa_conversas', 'lead_session_id', ses, 'telefone, lead_session_id') : [];
+  const tels = [...new Set(convs.map(c => c.telefone))];
+  const msgs = tels.length ? await emLotes('wa_mensagens', 'telefone', tels, 'telefone, autor, criado_em', q => q.eq('direcao', 'out').order('criado_em')) : [];
+  const telDe = new Map(convs.map(c => [c.lead_session_id, c.telefone]));
+  const primeira = {}; msgs.forEach(m => { const k = m.autor === 'agente' ? 'a' : 'h'; const o = primeira[m.telefone] = primeira[m.telefone] || {}; if (!o[k]) o[k] = m.criado_em; });
+  const tAg = [], tHu = [], porCons = {}, esperando = [];
+  comp.forEach(L => {
+    const fim = new Date(L.convertido_em || L.criado_em).getTime();
+    const n = N.get(Number(L.pipedrive_deal_id)), w = primeira[telDe.get(L.session_id)] || {};
+    if (w.a) tAg.push(Math.max(0, (new Date(w.a) - fim) / 60000));
+    const cand = [w.h, n?.resposta_humana_em].filter(Boolean).map(x => new Date(x).getTime()).filter(t => t >= fim - 60000);
+    const h = cand.length ? Math.min(...cand) : null;
+    const cn = consDe(L, n), g = porCons[cn] = porCons[cn] || { t: [], sem: 0, total: 0 };
+    g.total++;
+    if (h != null) { const m = Math.max(0, (h - fim) / 60000); tHu.push(m); g.t.push(m); }
+    else if (!n || n.status === 'open') {
+      g.sem++;
+      if (L.temperatura === 'QUENTE' && Date.now() - fim < 14 * 86400000) esperando.push({ L, n, cn, min: (Date.now() - fim) / 60000 });
+    }
+  });
+  const ate = (a, lim) => a.length ? Math.round(a.filter(x => x <= lim).length / a.length * 100) + '%' : '–';
+  $('#kTempo').innerHTML = kpi(fmtMin(mediana(tAg)), `agente · mediana (${tAg.length} leads)`) + kpi(fmtMin(mediana(tHu)), `humano · mediana (${tHu.length} leads)`) + kpi(ate(tHu, 60), 'humano em até 1 h') + kpi(ate(tHu, 24 * 60), 'humano em até 24 h') + kpi(comp.length - tHu.length, 'sem ação humana registrada');
+  const lc = Object.entries(porCons).sort((a, b) => b[1].total - a[1].total);
+  $('#tTempoCons').innerHTML = lc.length ? `<table><thead><tr><th></th><th>Leads</th><th>Mediana</th><th>Em até 1 h</th><th>Em até 24 h</th><th>Sem ação registrada</th></tr></thead><tbody>` +
+    lc.map(([k, g]) => `<tr><td><b>${esc(k)}</b></td><td>${g.total}</td><td>${fmtMin(mediana(g.t))}</td><td>${ate(g.t, 60)}</td><td>${ate(g.t, 1440)}</td><td>${g.sem}</td></tr>`).join('') + '</tbody></table>' : '<span class="muted small">Sem dados no período.</span>';
+  esperando.sort((a, b) => b.min - a.min);
+  $('#tEsperando').innerHTML = esperando.length ? `<table><thead><tr><th>Esperando há</th><th>Nome</th><th>Empresa</th><th>Consultora</th><th>Negócio</th></tr></thead><tbody>` +
+    esperando.map(x => `<tr><td><b>${fmtMin(x.min)}</b></td><td>${esc(x.L.nome || '')}</td><td>${esc(x.L.empresa || '')}</td><td>${esc(x.cn)}</td><td>${x.L.pipedrive_deal_id ? `<a href="https://rvb.pipedrive.com/deal/${x.L.pipedrive_deal_id}" target="_blank" rel="noopener">abrir</a>` : ''}</td></tr>`).join('') + '</tbody></table>'
+    : '<span class="muted small">Nenhum lead quente esperando. 👏</span>';
 }
 
 /* ---------- consultoras ---------- */
