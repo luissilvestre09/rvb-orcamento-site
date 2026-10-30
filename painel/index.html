@@ -210,7 +210,7 @@
       <div class="card"><h3 style="margin-top:0">Onde a conversa para</h3><div class="barras" id="gEtapas"></div><p class="muted small">Incompletos dos últimos 30 dias, pela última pergunta respondida.</p></div>
       <div class="card"><h3 style="margin-top:0">Por consultor (completos)</h3><div class="barras" id="gCons"></div></div>
       <div class="card"><h3 style="margin-top:0">Canal de origem</h3><div class="barras" id="gCanal"></div><p class="muted small">De onde a pessoa veio (Google, Instagram, ChatGPT…). Iniciados em 30 dias.</p></div>
-      <div class="card"><h3 style="margin-top:0">Página de entrada</h3><div class="barras" id="gPagina"></div><p class="muted small">Onde ela abriu o chat (produto, início, artigo…). Iniciados em 30 dias.</p></div>
+      <div class="card"><h3 style="margin-top:0">Página de entrada</h3><div class="barras" id="gPagina"></div><p class="muted small">Primeira página que ela abriu no site (produto, início, artigo…). Iniciados em 30 dias.</p></div>
     </div>
     <h2 style="margin:22px 0 4px">Do formulário à venda</h2>
     <p class="muted small" style="margin:0 0 10px">Só os negócios que nasceram de formulários completos no período do filtro de cima (<span class="fPer"></span>). Vendas de clientes antigos ficam de fora. Qualificada = chegou a Diagnóstico; proposta = chegou a Proposta Enviada (ganhos contam nas duas). Atualiza a cada 15 min.</p>
@@ -774,7 +774,7 @@ function renderNumeros() {
 
 /* ---------- canal × página (30/10/2026: antes os dois apareciam misturados em "Por origem") ---------- */
 function canalDe(L) {
-  const u = L.utms || {}, s = String(u.utm_source || '').toLowerCase(), m = String(u.utm_medium || '').toLowerCase();
+  const u = L.utms || {}, s = String(u.utm_source || u.ref || '').toLowerCase(), m = String(u.utm_medium || '').toLowerCase();   // sem UTM: site de onde veio (ref)
   if (!s) return 'Direto / sem origem';
   if (/google/.test(s)) return /cpc|ppc|paid|ads/.test(m) ? 'Google Ads' : 'Google orgânico';
   if (/instagram|^ig$/.test(s)) return 'Instagram';
@@ -788,7 +788,8 @@ function canalDe(L) {
   return s.replace(/^www\./, '');
 }
 function paginaDe(L) {
-  let p = String(L.origem_pagina || '').trim().replace(/\/+$/, '');
+  // entrada = primeira página visitada no site (utms.landing, cookie); sem ela, a página onde o chat abriu
+  let p = String((L.utms && L.utms.landing) || L.origem_pagina || '').trim().replace(/\/+$/, '');
   if (!p || p === '/') return '/';
   if (!p.startsWith('/')) p = '/produtos/' + p;   // o chat grava o produto da página sem barra (ex. tenda-inflavel/3x3m)
   return p;
