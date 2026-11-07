@@ -740,6 +740,14 @@
    "descricao": "Tenda inflável 3x3 m da Ademicon (consórcio e investimento): cobertura vermelha com a marca, colunas cinza; foto de fábrica. As unidades Ademicon usam em feirões, eventos e na frente da loja, muitas vezes com o balão de 3 m ao lado",
    "legenda": "Tenda 3x3 m que fizemos para uma unidade Ademicon; é a que a rede usa em feirões e eventos.",
    "medida": "3x3 m"
+  },
+  {
+   "id": "cores-rvb",
+   "arquivo": "cores-rvb.jpg",
+   "produto": "cartela de cores",
+   "segmento": "todos (escolha de cor)",
+   "descricao": "Cartela oficial de cores da RVB (20 cores Pantone). Mande só quando for perguntar ou o cliente perguntar a cor; não é foto de produto.",
+   "legenda": "Essas são as nossas cores oficiais."
   }
  ]
 }
