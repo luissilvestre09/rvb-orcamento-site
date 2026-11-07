@@ -6,6 +6,9 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#FFFFFF">
 <title>Orçamento RVB</title>
+<!-- Google Ads (07/11/2026): a conversão "lead do chat" sai desta página, que lê o gclid/gbraid/wbraid que o site passa na URL -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-1070402637"></script>
+<script>window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'AW-1070402637');</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap">
 <style>
@@ -752,6 +755,16 @@
   const DDD_CIDADE = { '11':'São Paulo/SP','12':'São José dos Campos/SP','13':'Santos/SP','14':'Bauru/SP','15':'Sorocaba/SP','16':'Ribeirão Preto/SP','17':'São José do Rio Preto/SP','18':'Presidente Prudente/SP','19':'Campinas/SP','21':'Rio de Janeiro/RJ','22':'Campos dos Goytacazes/RJ','24':'Volta Redonda/RJ','27':'Vitória/ES','28':'Cachoeiro de Itapemirim/ES','31':'Belo Horizonte/MG','32':'Juiz de Fora/MG','33':'Governador Valadares/MG','34':'Uberlândia/MG','35':'Poços de Caldas/MG','37':'Divinópolis/MG','38':'Montes Claros/MG','41':'Curitiba/PR','42':'Ponta Grossa/PR','43':'Londrina/PR','44':'Maringá/PR','45':'Foz do Iguaçu/PR','46':'Pato Branco/PR','47':'Joinville/SC','48':'Florianópolis/SC','49':'Chapecó/SC','51':'Porto Alegre/RS','53':'Pelotas/RS','54':'Caxias do Sul/RS','55':'Santa Maria/RS','61':'Brasília/DF','62':'Goiânia/GO','63':'Palmas/TO','64':'Rio Verde/GO','65':'Cuiabá/MT','66':'Rondonópolis/MT','67':'Campo Grande/MS','68':'Rio Branco/AC','69':'Porto Velho/RO','71':'Salvador/BA','73':'Ilhéus/BA','74':'Juazeiro/BA','75':'Feira de Santana/BA','77':'Vitória da Conquista/BA','79':'Aracaju/SE','81':'Recife/PE','82':'Maceió/AL','83':'João Pessoa/PB','84':'Natal/RN','85':'Fortaleza/CE','86':'Teresina/PI','87':'Petrolina/PE','88':'Juazeiro do Norte/CE','89':'Picos/PI','91':'Belém/PA','92':'Manaus/AM','93':'Santarém/PA','94':'Marabá/PA','95':'Boa Vista/RR','96':'Macapá/AP','97':'Coari/AM','98':'São Luís/MA','99':'Imperatriz/MA' };
   const REGIAO = { '1':'Sudeste (SP)', '2':'Sudeste (RJ/ES)', '3':'Sudeste (MG)', '4':'Sul', '5':'Sul', '6':'Centro-Oeste', '7':'Centro-Oeste / Norte', '8':'Nordeste', '9':'Norte / Nordeste' };
 
+  /* ---------- Conversão do Google Ads (07/11/2026) ----------
+     Rótulo da ação de conversão "Lead chat do site" criada no Google Ads (Metas > Conversões). Vazio = não envia. */
+  const ADS_CONVERSAO = '';
+  function avisarConversao(negocioId, sessao, produto) {
+    if (window.__rvbConvertido || !/(^|\.)rvb\.com\.br$/.test(location.hostname)) return;   // uma vez por conversa; nunca em teste local
+    window.__rvbConvertido = true;
+    try { if (ADS_CONVERSAO && typeof gtag === 'function') gtag('event', 'conversion', { send_to: 'AW-1070402637/' + ADS_CONVERSAO, transaction_id: String(negocioId || sessao || '') }); } catch (e) {}
+    try { if (window.self !== window.top) window.parent.postMessage({ rvb: 'lead', produto: produto || '' }, '*'); } catch (e) {}
+  }
+
   /* ---------- Origem: produto e UTMs vindos da página ---------- */
   function lerOrigem() {
     const o = { url: location.href, utms: {} };
@@ -760,6 +773,7 @@
     Object.keys(q).forEach(k => { if (k.startsWith('utm_')) o.utms[k] = q[k]; });
     if (q.landing) o.utms.landing = q.landing;   // primeira página visitada (cookie do site)
     if (q.ref) o.utms.ref = q.ref;   // site de onde a pessoa veio no primeiro acesso (google.com = busca orgânica)
+    ['gclid', 'gbraid', 'wbraid'].forEach(k => { if (q[k]) o.utms[k] = q[k]; });   // clique do anúncio (07/11/2026): base para conversão de venda no Google Ads
     const hash = (location.hash || '').replace('#', '');
     const pid = q.produto_id || q.produto || hash;
     if (pid && PRODUCTS[pid]) {
@@ -1101,6 +1115,7 @@
         C = nova;
       }
       L.dist = { c: C, motivo: rf.distribuicao || L.dist.motivo }; L.negocioId = rf.negocio_id;
+      avisarConversao(rf.negocio_id, L.session_id, L.produto && L.produto.short);
     } else if (rf && !rf.ok) { C = CENTRAL; L.dist = { c: C, motivo: 'falha no servidor, lead gravado para reprocessar: ' + (rf.erro || '') }; }
     if (trocouNoFim) {
       const art = C.artigo || 'a', pron = art === 'o' ? 'ele' : 'ela';

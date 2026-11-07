@@ -49,7 +49,11 @@
   var atuais = utmsDaUrl();
   // gclid sem utm = Google Ads (o Google nem sempre manda utm); referrer externo = de onde a pessoa veio (google.com = busca orgânica,
   // instagram.com, l.facebook.com...). Guardado no primeiro acesso, para a origem do lead ficar na nota do Pipedrive (16/10/2026).
-  try { if (new URLSearchParams(location.search).get('gclid') && !atuais.utm_source) { atuais.utm_source = 'google'; atuais.utm_medium = 'cpc'; } } catch (e) {}
+  // 07/11/2026: no iPhone o Google Ads manda gbraid/wbraid em vez de gclid; os três ficam guardados para a conversão do Google Ads
+  var CLIQUE = {};
+  try { var qs = new URLSearchParams(location.search); ['gclid', 'gbraid', 'wbraid'].forEach(function (k) { if (qs.get(k)) CLIQUE[k] = qs.get(k); }); } catch (e) {}
+  if (Object.keys(CLIQUE).length && !atuais.utm_source) { atuais.utm_source = 'google'; atuais.utm_medium = 'cpc'; }
+  Object.keys(CLIQUE).forEach(function (k) { atuais[k] = CLIQUE[k]; });
   // 30/10/2026: o cookie passa a ser atualizado em toda visita que TEM origem (utm ou site externo) — "último toque identificado".
   // Antes só gravava no primeiro acesso: quem tinha cookie antigo sem origem (anterior a 16/10) ficava "direto" para sempre.
   var ref = ''; try { ref = new URL(document.referrer).hostname.replace(/^www\./, ''); } catch (e) {}
@@ -118,6 +122,11 @@
       if (e.origin !== ORIGEM) return;
       var d = e.data || {};
       if (d.rvb === 'fechar') fechar();
+      // lead concluído no chat (07/11/2026): avisa o Google Tag Manager / GA4 do site (o Google Ads é avisado pela própria página do chat)
+      if (d.rvb === 'lead') {
+        try { (window.dataLayer = window.dataLayer || []).push({ event: 'rvb_lead', rvb_produto: d.produto || '' }); } catch (err) {}
+        try { if (typeof window.gtag === 'function') window.gtag('event', 'generate_lead', { source: 'chat_rvb', item_name: d.produto || '' }); } catch (err) {}
+      }
       if (d.rvb === 'expandir') { try { frame.contentWindow.postMessage({ rvb: 'expandido' }, ORIGEM); } catch (err) {} }
     });
   }
@@ -133,6 +142,7 @@
     Object.keys(u).forEach(function (k) { if (k.indexOf('utm_') === 0) p.set(k, u[k]); });
     if (u.landing) p.set('landing', u.landing);
     if (u.ref) p.set('ref', u.ref);
+    ['gclid', 'gbraid', 'wbraid'].forEach(function (k) { if (u[k]) p.set(k, u[k]); });
     return BASE + '?' + p.toString();
   }
 
