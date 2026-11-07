@@ -748,6 +748,14 @@
    "segmento": "todos (escolha de cor)",
    "descricao": "Cartela oficial de cores da RVB (20 cores Pantone). Mande só quando for perguntar ou o cliente perguntar a cor; não é foto de produto.",
    "legenda": "Essas são as nossas cores oficiais."
+  },
+  {
+   "id": "black-balao-3m",
+   "arquivo": "black-balao-3m.jpg",
+   "produto": "balão inflável 3 m listrado (Black)",
+   "segmento": "campanha Black (preço)",
+   "descricao": "Arte da campanha Black RVB: balão de 3 m listrado com branco, R$ 1.590 ou 3x de R$ 530, R$ 1.490 no Pix, válido até 30/11. Só na campanha Black, junto com o preço.",
+   "legenda": ""
   }
  ]
 }
