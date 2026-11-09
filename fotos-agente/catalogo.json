@@ -756,6 +756,42 @@
    "segmento": "campanha Black (preço)",
    "descricao": "Arte da campanha Black RVB: balão de 3 m listrado com branco, R$ 1.590 ou 3x de R$ 530, R$ 1.490 no Pix, válido até 30/11. Só na campanha Black, junto com o preço.",
    "legenda": ""
+  },
+  {
+   "id": "balao-3m-listrado-anhanguera",
+   "arquivo": "balao-3m-listrado-anhanguera.jpg",
+   "produto": "balão inflável 3 m listrado",
+   "medida": "3 m",
+   "segmento": "cliente real (Anhanguera) · listras laranja",
+   "descricao": "Foto real de fábrica do balão de 3 m listrado com branco, equador branco, listras e base laranja, logo Anhanguera. Use na campanha Black para mostrar a cor que o cliente escolheu.",
+   "legenda": ""
+  },
+  {
+   "id": "balao-3m-listrado-daycoval",
+   "arquivo": "balao-3m-listrado-daycoval.jpg",
+   "produto": "balão inflável 3 m listrado",
+   "medida": "3 m",
+   "segmento": "cliente real (Banco Daycoval) · listras azul marinho",
+   "descricao": "Foto real de fábrica do balão de 3 m listrado com branco, equador branco, listras e base azul marinho, logo Banco Daycoval. Use na campanha Black para mostrar a cor que o cliente escolheu.",
+   "legenda": ""
+  },
+  {
+   "id": "balao-3m-listrado-intelbras",
+   "arquivo": "balao-3m-listrado-intelbras.jpg",
+   "produto": "balão inflável 3 m listrado",
+   "medida": "3 m",
+   "segmento": "cliente real (Intelbras) · listras verde maçã",
+   "descricao": "Foto real de fábrica do balão de 3 m listrado com branco, equador branco, listras e base verde maçã, logo Intelbras. Use na campanha Black para mostrar a cor que o cliente escolheu.",
+   "legenda": ""
+  },
+  {
+   "id": "balao-3m-listrado-sicoob",
+   "arquivo": "balao-3m-listrado-sicoob.jpg",
+   "produto": "balão inflável 3 m listrado",
+   "medida": "3 m",
+   "segmento": "cliente real (Sicoob Credicarpa) · listras verde turquesa",
+   "descricao": "Foto real de fábrica do balão de 3 m listrado com branco, equador branco, listras e base verde turquesa, logo Sicoob Credicarpa. Use na campanha Black para mostrar a cor que o cliente escolheu.",
+   "legenda": ""
   }
  ]
 }
