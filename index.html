@@ -777,6 +777,8 @@
     Object.keys(q).forEach(k => { if (k.startsWith('utm_')) o.utms[k] = q[k]; });
     if (q.landing) o.utms.landing = q.landing;   // primeira página visitada (cookie do site)
     if (q.ref) o.utms.ref = q.ref;   // site de onde a pessoa veio no primeiro acesso (google.com = busca orgânica)
+    // chegou sem origem na URL: usa o site de onde a pessoa veio, se for de fora (link direto para o chat em bio, e-mail, outro site)
+    if (!o.utms.utm_source && !o.utms.ref) { try { const h = new URL(document.referrer).hostname.replace(/^www\./, ''); if (h && !/(^|\.)rvb\.com\.br$/.test(h)) o.utms.ref = h; } catch (e) {} }
     ['gclid', 'gbraid', 'wbraid'].forEach(k => { if (q[k]) o.utms[k] = q[k]; });   // clique do anúncio (07/11/2026): base para conversão de venda no Google Ads
     const hash = (location.hash || '').replace('#', '');
     const pid = q.produto_id || q.produto || hash;

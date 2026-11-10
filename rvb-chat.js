@@ -195,6 +195,15 @@
     var el = e.target.closest && e.target.closest('a[href], .rvb-abrir-chat, [data-rvb-chat]');
     if (!el) return;
     var href = el.getAttribute('href') || '';
+    // link fixo para o chat (banner da lateral, botão de página antiga): leva junto a origem guardada no cookie, senão o lead
+    // chega como "direto" (10/11/2026, caso Creme Americano: origem banner-sidebar, sem utm, sem ref, sem landing)
+    try {
+      if (href.indexOf(BASE) === 0 && !/[?&](utm_source|ref|landing|gclid|gbraid|wbraid)=/.test(href)) {
+        var U = new URL(href), ck = Object.assign({}, lerCookie() || {}, utmsDaUrl());
+        Object.keys(ck).forEach(function (k) { if ((k.indexOf('utm_') === 0 || /^(landing|ref|gclid|gbraid|wbraid)$/.test(k)) && ck[k] && !U.searchParams.get(k)) U.searchParams.set(k, ck[k]); });
+        el.setAttribute('href', U.toString()); href = U.toString();
+      }
+    } catch (err) {}
     var direto = /#(orcamento|contato|solicitar-orcamento|solicite-orcamento)/.test(href) || el.matches('.rvb-abrir-chat, [data-rvb-chat]');
     var legado = INTERCEPTAR && (WA_CENTRAL.test(href) || /\/solicitar-orcamento\/?(\?|#|$)/.test(href));
     if (!direto && !legado) return;
