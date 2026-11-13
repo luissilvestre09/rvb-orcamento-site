@@ -529,13 +529,20 @@ async function abrirConversa(t) {
   const dadosTxt = Object.keys(rot).filter(k => d[k]).map(k => `<div><b>${rot[k]}:</b> ${esc(k === 'data_evento' ? String(d[k]).split('-').reverse().join('/') : d[k])}</div>`).join('');
   $('#cHead').innerHTML = `<button class="btn voltar" id="cVoltar2">‹</button><div><b>${esc(CONV.nome || foneCurto(CONV.telefone))}</b> <span class="muted small">${esc(foneCurto(CONV.telefone))}${NUMS.length > 1 && numeroDe(CONV) ? ' · via ' + esc(numeroDe(CONV)) : ''}</span>${CONV.temperatura ? ` <span class="tag">${esc(CONV.temperatura)}</span>` : ''}
       ${CONV.pipedrive_deal_id ? ` · <a href="${PD}/deal/${CONV.pipedrive_deal_id}" target="_blank" rel="noopener">negócio</a>` : CONV.pipedrive_person_id ? ` · <a href="${PD}/person/${CONV.pipedrive_person_id}" target="_blank" rel="noopener">pessoa</a>` : ''}</div>`;
-  $('#cFerr').innerHTML = `<button class="btn" id="kAbrir">🎯 Coach</button>${dadosTxt ? `<button class="btn" id="dAbrir">📋 Briefing</button>` : ''}${PODE_APAGAR ? `<button class="btn" id="cApagar" title="Apaga a conversa do painel (não mexe no Pipedrive nem no WhatsApp do cliente)">🗑</button>` : ''}<div class="modo"><span class="muted">Quem atende:</span>${['agente', 'humano', 'pausado'].map(m => `<button data-modo="${m}" class="${CONV.modo === m ? 'on' : ''}">${m === 'agente' ? '🤖 Agente' : m === 'humano' ? '👤 Humano' : '⏸ Pausado'}</button>`).join('')}</div>`;
+  $('#cFerr').innerHTML = `<button class="btn" id="kAbrir">🎯 Coach</button><button class="btn" id="oAbrir" title="Diga ao agente o que fazer agora. O cliente não vê a orientação.">🧭 Orientar agente</button>${dadosTxt ? `<button class="btn" id="dAbrir">📋 Briefing</button>` : ''}${PODE_APAGAR ? `<button class="btn" id="cApagar" title="Apaga a conversa do painel (não mexe no Pipedrive nem no WhatsApp do cliente)">🗑</button>` : ''}<div class="modo"><span class="muted">Quem atende:</span>${['agente', 'humano', 'pausado'].map(m => `<button data-modo="${m}" class="${CONV.modo === m ? 'on' : ''}">${m === 'agente' ? '🤖 Agente' : m === 'humano' ? '👤 Humano' : '⏸ Pausado'}</button>`).join('')}</div>`;
   $('#cFerr').hidden = false;
   $('#cDados').innerHTML = dadosTxt + `<div class="parou">${CONV.motivo_transbordo ? `<b>Agente parou porque:</b> ${esc(CONV.motivo_transbordo)}` : ''}</div>`;
   $('#cDados').hidden = true;
   if (dadosTxt) $('#dAbrir').addEventListener('click', () => { $('#cDados').hidden = !$('#cDados').hidden; });
   $('#cVoltar2').addEventListener('click', () => { document.querySelector('.chat').classList.remove('aberta'); lembrarHash('#conversas'); });
   $('#kAbrir').addEventListener('click', () => { $('#coach').hidden = !$('#coach').hidden; });
+  $('#oAbrir').addEventListener('click', async () => {
+    const instrucao = prompt('O que o agente deve fazer agora? O cliente não vê esta orientação.\nEx.: "faça a prévia do outro lado com a logo da SM Veículos" ou "diga que a Kátia chama amanhã às 8h".');
+    if (!instrucao || !instrucao.trim()) return;
+    $('#cErro').textContent = 'Orientação enviada. O agente responde em instantes…';
+    const r = await chamarFn({ acao: 'orientar', telefone: CONV.telefone, instrucao: instrucao.trim() });
+    $('#cErro').textContent = r.ok ? '' : (r.erro || 'não deu');
+  });
   if (PODE_APAGAR) $('#cApagar').addEventListener('click', async () => {
     if (!confirm('Apagar esta conversa do painel? Some daqui (mensagens incluídas), mas não apaga nada no Pipedrive nem no WhatsApp do cliente.')) return;
     const r = await chamarFn({ acao: 'apagar', telefone: CONV.telefone });
