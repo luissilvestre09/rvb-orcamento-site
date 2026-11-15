@@ -260,7 +260,7 @@ const fone = (d) => { d = String(d || '').replace(/\D/g, ''); return d.length ==
 const dt = (s) => s ? new Date(s).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }) : '';
 const PERGUNTAS = { 0:'abriu', 1:'nome (parou no WhatsApp)', 2:'WhatsApp/e-mail (parou na empresa)', 3:'empresa (parou no objetivo)', 4:'objetivo (parou no prazo)', 5:'prazo (parou no CNPJ)', 6:'CNPJ (parou na cidade)', 7:'cidade (parou no resumo)', 8:'completo' };
 const PD = 'https://rvb.pipedrive.com';
-let CONS = [], LEADS = [], DEPS = [], PODE_APAGAR = false, SOU_LUIS = false;
+let CONS = [], LEADS = [], DEPS = [], PODE_APAGAR = false, SOU_LUIS = false, VE_TUDO = false;
 const APAGADORES = ['luis@rvb.com.br', 'silvestre@rvb.com.br'];
 
 /* ---------- login ---------- */
@@ -279,11 +279,14 @@ sb.auth.onAuthStateChange((_e, sess) => {
   $('#who').textContent = ok ? sess.user.email : '';
   PODE_APAGAR = ok && APAGADORES.includes((sess.user.email || '').toLowerCase());
   SOU_LUIS = ok && /^(luis|silvestre)@rvb\.com\.br$/i.test(sess.user.email || '');
+  // consultora: só a aba Conversas (as dela; o banco é quem filtra). Leads, números, rodízio e departamentos ficam com a administração.
+  VE_TUDO = ok && /^(luis|silvestre|lais)@rvb\.com\.br$/i.test(sess.user.email || '');
+  document.querySelectorAll('#tabs .tab').forEach(t => { if (t.dataset.p !== 'conversas') t.hidden = !VE_TUDO; });
   // Conversas é a aba inicial e a última conversa aberta volta sozinha (22/10/2026: "quando saio do painel ele volta para os leads
   // e tenho que entrar de novo na conversa"). O hash guarda a conversa; o app instalado abre sem hash, então também fica no localStorage (12 h).
   if (ok) {
     if (!location.hash) { try { const u = JSON.parse(localStorage.getItem('painel_ultima') || 'null'); if (u && u.h && Date.now() - u.ts < 12 * 3600 * 1000) history.replaceState(null, '', u.h); } catch { /* sem localStorage */ } }
-    { const h = location.hash.replace(/^#/, '').split('/')[0]; mostrar(['leads', 'numeros', 'equipe', 'deptos'].includes(h) ? h : 'conversas'); } irPeloLink(); carregarTudo(); avisosEstado().catch(e => console.warn('avisos:', e)); } else { document.querySelectorAll('.painel').forEach(p => p.classList.toggle('on', p.id === 'p-login')); }
+    { const h = location.hash.replace(/^#/, '').split('/')[0]; mostrar(VE_TUDO && ['leads', 'numeros', 'equipe', 'deptos'].includes(h) ? h : 'conversas'); } irPeloLink(); carregarTudo(); avisosEstado().catch(e => console.warn('avisos:', e)); } else { document.querySelectorAll('.painel').forEach(p => p.classList.toggle('on', p.id === 'p-login')); }
 });
 
 /* ---------- abas ---------- */
@@ -291,7 +294,7 @@ function mostrar(p) {
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.p === p));
   document.querySelectorAll('.painel').forEach(x => x.classList.toggle('on', x.id === 'p-' + p));
 }
-$('#tabs').addEventListener('click', e => { const t = e.target.closest('.tab'); if (!t) return; mostrar(t.dataset.p); lembrarHash(t.dataset.p === 'conversas' ? (CONV ? '#conversas/' + CONV.telefone : '#conversas') : '#' + t.dataset.p); });
+$('#tabs').addEventListener('click', e => { const t = e.target.closest('.tab'); if (!t) return; if (!VE_TUDO && t.dataset.p !== 'conversas') return; mostrar(t.dataset.p); lembrarHash(t.dataset.p === 'conversas' ? (CONV ? '#conversas/' + CONV.telefone : '#conversas') : '#' + t.dataset.p); });
 function lembrarHash(h) { history.replaceState(null, '', h); try { localStorage.setItem('painel_ultima', JSON.stringify({ h, ts: Date.now() })); } catch { /* sem localStorage */ } }
 
 /* ---------- dados ---------- */
