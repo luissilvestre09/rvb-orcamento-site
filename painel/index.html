@@ -121,6 +121,7 @@
 .previas{padding:10px 12px;border-top:1px solid #e3e8f0;background:#fffbe6}
 .previa{display:flex;gap:12px;align-items:flex-start;margin-bottom:10px}.previa img{width:140px;height:140px;object-fit:cover;border-radius:8px;border:1px solid #e3e8f0}
 .previa .txt{flex:1;font-size:13px}.previa .acoes{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+body.so-meu .sc{display:none}
 </style>
 </head>
 <body>
@@ -173,7 +174,7 @@
       <span class="muted small" id="cont"></span>
     </div>
     <div style="overflow:auto"><table>
-      <thead><tr><th>Quando</th><th>Nome</th><th>Empresa</th><th class="oc">WhatsApp</th><th class="oc">Produto</th><th>Status</th><th class="oc">Score</th><th>Consultor</th><th class="oc">Origem</th><th>Pipedrive</th></tr></thead>
+      <thead><tr><th>Quando</th><th>Nome</th><th>Empresa</th><th class="oc">WhatsApp</th><th class="oc">Produto</th><th>Status</th><th class="oc sc">Score</th><th>Consultor</th><th class="oc">Origem</th><th>Pipedrive</th></tr></thead>
       <tbody id="tb"></tbody>
     </table></div>
   </div>
@@ -288,6 +289,7 @@ sb.auth.onAuthStateChange((_e, sess) => {
   // consultora: abas Conversas e Leads, só com o que é dela (o banco é quem filtra). Números, rodízio e departamentos ficam com a administração.
   VE_TUDO = ok && /^(luis|silvestre|lais)@rvb\.com\.br$/i.test(sess.user.email || '');
   document.querySelectorAll('#tabs .tab').forEach(t => { if (!['conversas', 'leads'].includes(t.dataset.p)) t.hidden = !VE_TUDO; });
+  document.body.classList.toggle('so-meu', ok && !VE_TUDO); $('#fCons').hidden = ok && !VE_TUDO;
   // Conversas é a aba inicial e a última conversa aberta volta sozinha (22/10/2026: "quando saio do painel ele volta para os leads
   // e tenho que entrar de novo na conversa"). O hash guarda a conversa; o app instalado abre sem hash, então também fica no localStorage (12 h).
   if (ok) {
@@ -362,7 +364,7 @@ function renderLeads() {
       <td class="small">${dt(L.criado_em)}</td><td><b>${esc(L.nome || '–')}</b>${L.nome_digitado ? `<span class="aviso">escreveu: ${esc(L.nome_digitado)}</span>` : ''}</td><td>${esc(L.empresa || (L.pessoa_fisica ? 'pessoa física' : '–'))}${L.empresa_digitada ? `<span class="aviso">escreveu: ${esc(L.empresa_digitada)}</span>` : ''}</td>
       <td class="oc small">${L.whatsapp ? `<a href="https://wa.me/${L.ddi && L.ddi !== '55' ? L.ddi : '55'}${esc(L.whatsapp)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(fone(L.whatsapp))}</a>` : '–'}</td>
       <td class="oc small">${esc(L.produto_nome || '–')}</td><td><span class="tag ${cls}">${esc(lab)}</span></td>
-      <td class="oc">${Q.potencial ? `<span class="tag">${esc(Q.potencial)}</span>` : ''}</td>
+      <td class="oc sc">${Q.potencial ? `<span class="tag">${esc(Q.potencial)}</span>` : ''}</td>
       <td>${esc(cons ? cons.nome : (L.consultora_id || '–'))}</td>
       <td class="oc small muted">${esc(origem + utm)}</td><td onclick="event.stopPropagation()">${pdLink}</td></tr>`;
   }).join('') || '<tr><td colspan="10" class="muted">Nada nesse filtro.</td></tr>';
@@ -382,7 +384,7 @@ function abrirLead(id) {
     ['CNPJ', L.cnpj ? L.cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5') + (R.ie ? (R.ie.tem ? ' · IE ' + (R.ie.ativa ? 'ativa' : 'não ativa') + ' (' + R.ie.uf + ')' : ' · sem IE') : '') + (R.porte ? ' · ' + R.porte : '') : ''],
     ['Consultor', (cons ? cons.nome : L.consultora_id || '') + (L.distribuicao && SOU_LUIS ? ' · ' + L.distribuicao : '')],   // motivo da distribuição (rodízio) só o Luis vê
     ['Origem', `<a href="${esc(L.origem_url && /^https?:\/\//.test(L.origem_url) ? L.origem_url : 'https://rvb.com.br' + (L.origem_pagina || '/'))}" target="_blank" rel="noopener">${esc(L.origem_pagina && L.origem_pagina !== '/' ? L.origem_pagina : 'página inicial')}</a>` + (L.utms && Object.keys(L.utms).length ? ' · ' + esc(Object.entries(L.utms).map(([k, v]) => k.replace('utm_', '') + '=' + v).join(' ')) : '')],
-    ['Score', Q.potencial ? Q.potencial + (Q.potencial_motivo ? ' · ' + Q.potencial_motivo : '') : ''],
+    ['Score', VE_TUDO && Q.potencial ? Q.potencial + (Q.potencial_motivo ? ' · ' + Q.potencial_motivo : '') : ''],   // score é interno: consultora não vê
     ['Perfil', Q.perfil ? Q.perfil + (Q.rede ? ' · REDE: ' + Q.unidades : '') : ''],
     ['Pipedrive', L.pipedrive_deal_id ? `<a href="${PD}/deal/${L.pipedrive_deal_id}" target="_blank" rel="noopener">abrir negócio</a>` : L.pipedrive_lead_id ? `<a href="${PD}/leads/inbox/${L.pipedrive_lead_id}" target="_blank" rel="noopener">abrir na Caixa de Leads</a>` : ''],
   ].filter(([, v]) => v && String(v).trim() && v !== 'undefined' && v !== 'null');
