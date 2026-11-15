@@ -149,6 +149,7 @@
       <label>E-mail<input type="email" id="lemail" autocomplete="username"></label>
       <label>Senha<input type="password" id="lsenha" autocomplete="current-password"></label>
       <button class="btn primario" id="entrar">Entrar</button>
+      <button class="btn" id="entrarGoogle" style="margin-top:8px;width:100%">Entrar com Google</button>
       <div class="erro" id="lerro"></div>
     </div>
   </div>
@@ -270,6 +271,11 @@ async function entrar() {
   if (error) { $('#lerro').textContent = 'Não deu: ' + (error.message === 'Invalid login credentials' ? 'e-mail ou senha errados.' : error.message); return; }
 }
 $('#entrar').addEventListener('click', entrar);
+$('#entrarGoogle').addEventListener('click', async () => {
+  $('#lerro').textContent = '';
+  const { error } = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + location.pathname, queryParams: { hd: 'rvb.com.br', prompt: 'select_account' } } });
+  if (error) $('#lerro').textContent = 'Não deu: ' + error.message;
+});
 $('#lsenha').addEventListener('keydown', e => { if (e.key === 'Enter') entrar(); });
 $('#sair').addEventListener('click', () => sb.auth.signOut());
 sb.auth.onAuthStateChange((_e, sess) => {
@@ -279,14 +285,14 @@ sb.auth.onAuthStateChange((_e, sess) => {
   $('#who').textContent = ok ? sess.user.email : '';
   PODE_APAGAR = ok && APAGADORES.includes((sess.user.email || '').toLowerCase());
   SOU_LUIS = ok && /^(luis|silvestre)@rvb\.com\.br$/i.test(sess.user.email || '');
-  // consultora: só a aba Conversas (as dela; o banco é quem filtra). Leads, números, rodízio e departamentos ficam com a administração.
+  // consultora: abas Conversas e Leads, só com o que é dela (o banco é quem filtra). Números, rodízio e departamentos ficam com a administração.
   VE_TUDO = ok && /^(luis|silvestre|lais)@rvb\.com\.br$/i.test(sess.user.email || '');
-  document.querySelectorAll('#tabs .tab').forEach(t => { if (t.dataset.p !== 'conversas') t.hidden = !VE_TUDO; });
+  document.querySelectorAll('#tabs .tab').forEach(t => { if (!['conversas', 'leads'].includes(t.dataset.p)) t.hidden = !VE_TUDO; });
   // Conversas é a aba inicial e a última conversa aberta volta sozinha (22/10/2026: "quando saio do painel ele volta para os leads
   // e tenho que entrar de novo na conversa"). O hash guarda a conversa; o app instalado abre sem hash, então também fica no localStorage (12 h).
   if (ok) {
     if (!location.hash) { try { const u = JSON.parse(localStorage.getItem('painel_ultima') || 'null'); if (u && u.h && Date.now() - u.ts < 12 * 3600 * 1000) history.replaceState(null, '', u.h); } catch { /* sem localStorage */ } }
-    { const h = location.hash.replace(/^#/, '').split('/')[0]; mostrar(VE_TUDO && ['leads', 'numeros', 'equipe', 'deptos'].includes(h) ? h : 'conversas'); } irPeloLink(); carregarTudo(); avisosEstado().catch(e => console.warn('avisos:', e)); } else { document.querySelectorAll('.painel').forEach(p => p.classList.toggle('on', p.id === 'p-login')); }
+    { const h = location.hash.replace(/^#/, '').split('/')[0]; mostrar((VE_TUDO ? ['leads', 'numeros', 'equipe', 'deptos'] : ['leads']).includes(h) ? h : 'conversas'); } irPeloLink(); carregarTudo(); avisosEstado().catch(e => console.warn('avisos:', e)); } else { document.querySelectorAll('.painel').forEach(p => p.classList.toggle('on', p.id === 'p-login')); }
 });
 
 /* ---------- abas ---------- */
@@ -294,7 +300,7 @@ function mostrar(p) {
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.p === p));
   document.querySelectorAll('.painel').forEach(x => x.classList.toggle('on', x.id === 'p-' + p));
 }
-$('#tabs').addEventListener('click', e => { const t = e.target.closest('.tab'); if (!t) return; if (!VE_TUDO && t.dataset.p !== 'conversas') return; mostrar(t.dataset.p); lembrarHash(t.dataset.p === 'conversas' ? (CONV ? '#conversas/' + CONV.telefone : '#conversas') : '#' + t.dataset.p); });
+$('#tabs').addEventListener('click', e => { const t = e.target.closest('.tab'); if (!t) return; if (!VE_TUDO && !['conversas', 'leads'].includes(t.dataset.p)) return; mostrar(t.dataset.p); lembrarHash(t.dataset.p === 'conversas' ? (CONV ? '#conversas/' + CONV.telefone : '#conversas') : '#' + t.dataset.p); });
 function lembrarHash(h) { history.replaceState(null, '', h); try { localStorage.setItem('painel_ultima', JSON.stringify({ h, ts: Date.now() })); } catch { /* sem localStorage */ } }
 
 /* ---------- dados ---------- */
