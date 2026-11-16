@@ -629,12 +629,18 @@ async function carregarPrevias(t) {
   const box = $('#cPrevias');
   const { data } = await sb.from('wa_previas').select('*').eq('telefone', t).in('status', ['gerando', 'pendente', 'erro']).order('criado_em', { ascending: false }).limit(3);
   const lista = data || [];
+  // a última prévia que já foi ao cliente também aparece, para a equipe pedir uma versão ajustada (Luis, 16/11/2026)
+  if (!lista.some(p => p.status === 'gerando' || p.status === 'pendente')) {
+    const { data: env } = await sb.from('wa_previas').select('*').eq('telefone', t).eq('status', 'enviada').order('criado_em', { ascending: false }).limit(1);
+    if (env && env[0]) lista.push(env[0]);
+  }
   if (!lista.length) { box.hidden = true; box.innerHTML = ''; return; }
   box.hidden = false;
   box.innerHTML = lista.map(p => `<div class="previa" data-id="${p.id}">
       ${p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener"><img src="${esc(p.url)}" alt=""></a>` : '<div class="muted small" style="width:140px">gerando…</div>'}
-      <div class="txt"><b>🎨 Prévia visual ${p.status === 'gerando' ? '(gerando)' : p.status === 'erro' ? '(falhou)' : 'pronta para aprovar'}</b><div class="muted small">${esc(p.descricao || '')}</div>
+      <div class="txt"><b>🎨 Prévia visual ${p.status === 'gerando' ? '(gerando)' : p.status === 'erro' ? '(falhou)' : p.status === 'enviada' ? 'já enviada ao cliente' : 'pronta para aprovar'}</b><div class="muted small">${esc(p.descricao || '')}</div>
         ${p.status === 'erro' ? `<div class="erro small">${esc(p.erro || '')}</div>` : ''}
+        ${p.status === 'enviada' ? `<div class="acoes"><button class="btn" data-pv-refazer>Refazer com ajuste</button></div><div class="muted small" style="margin-top:4px">Gera outra versão para você aprovar antes de mandar. A que já foi continua na conversa.</div>` : ''}
         ${p.status === 'pendente' ? `<div class="acoes"><button class="btn primario" data-pv-enviar>Enviar ao cliente</button><button class="btn" data-pv-refazer>Refazer com ajuste</button><button class="btn" data-pv-descartar>Descartar</button></div><div class="muted small" style="margin-top:4px">Vai com a marca "prévia conceitual" e a legenda explicando que o layout final vem depois.</div>` : ''}
       </div></div>`).join('');
   box.querySelectorAll('[data-pv-descartar]').forEach(b => b.addEventListener('click', async () => {
