@@ -454,7 +454,9 @@ function bateBusca(c) {
   if (!BUSCA) return true;
   const t = semAcento(BUSCA), d = BUSCA.replace(/\D/g, '');
   if (semAcento([c.nome, c.dados && c.dados.empresa, c.dados && c.dados.nome].filter(Boolean).join(' ')).includes(t)) return true;
-  return d.length >= 3 && String(c.telefone || '').includes(d);
+  // telefone: o cadastro pode estar sem o 9 do celular (5554 9925-5999) e o usuário cola com DDD, 9 e tracinho: vale também pelos 8 últimos dígitos
+  const tel = String(c.telefone || '');
+  return d.length >= 3 && (tel.includes(d) || (d.length >= 8 && tel.endsWith(d.slice(-8))));
 }
 let buscaT = null;
 $('#cBusca').addEventListener('input', e => {
