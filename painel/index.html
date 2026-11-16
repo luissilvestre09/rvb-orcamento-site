@@ -328,6 +328,25 @@ async function carregarLeads() {
   renderLeads(); renderNumeros();
 }
 ['#fStatus', '#fCons', '#fBusca'].forEach(s => $(s).addEventListener('input', renderLeads));
+/* a busca vale para TODO o histórico, não só para o período escolhido (Luis, 16/11/2026: "se a pessoa está acima de 30 dias, ele não mostra").
+   Com 3+ caracteres, procura no banco sem filtro de data e junta o que estiver fora do período carregado. */
+let LEADS_FORA = [], leadBuscaT = null;
+$('#fBusca').addEventListener('input', () => {
+  const termo = $('#fBusca').value.trim(); LEADS_FORA = [];
+  clearTimeout(leadBuscaT);
+  if (termo.length < 3) return;
+  leadBuscaT = setTimeout(async () => {
+    const d = termo.replace(/\D/g, ''), txt = termo.replace(/[%,()*\\]/g, ' ').trim();
+    const ou = [];
+    if (txt && d.length < 8) ['nome', 'empresa', 'email', 'razao_social'].forEach(c => ou.push(`${c}.ilike.%${txt}%`));
+    if (d.length >= 4) { const u = d.slice(-8); ou.push(`whatsapp.ilike.%${u.length === 8 ? u.slice(0, 4) + '%' + u.slice(4) : u}%`); }
+    if (!ou.length) return;
+    const { data } = await sb.from('leads').select('*').or(ou.join(',')).order('criado_em', { ascending: false }).limit(100);
+    if (termo !== $('#fBusca').value.trim()) return;
+    LEADS_FORA = (data || []).filter(L => !LEADS.some(x => x.session_id === L.session_id && x.criado_em === L.criado_em));
+    if (LEADS_FORA.length) renderLeads();
+  }, 350);
+});
 $('#fDias').addEventListener('change', carregarLeads);
 
 function statusDe(L) {
@@ -340,11 +359,12 @@ function statusDe(L) {
 }
 function filtrados() {
   const st = $('#fStatus').value, co = $('#fCons').value, q = $('#fBusca').value.trim().toLowerCase();
-  return LEADS.filter(L => {
+  const qd = q.replace(/\D/g, '');
+  return (q ? [...LEADS, ...LEADS_FORA] : LEADS).filter(L => {
     const [s] = statusDe(L);
     if (st && s !== st) return false;
     if (co && L.consultora_id !== co) return false;
-    if (q) { const alvo = [L.nome, L.empresa, L.whatsapp, L.email, L.razao_social, L.cidade_uso].join(' ').toLowerCase(); if (!alvo.includes(q)) return false; }
+    if (q) { const alvo = [L.nome, L.empresa, L.whatsapp, L.email, L.razao_social, L.cidade_uso].join(' ').toLowerCase(); const tel = String(L.whatsapp || '').replace(/\D/g, ''); if (!alvo.includes(q) && !(qd.length >= 4 && (tel.includes(qd) || (qd.length >= 8 && tel.endsWith(qd.slice(-8)))))) return false; }
     return true;
   });
 }
@@ -374,7 +394,7 @@ const kpi = (n, l) => `<div class="card kpi"><div class="n">${n}</div><div class
 $('#tb').addEventListener('click', e => { const tr = e.target.closest('tr.linha'); if (tr) abrirLead(tr.dataset.id); });
 
 function abrirLead(id) {
-  const L = LEADS.find(x => x.session_id === id); if (!L) return;
+  const L = LEADS.find(x => x.session_id === id) || LEADS_FORA.find(x => x.session_id === id); if (!L) return;
   const Q = L.qualificacao || {}; const R = L.receita || {}; const cons = CONS.find(c => c.id === L.consultora_id);
   const [, lab] = statusDe(L);
   const kv = [
