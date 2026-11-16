@@ -183,6 +183,7 @@ body.so-meu .sc{display:none}
     <div class="chat">
       <div class="lista" id="cListaWrap"><div class="nova" id="cNovaBar"><button class="btn" id="cNovaBtn">＋ Nova conversa</button><span class="muted small">Puxar papo com um número (usa template aprovado)</span></div>
         <div class="nova" id="cNova" hidden><input id="nTel" placeholder="WhatsApp (DDD + número)" inputmode="tel" style="width:170px"><input id="nNome" placeholder="Nome do cliente" style="width:150px"><button class="btn primario" id="nEnviar">Enviar</button><button class="btn" id="nCancel">Cancelar</button><span class="small" id="nMsg"></span></div>
+        <div class="nova" id="cBuscaBar"><input id="cBusca" type="search" placeholder="🔎 Buscar por nome, empresa ou telefone" autocomplete="off" style="flex:1;min-width:0;width:100%"></div>
         <div id="cLista"><div class="muted small" style="padding:12px">Carregando…</div></div></div>
       <div class="thread" id="cThread">
         <div class="thead" id="cHead"><button class="btn voltar" id="cVoltar">‹</button><div class="muted">Escolha uma conversa</div></div>
@@ -420,7 +421,7 @@ $('#csv').addEventListener('click', () => {
 });
 
 /* ---------- conversas (WhatsApp oficial) ---------- */
-let CONVS = [], CONV = null, convCanal = null, NUMS = [];
+let CONVS = [], CONV = null, convCanal = null, NUMS = [], BUSCA = '', ACHADAS = [];
 const numeroDe = (c) => { const n = NUMS.find(x => x.phone_id === c.phone_id); return n ? (n.nome || foneCurto(n.telefone)) : ''; };
 const FN = SUPABASE_URL + '/functions/v1/whatsapp-enviar';
 const hora = (s) => new Date(s).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
@@ -446,14 +447,40 @@ async function carregarConversas() {
       .subscribe();
   }
 }
+/* busca por nome, empresa ou telefone (Luis, 16/11/2026). Filtra o que já está na tela e, com 3+ caracteres, procura também
+   nas conversas antigas que não vieram nas 300 mais recentes. Cada um continua vendo só o que é seu (a regra é do banco). */
+const semAcento = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+function bateBusca(c) {
+  if (!BUSCA) return true;
+  const t = semAcento(BUSCA), d = BUSCA.replace(/\D/g, '');
+  if (semAcento([c.nome, c.dados && c.dados.empresa, c.dados && c.dados.nome].filter(Boolean).join(' ')).includes(t)) return true;
+  return d.length >= 3 && String(c.telefone || '').includes(d);
+}
+let buscaT = null;
+$('#cBusca').addEventListener('input', e => {
+  BUSCA = e.target.value.trim(); ACHADAS = []; renderConversas();
+  clearTimeout(buscaT);
+  if (BUSCA.length < 3) return;
+  const termo = BUSCA;
+  buscaT = setTimeout(async () => {
+    const d = termo.replace(/\D/g, ''), txt = termo.replace(/[%,()*\\]/g, ' ').trim();
+    const ou = [txt ? `nome.ilike.%${txt}%` : '', d.length >= 4 ? `telefone.ilike.%${d.slice(-8)}%` : ''].filter(Boolean).join(',');
+    if (!ou) return;
+    const { data } = await sb.from('wa_conversas').select('*').or(ou).order('ultima_msg_em', { ascending: false, nullsFirst: false }).limit(40);
+    if (termo !== BUSCA) return;
+    ACHADAS = (data || []).filter(c => !CONVS.some(x => x.telefone === c.telefone));
+    renderConversas();
+  }, 350);
+});
 function renderConversas() {
   const nl = CONVS.filter(c => c.nao_lida).length;
   $('#bConv').textContent = nl; $('#bConv').hidden = !nl;
-  $('#cLista').innerHTML = CONVS.map(c => `<div class="conv ${c.nao_lida ? 'nl' : ''} ${CONV && CONV.telefone === c.telefone ? 'on' : ''}" data-t="${esc(c.telefone)}">
+  const LISTA = BUSCA ? [...CONVS.filter(bateBusca), ...ACHADAS] : CONVS;
+  $('#cLista').innerHTML = LISTA.map(c => `<div class="conv ${c.nao_lida ? 'nl' : ''} ${CONV && CONV.telefone === c.telefone ? 'on' : ''}" data-t="${esc(c.telefone)}">
       <div class="n">${esc(c.nome || foneCurto(c.telefone))}${c.temperatura ? ` <span class="tag" style="${({ QUENTE: 'background:#fde2e1;color:#b42318', MORNO: 'background:#fef0c7;color:#93600b', FRIO: 'background:#e0f2fe;color:#0369a1' })[c.temperatura] || ''}">${esc(c.temperatura)}</span>` : ''}</div>
       <div class="h">${c.ultima_msg_em ? diaHora(c.ultima_msg_em) : ''}</div>
       <div class="p">${c.modo === 'agente' ? '🤖 agente' : c.modo === 'pausado' ? '⏸ pausado' : '👤 ' + esc(c.dono || 'humano')}${NUMS.length > 1 && numeroDe(c) ? ' · 📱 ' + esc(numeroDe(c)) : ''}${c.dados && c.dados.empresa ? ' · ' + esc(c.dados.empresa) : ''}${c.dados && c.dados.produto ? ' · ' + esc(c.dados.produto) : ''}${c.origem && c.origem !== 'direto' ? ' · 📍 ' + esc(c.origem) : ''}</div>
-    </div>`).join('') || '<div class="muted small" style="padding:12px">Nenhuma conversa ainda. Quando alguém escrever no número oficial, aparece aqui.</div>';
+    </div>`).join('') || (BUSCA ? '<div class="muted small" style="padding:12px">Nenhuma conversa com esse nome ou telefone.</div>' : '<div class="muted small" style="padding:12px">Nenhuma conversa ainda. Quando alguém escrever no número oficial, aparece aqui.</div>');
 }
 $('#cLista').addEventListener('click', e => { const el = e.target.closest('.conv'); if (el) abrirConversa(el.dataset.t); });
 $('#cNovaBtn').addEventListener('click', () => { $('#cNova').hidden = !$('#cNova').hidden; $('#nMsg').textContent = ''; });
@@ -531,7 +558,7 @@ function renderModo() {
   const par = $('#cDados').querySelector('.parou'); if (par) par.innerHTML = CONV.motivo_transbordo ? `<b>Agente parou porque:</b> ${esc(CONV.motivo_transbordo)}` : '';
 }
 async function abrirConversa(t) {
-  CONV = CONVS.find(c => c.telefone === t); if (!CONV) return;
+  CONV = CONVS.find(c => c.telefone === t) || ACHADAS.find(c => c.telefone === t); if (!CONV) return;
   lembrarHash('#conversas/' + t);
   document.querySelector('.chat').classList.add('aberta');
   renderConversas();
