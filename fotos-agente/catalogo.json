@@ -783,6 +783,15 @@
       "segmento": "cliente real (Sicoob Credicarpa) · listras verde turquesa",
       "descricao": "Foto real de fábrica do balão de 3 m listrado com branco, equador branco, listras e base verde turquesa, logo Sicoob Credicarpa. Use na campanha Black para mostrar a cor que o cliente escolheu.",
       "legenda": ""
+    },
+    {
+      "id": "replica-3m-svk-extintor-vermelho",
+      "arquivo": "replica-3m-svk-extintor-vermelho.jpg",
+      "produto": "réplica de produto",
+      "segmento": "extintores, prevenção e combate a incêndio, segurança, equipamentos",
+      "descricao": "Réplica inflável de 3 m em formato de extintor de incêndio vermelho, com mangueira preta e gatilho amarelo, da SVK Extintores, foto de estúdio",
+      "legenda": "Réplica de 3 m em formato de extintor que fizemos para a SVK Extintores.",
+      "medida": "3 m de altura"
     }
   ]
 }
