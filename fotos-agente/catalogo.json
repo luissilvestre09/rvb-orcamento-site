@@ -734,11 +734,19 @@
     },
     {
       "id": "cores-rvb",
-      "arquivo": "cores-rvb-21.jpg",
+      "arquivo": "cores-rvb-v3.jpg",
       "produto": "cartela de cores",
       "segmento": "todos (escolha de cor)",
-      "descricao": "Cartela oficial de cores da RVB (21 cores Pantone). Mande só quando for perguntar ou o cliente perguntar a cor; não é foto de produto.",
+      "descricao": "Cartela de Cores RVB (21 cores, só os nomes, sem código Pantone). É a cartela PADRÃO: vai para todo cliente quando o assunto é cor. Não é foto de produto.",
       "legenda": "Essas são as nossas cores. É só me dizer o nome da cor que você prefere."
+    },
+    {
+      "id": "cores-rvb-pantone",
+      "arquivo": "cores-rvb-21.jpg",
+      "produto": "cartela de cores técnica",
+      "segmento": "agência, gráfica, marca com manual (pedido de Pantone)",
+      "descricao": "Cartela Técnica Pantone RVB (as mesmas 21 cores, com o código Pantone de cada uma). Mande SÓ quando o cliente falar em Pantone, código de cor, manual da marca ou tom exato. Nunca no lugar da cartela padrão.",
+      "legenda": "Essa é a nossa cartela técnica, com o código Pantone de cada cor."
     },
     {
       "id": "black-balao-3m",
