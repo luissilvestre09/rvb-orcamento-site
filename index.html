@@ -1157,7 +1157,7 @@
 
     if (PROTOTIPO || TESTE || /debug/.test(location.hash)) renderCard(L);
 
-    const nomeOk = /\?|\b(gostaria|orçamento|orcamento|vocês|voces|preciso|quero|fazem|atendem|quanto)\b/i.test(L.nome || '') || (L.nome || '').split(/\s+/).length > 5 ? '' : nome;
+    const nomeOk = /\?|\b(gostaria|orçamento|orcamento|vocês|voces|preciso|quero|fazem|atendem|quanto)\b/i.test(L.nome || '') || (L.nome || '').split(/\s+/).length > 5 || /^(oi+|ol[aá]|opa|bom|boa|e a[ií])[,!.]*$/i.test(nome || '') ? '' : nome;
     const empresaOk = /^(pf|cpf|pessoa f|particular|não tenho|nao tenho|sem cnpj|uso pessoal|eu mesm)/i.test((L.empresa || '').trim()) || /\?/.test(L.empresa || '') ? '' : L.empresa;
     const msg = encodeURIComponent('Oi' + (C === CENTRAL ? '' : ', ' + C.nome) + '! ' + (nomeOk ? 'Sou ' + nomeOk + (empresaOk ? ', da ' + empresaOk : '') + '. ' : '') + 'Acabei de preencher o orçamento' + (L.produto ? ' de ' + L.produto.label : '') + ' no site da RVB.');
     const assuntoMail = 'Orçamento' + (L.produto ? ' · ' + L.produto.label : '') + ' · ' + L.empresa;
