@@ -817,6 +817,87 @@
       "descricao": "Réplica inflável de 3 m em formato de extintor de incêndio vermelho, com mangueira preta e gatilho amarelo, da SVK Extintores, foto de estúdio",
       "legenda": "Réplica de 3 m em formato de extintor que fizemos para a SVK Extintores.",
       "medida": "3 m de altura"
+    },
+    {
+      "id": "balao-2m-listrado-vermelho-avivip",
+      "arquivo": "balao-2m-listrado-vermelho-avivip.jpg",
+      "produto": "balão inflável 2 m listrado",
+      "medida": "2 m",
+      "segmento": "cliente real (AviVip) · listras vermelho · frigorífico, avícola, alimentos",
+      "descricao": "Foto real de fábrica do balão de 2 m listrado, equador branco, listras e base vermelhas, mascote do galo AviVip. A foto já traz o selo 'Balão Inflável 2,00m'. Mande quando o cliente escolher o balão de 2 m (depois da comparação com o de 3 m) ou pedir foto do de 2 m; nunca por conta própria para quem não pediu menor.",
+      "legenda": ""
+    },
+    {
+      "id": "balao-2m-listrado-magenta-loja-dos-sonhos",
+      "arquivo": "balao-2m-listrado-magenta-loja-dos-sonhos.jpg",
+      "produto": "balão inflável 2 m listrado",
+      "medida": "2 m",
+      "segmento": "cliente real (Loja dos Sonhos Colchões) · listras magenta (rosa pink) · loja de colchões, varejo",
+      "descricao": "Foto real de fábrica do balão de 2 m listrado, equador branco, listras e base magenta, logo Loja dos Sonhos Colchões. A foto já traz o selo 'Balão Inflável 2,00m'. Mande quando o cliente escolher o balão de 2 m (depois da comparação com o de 3 m) ou pedir foto do de 2 m; nunca por conta própria para quem não pediu menor.",
+      "legenda": ""
+    },
+    {
+      "id": "balao-3m-listrado-preto-serralheria-fraga",
+      "arquivo": "balao-3m-listrado-preto-serralheria-fraga.jpg",
+      "produto": "balão inflável 3 m listrado",
+      "medida": "3 m",
+      "segmento": "cliente real (Serralheria Fraga) · listras preto (Pantone Black 6 C) · serralheria, indústria, prestador de serviço",
+      "descricao": "Foto real de fábrica do balão de 3 m listrado, equador branco, listras e base pretas, logo Serralheria Fraga. A foto já traz o selo 'Balão Inflável 3,00m'. Use na campanha Black para mostrar a cor que o cliente escolheu.",
+      "legenda": ""
+    },
+    {
+      "id": "balao-3m-listrado-marrom-cacau-show",
+      "arquivo": "balao-3m-listrado-marrom-cacau-show.jpg",
+      "produto": "balão inflável 3 m listrado",
+      "medida": "3 m",
+      "segmento": "cliente real (Cacau Show) · listras marrom (Pantone 7595 C) · chocolate, franquia, loja de rua",
+      "descricao": "Foto real de fábrica do balão de 3 m listrado, equador branco, listras e base marrom, logo Cacau Show. A foto já traz o selo 'Balão Inflável 3,00m'. Use na campanha Black para mostrar a cor que o cliente escolheu.",
+      "legenda": ""
+    },
+    {
+      "id": "balao-3m-listrado-roxo-superar-klabin",
+      "arquivo": "balao-3m-listrado-roxo-superar-klabin.jpg",
+      "produto": "balão inflável 3 m listrado",
+      "medida": "3 m",
+      "segmento": "cliente real (Superar / Klabin) · listras roxo · indústria, programa corporativo, evento",
+      "descricao": "Foto real de fábrica do balão de 3 m listrado, equador branco, listras e base roxas, logos Superar e Klabin. A foto já traz o selo 'Balão Inflável 3,00m'. Use na campanha Black para mostrar a cor que o cliente escolheu.",
+      "legenda": ""
+    },
+    {
+      "id": "balao-3m-listrado-vermelho-wn-net",
+      "arquivo": "balao-3m-listrado-vermelho-wn-net.jpg",
+      "produto": "balão inflável 3 m listrado",
+      "medida": "3 m",
+      "segmento": "cliente real (WN Net Telecom) · listras vermelho, base preta · provedor de internet, telecom",
+      "descricao": "Foto real de fábrica do balão de 3 m listrado, equador branco, listras vermelhas e base PRETA (segunda cor na base), logo WN Net Telecom. A foto já traz o selo 'Balão Inflável 3,00m'. Use na campanha Black para mostrar a cor que o cliente escolheu.",
+      "legenda": ""
+    },
+    {
+      "id": "balao-3m-listrado-laranja-stihl",
+      "arquivo": "balao-3m-listrado-laranja-stihl.jpg",
+      "produto": "balão inflável 3 m listrado",
+      "medida": "3 m",
+      "segmento": "cliente real (Stihl) · listras laranja · loja de ferramentas, agro, revenda",
+      "descricao": "Foto real de fábrica do balão de 3 m listrado, equador branco, listras e base laranja, logo Stihl. A foto já traz o selo 'Balão Inflável 3,00m'. Use na campanha Black para mostrar a cor que o cliente escolheu.",
+      "legenda": ""
+    },
+    {
+      "id": "balao-3m-listrado-verde-sicoob-nossocredito",
+      "arquivo": "balao-3m-listrado-verde-sicoob-nossocredito.jpg",
+      "produto": "balão inflável 3 m listrado",
+      "medida": "3 m",
+      "segmento": "cliente real (Sicoob Nossocrédito) · listras dois verdes (turquesa e verde petróleo), sem branco nas listras · cooperativa de crédito, banco",
+      "descricao": "Foto real de fábrica do balão de 3 m listrado, equador branco, listras alternando dois verdes (turquesa e verde petróleo), base verde petróleo, logo Sicoob Nossocrédito. A foto já traz o selo 'Balão Inflável 3,00m'. Use na campanha Black para mostrar a cor que o cliente escolheu.",
+      "legenda": ""
+    },
+    {
+      "id": "balao-3m-listrado-amarelo-recopa",
+      "arquivo": "balao-3m-listrado-amarelo-recopa.jpg",
+      "produto": "balão inflável 3 m listrado",
+      "medida": "3 m",
+      "segmento": "cliente real (Recopa Petshop) · listras amarelo (Pantone 110 C) · pet shop, varejo",
+      "descricao": "Foto real de fábrica do balão de 3 m listrado, equador branco, listras e base amarelas, logo Recopa Petshop. A foto já traz o selo 'Balão Inflável 3,00m'. Use na campanha Black para mostrar a cor que o cliente escolheu.",
+      "legenda": ""
     }
   ]
 }
