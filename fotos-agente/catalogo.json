@@ -1426,6 +1426,78 @@
       "segmento": "indústria de alimentos, marca de alimentos, chocolate",
       "descricao": "Card Case de Sucesso do segmento indústria de alimentos, marca de alimentos, chocolate: réplica Lindt, tenda e réplicas Gama Lopes e tenda Nestlé; +26 anos, +150 mil projetos, fabricante mais bem avaliada do Brasil. Mande quando o cliente for desse segmento, uma vez na conversa.",
       "legenda": ""
+    },
+    {
+      "id": "tenda-inflavel-vs-sanfonada",
+      "arquivo": "tenda-inflavel-vs-sanfonada.jpg",
+      "produto": "comparativo tenda inflável x sanfonada",
+      "segmento": "tenda",
+      "descricao": "Arte comparando a tenda inflável com a sanfonada (de ferro): mais atraente e personalizável, leve e vai na bolsa, monta só ligando o motor, impressão com proteção UV, mais espaço para a marca. Mande quando o cliente comparar com tenda sanfonada, gazebo ou tenda de ferro, ou achar a sanfonada mais barata.",
+      "legenda": ""
+    },
+    {
+      "id": "portal-banner-removivel",
+      "arquivo": "portal-banner-removivel.jpg",
+      "produto": "portal com banner removível (velcro)",
+      "segmento": "portal",
+      "descricao": "Arte do portal com banner removível em velcro: um portal, várias campanhas (Black Friday, Natal, corrida); o banner custa menos e é opcional, escolhido na compra. Mande quando o cliente quiser trocar a mensagem ou o patrocinador do portal.",
+      "legenda": ""
+    },
+    {
+      "id": "marketing-para-corridas",
+      "arquivo": "marketing-para-corridas.jpg",
+      "produto": "infláveis para corrida de rua",
+      "segmento": "corrida, assessoria esportiva, organizador de prova",
+      "descricao": "Arte Marketing para corridas: tenda no ponto de hidratação, tenda de retirada de kit, portal de largada e chegada e tenda de entrega de medalhas. Mande para organizador de corrida ou evento esportivo que ainda não sabe o que precisa.",
+      "legenda": ""
+    },
+    {
+      "id": "catalogo-tenda-modelos",
+      "arquivo": "catalogo-tenda-modelos.jpg",
+      "produto": "catálogo de tendas (modelos e acessórios)",
+      "segmento": "tenda",
+      "descricao": "Página do catálogo com os 4 modelos de tenda (Clássica, Casinha, Iglu e Trave) e os acessórios (medalhão, cortina, balcão e banners nas colunas). Mande quando o cliente de tenda quiser ver os modelos.",
+      "legenda": ""
+    },
+    {
+      "id": "catalogo-tenda-acessorios",
+      "arquivo": "catalogo-tenda-acessorios.jpg",
+      "produto": "catálogo de tendas (acessórios)",
+      "segmento": "tenda",
+      "descricao": "Página do catálogo de tendas com os acessórios: medalhão no topo, cortina fixa ou removível com velcro (pode ser backdrop de foto), balcão inflável e banners nas colunas. Prefira tenda-acessorios; use esta se ele pedir o catálogo.",
+      "legenda": ""
+    },
+    {
+      "id": "catalogo-balao-estilos-impressao",
+      "arquivo": "catalogo-balao-estilos-impressao.jpg",
+      "produto": "catálogo de balões (estilos de impressão)",
+      "segmento": "balão",
+      "descricao": "Página do catálogo com os 3 estilos de impressão do balão: só a logo na frente e no verso; faixa no equador, nos quatro lados; ou impressão total. Dá para colocar 2, 3 ou até 4 logos. Fora da Black. Mande quando o cliente de balão perguntar como a marca vai no balão ou quiser mais destaque.",
+      "legenda": ""
+    },
+    {
+      "id": "catalogo-balao-acessorios",
+      "arquivo": "catalogo-balao-acessorios.jpg",
+      "produto": "catálogo de balões (acessórios)",
+      "segmento": "balão",
+      "descricao": "Página do catálogo de balões com acessórios: personalizações especiais (fone, chapéu, alça em cima do balão) e banner na base para mensagem, patrocínio ou QR Code. Fora da Black. Mande quando o cliente perguntar o que dá para acrescentar no balão.",
+      "legenda": ""
+    },
+    {
+      "id": "catalogo-portal-modelos",
+      "arquivo": "catalogo-portal-modelos.jpg",
+      "produto": "catálogo de portais (modelos)",
+      "segmento": "portal",
+      "descricao": "Página do catálogo com os modelos de portal: clássico, trave, trave curvado, torres e arco. Mande quando o cliente de portal quiser ver os formatos.",
+      "legenda": ""
+    },
+    {
+      "id": "catalogo-portal-acessorios",
+      "arquivo": "catalogo-portal-acessorios.jpg",
+      "produto": "catálogo de portais (acessórios)",
+      "segmento": "portal",
+      "descricao": "Página do catálogo de portais com acessórios: medalhão no topo, faixa para patrocinadores e banners nas colunas. Mande quando o cliente de portal perguntar sobre patrocinadores ou mais destaque.",
+      "legenda": ""
     }
   ]
 }
