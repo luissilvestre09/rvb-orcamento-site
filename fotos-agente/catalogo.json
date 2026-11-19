@@ -2,6 +2,14 @@
   "base": "https://atendimento.rvb.com.br/fotos-agente/",
   "fotos": [
     {
+      "id": "catalogo-modelos-rvb",
+      "arquivo": "catalogo-modelos-rvb.jpg",
+      "produto": "catálogo de modelos (todos os produtos)",
+      "segmento": "catálogo geral",
+      "descricao": "Card 'Infláveis para todos os seus objetivos': 12 modelos com foto (balões, tendas, portais, réplicas, chute a gol, totens, painéis, logomarcas, garrafas e latas, potes e frascos, mascotes, e muito mais). Mande quando o cliente perguntar quais modelos a RVB tem, pedir catálogo ou não souber o que quer.",
+      "legenda": ""
+    },
+    {
       "id": "tenda-otica-instituto-visao",
       "arquivo": "tenda-otica-instituto-visao.jpg",
       "produto": "tenda inflável",
