@@ -914,6 +914,358 @@
       "segmento": "cliente real (Recopa Petshop) · listras amarelo (Pantone 110 C) · pet shop, varejo",
       "descricao": "Foto real de fábrica do balão de 3 m listrado, equador branco, listras e base amarelas, logo Recopa Petshop. A foto já traz o selo 'Balão Inflável 3,00m'. Use na campanha Black para mostrar a cor que o cliente escolheu.",
       "legenda": ""
+    },
+    {
+      "id": "linhas-essencial-vs-premium",
+      "arquivo": "linhas-essencial-vs-premium.jpg",
+      "produto": "informação (linhas Essencial e Premium)",
+      "segmento": "comparativo de linhas",
+      "descricao": "Tabela Essencial x Premium: tecido (Omborgo 300DGBA x SANPRO III Sansuy), prazo de produção 9 a 11 dias úteis nas duas, impressão Canon UVgel, motor IBRAM 350 W, garantia de 1 ano, cordas e sacola nas duas; extensão de 5 m, kit de reparos e iluminação interna só na Premium. Mande quando o cliente perguntar a diferença entre as linhas ou o que muda de uma para outra. Não mande na Black.",
+      "legenda": ""
+    },
+    {
+      "id": "itens-inclusos-essencial",
+      "arquivo": "itens-inclusos-essencial.jpg",
+      "produto": "informação (itens inclusos)",
+      "segmento": "itens inclusos",
+      "descricao": "Itens inclusos na linha Essencial (balão e infláveis em geral): motor IBRAM 350 W embutido com garantia de 1 ano, sacola reforçada, tecido Omborgo 300DGBA, impressão Canon UVgel, cordas de fixação, garantia de 1 ano. Mande quando o cliente perguntar o que vem junto, se vem com motor ou bolsa.",
+      "legenda": ""
+    },
+    {
+      "id": "itens-inclusos-tenda-essencial",
+      "arquivo": "itens-inclusos-tenda-essencial.jpg",
+      "produto": "tenda inflável (itens inclusos)",
+      "segmento": "itens inclusos",
+      "descricao": "Itens inclusos na tenda inflável Essencial: motor IBRAM 350 W embutido, sacola reforçada, tecido Omborgo 300DGBA, impressão Canon UVgel, cordas, garantia de 1 ano. Mande quando o cliente de tenda perguntar o que vem junto.",
+      "legenda": ""
+    },
+    {
+      "id": "itens-inclusos-tenda-premium",
+      "arquivo": "itens-inclusos-tenda-premium.jpg",
+      "produto": "tenda inflável (itens inclusos)",
+      "segmento": "itens inclusos",
+      "descricao": "Itens inclusos na tenda inflável Premium: iluminação interna (conforme o modelo), motor IBRAM 350 W, extensão de 5 m, manual e kit de reparos, sacola reforçada, tecido SANPRO III, impressão Canon UVgel, cordas, garantia de 1 ano. Mande quando o cliente de tenda perguntar o que vem na Premium ou pedir acabamento melhor.",
+      "legenda": ""
+    },
+    {
+      "id": "rvb-diferenciais",
+      "arquivo": "rvb-diferenciais.jpg",
+      "produto": "prova (por que a RVB)",
+      "segmento": "prova social",
+      "descricao": "Card 'Por que escolher a RVB?': projeto personalizado com layout 3D incluso, produção rápida com envio para todo o Brasil, modelos com iluminação interna, motoventilador silencioso e econômico, mais de 25 anos de experiência. Mande quando o cliente comparar com outra empresa ou disser que achou mais barato.",
+      "legenda": ""
+    },
+    {
+      "id": "rvb-clientes-grandes-marcas",
+      "arquivo": "rvb-clientes-grandes-marcas.jpg",
+      "produto": "prova (clientes)",
+      "segmento": "prova social",
+      "descricao": "Logos de clientes da RVB: Max Titanium, Óticas Carol, Salon Line, Fiat, Cartão de Todos, Sicoob, aiqfome, Colgate, RE/MAX, Ultragaz, Doglly, CNA, Banco Pan, Claro, Moura, Droga Raia, Vonder, Cresol, Smart Fit, Unimed, Nestlé, Fila, O Boticário, Honda Consórcio. Mande quando o cliente perguntar se a RVB é confiável, quem já comprou ou hesitar antes de fechar.",
+      "legenda": ""
+    },
+    {
+      "id": "rvb-avaliacoes-google",
+      "arquivo": "rvb-avaliacoes-google.jpg",
+      "produto": "prova (avaliações)",
+      "segmento": "prova social",
+      "descricao": "Card de avaliações: 5,0 no Google com mais de 600 avaliações; depoimentos da Agro Lupi (balão), Posto Shell (comecei com 1 balão e 1 tenda, em três meses fiz 22 balões) e Resenha Runners (pórtico). Mande quando o cliente perguntar se a empresa é confiável, se é golpe, ou pedir referência.",
+      "legenda": ""
+    },
+    {
+      "id": "rvb-depoimentos-clientes",
+      "arquivo": "rvb-depoimentos-clientes.jpg",
+      "produto": "prova (depoimentos)",
+      "segmento": "prova social",
+      "descricao": "Card 'Feedbacks que amamos': 4 depoimentos 5 estrelas (Banco Daycoval: prazo antes do combinado; Bola na Rede: dois infláveis, qualidade e pontualidade; Capitalizza: tenda; Acredicoop: tenda 6x6, entrega rápida). Mande quando o cliente tiver dúvida de prazo, qualidade ou atendimento.",
+      "legenda": ""
+    },
+    {
+      "id": "rvb-depoimento-colegio-ser",
+      "arquivo": "rvb-depoimento-colegio-ser.jpg",
+      "produto": "prova (durabilidade)",
+      "segmento": "prova social · escola",
+      "descricao": "Depoimento do Colégio Ser: balão comprado em 2023 continua intacto depois de sol e chuva. Mande quando o cliente perguntar quanto tempo dura, se aguenta sol e chuva, ou for escola.",
+      "legenda": ""
+    },
+    {
+      "id": "balao-iluminacao-noturna",
+      "arquivo": "balao-iluminacao-noturna.jpg",
+      "produto": "balão inflável (iluminação)",
+      "segmento": "iluminação interna",
+      "descricao": "Balão da HS Seminovos aceso à noite: iluminação interna para a marca continuar em destaque. Mande quando o cliente falar em evento ou loja à noite, ou perguntar se tem iluminação. Iluminação depende do modelo e da linha.",
+      "legenda": ""
+    },
+    {
+      "id": "segmento-academia",
+      "arquivo": "segmento-academia.jpg",
+      "produto": "balão, tenda e portal (academias)",
+      "segmento": "academia, fitness",
+      "descricao": "Card 'Sua academia pronta para se destacar': balão Bluefit, portal Smart Fit em corrida e tenda Dom Fit na fachada. Mande para academia ou estúdio fitness.",
+      "legenda": ""
+    },
+    {
+      "id": "segmento-concessionaria",
+      "arquivo": "segmento-concessionaria.jpg",
+      "produto": "balão, tenda e portal (concessionárias)",
+      "segmento": "concessionária, loja de veículos",
+      "descricao": "Card 'Destaque seu showroom': balão Fiat sobre picape, tenda Alpine Veículos na entrega de carro e portal Red Car. Mande para concessionária ou loja de veículos.",
+      "legenda": ""
+    },
+    {
+      "id": "tenda-acessorios",
+      "arquivo": "tenda-acessorios.jpg",
+      "produto": "tenda inflável (acessórios)",
+      "segmento": "acessórios de tenda",
+      "descricao": "Acessórios da tenda: medalhão superior, balcão de atendimento, cortinas laterais e banners nas colunas (fixos ou removíveis). Mande quando o cliente de tenda perguntar de balcão, cortina, fechamento, banner ou trocar a marca.",
+      "legenda": ""
+    },
+    {
+      "id": "totem-hiper-popular-pdv",
+      "arquivo": "totem-hiper-popular-pdv.jpg",
+      "produto": "totem inflável",
+      "segmento": "farmácia, PDV",
+      "descricao": "Totem inflável da Hiper Popular Drogarias na entrada da loja, com o 'Checklist do PDV'. Mande para farmácia ou quem quer destacar a entrada do ponto de venda.",
+      "legenda": ""
+    },
+    {
+      "id": "totem-com-seta",
+      "arquivo": "totem-com-seta.jpg",
+      "produto": "totem inflável",
+      "segmento": "loja, varejo, lavanderia, supermercado",
+      "descricao": "Totem inflável com seta personalizada (Eco Park, Lavanderia Manolo, Supermercado Sacola Cheia): direciona o cliente para a loja. Mande para loja de rua que precisa ser achada ou quer chamar quem passa.",
+      "legenda": ""
+    },
+    {
+      "id": "replica-produtos-gigantes",
+      "arquivo": "replica-produtos-gigantes.jpg",
+      "produto": "réplica inflável",
+      "segmento": "réplica de produto, embalagem",
+      "descricao": "Card 'Seu produto em tamanho GIGANTE': réplicas de milho Agro Jangada, frasco O Boticário, pacote Doritos, garrafa Powerade e coroa Burger King, com uma pessoa para escala. Mande quando o cliente pedir réplica de produto, embalagem, garrafa ou lata.",
+      "legenda": ""
+    },
+    {
+      "id": "logomarca-seara-aiqfome",
+      "arquivo": "logomarca-seara-aiqfome.jpg",
+      "produto": "logomarca inflável",
+      "segmento": "logomarca, painel no formato da logo",
+      "descricao": "Logomarcas infláveis da Seara e do aiqfome, no formato da logo. Mande quando o cliente quiser a logo em tamanho grande.",
+      "legenda": ""
+    },
+    {
+      "id": "replica-lindt-supermercado",
+      "arquivo": "replica-lindt-supermercado.jpg",
+      "produto": "réplica inflável",
+      "segmento": "chocolate, supermercado, PDV",
+      "descricao": "Réplica da embalagem Lindt Lindor dentro do supermercado, com promotora. Mande para indústria de alimentos, ação em supermercado ou PDV.",
+      "legenda": ""
+    },
+    {
+      "id": "replica-carro-daycoval",
+      "arquivo": "replica-carro-daycoval.jpg",
+      "produto": "réplica inflável",
+      "segmento": "banco, correspondente, loja de veículos",
+      "descricao": "Réplica de carro do Banco Daycoval na frente da BR Car Veículos, com wind banner. Mande para banco, financeira, correspondente ou loja de veículos.",
+      "legenda": ""
+    },
+    {
+      "id": "replica-whey-vitafor",
+      "arquivo": "replica-whey-vitafor.jpg",
+      "produto": "réplica inflável",
+      "segmento": "suplementos, academia, loja",
+      "descricao": "Réplica do pote de Whey Protein Vitafor na frente de loja. Mande para marca ou loja de suplementos.",
+      "legenda": ""
+    },
+    {
+      "id": "portal-tenda-espaco-optico",
+      "arquivo": "portal-tenda-espaco-optico.jpg",
+      "produto": "portal e tenda infláveis",
+      "segmento": "ótica, ação de rua",
+      "descricao": "Portal e tenda da Espaço Óptico em ação de rua, com a equipe. Mande para ótica ou ação de rua com portal e tenda juntos.",
+      "legenda": ""
+    },
+    {
+      "id": "tenda-cmpc-praia",
+      "arquivo": "tenda-cmpc-praia.jpg",
+      "produto": "tenda inflável",
+      "segmento": "patrocínio, evento na praia, esporte",
+      "descricao": "Tenda verde da CMPC com balcão em evento esportivo na praia. Mande para patrocínio, evento esportivo ou praia.",
+      "legenda": ""
+    },
+    {
+      "id": "replica-carro-mary-kay",
+      "arquivo": "replica-carro-mary-kay.jpg",
+      "produto": "réplica inflável",
+      "segmento": "evento corporativo, palco",
+      "descricao": "Réplica de carro rosa da Mary Kay no palco de seminário. Mande para evento corporativo, convenção ou palco.",
+      "legenda": ""
+    },
+    {
+      "id": "portal-dez-telecom-noturno",
+      "arquivo": "portal-dez-telecom-noturno.jpg",
+      "produto": "portal inflável",
+      "segmento": "provedor de internet, evento noturno",
+      "descricao": "Portal da Dez Telecom com medalhão, à noite, com a equipe. Mande para provedor de internet ou evento noturno.",
+      "legenda": ""
+    },
+    {
+      "id": "pote-azeitonas-tozzi",
+      "arquivo": "pote-azeitonas-tozzi.jpg",
+      "produto": "réplica inflável (pote)",
+      "segmento": "alimentos, pote, frasco",
+      "descricao": "Pote inflável de azeitonas Tozzi. Mande quando o cliente pedir pote ou frasco do produto.",
+      "legenda": ""
+    },
+    {
+      "id": "tenda-ana-castela-loja",
+      "arquivo": "tenda-ana-castela-loja.jpg",
+      "produto": "tenda inflável",
+      "segmento": "show, loja de produtos, evento",
+      "descricao": "Tenda da Ana Castela Loja Oficial com balcão, em show. Mande para venda de produtos em show ou evento.",
+      "legenda": ""
+    },
+    {
+      "id": "painel-softx-robo",
+      "arquivo": "painel-softx-robo.jpg",
+      "produto": "painel inflável",
+      "segmento": "provedor de internet, mascote em painel",
+      "descricao": "Painel inflável gigante da SoftX com o robô mascote. Mande para provedor de internet ou quem quer o mascote em painel.",
+      "legenda": ""
+    },
+    {
+      "id": "totem-oticas-carol-detalhe",
+      "arquivo": "totem-oticas-carol-detalhe.jpg",
+      "produto": "totem inflável",
+      "segmento": "ótica",
+      "descricao": "Totem azul da Óticas Carol com óculos no topo, de perto. Mande para ótica.",
+      "legenda": ""
+    },
+    {
+      "id": "totem-oticas-carol-fachada",
+      "arquivo": "totem-oticas-carol-fachada.jpg",
+      "produto": "totem inflável",
+      "segmento": "ótica, fachada",
+      "descricao": "Totem da Óticas Carol na fachada da loja. Mande para ótica que quer ver o totem na calçada.",
+      "legenda": ""
+    },
+    {
+      "id": "mascote-girafa-madeiramadeira",
+      "arquivo": "mascote-girafa-madeiramadeira.jpg",
+      "produto": "mascote inflável",
+      "segmento": "mascote, corrida, evento",
+      "descricao": "Mascote girafa gigante da MadeiraMadeira em corrida. Mande quando o cliente pedir mascote ou personagem.",
+      "legenda": ""
+    },
+    {
+      "id": "replica-racao-danes",
+      "arquivo": "replica-racao-danes.jpg",
+      "produto": "réplica inflável (saco)",
+      "segmento": "pet, ração",
+      "descricao": "Réplica de saco de ração Danes ao lado do produto real. Mande para pet shop ou marca de ração.",
+      "legenda": ""
+    },
+    {
+      "id": "replica-bola-cafu-detalhe",
+      "arquivo": "replica-bola-cafu-detalhe.jpg",
+      "produto": "réplica inflável (bola)",
+      "segmento": "futebol, esporte, evento",
+      "descricao": "Bola gigante do Cafu Camp, detalhe da impressão. Mande para evento esportivo ou futebol.",
+      "legenda": ""
+    },
+    {
+      "id": "replica-bola-cafu-evento",
+      "arquivo": "replica-bola-cafu-evento.jpg",
+      "produto": "réplica inflável (bola)",
+      "segmento": "futebol, esporte, evento",
+      "descricao": "Bola gigante do Cafu Camp com o Cafu e crianças. Mande para evento esportivo ou escolinha de futebol.",
+      "legenda": ""
+    },
+    {
+      "id": "replica-feijao-gama-lopes",
+      "arquivo": "replica-feijao-gama-lopes.jpg",
+      "produto": "réplica inflável (saco)",
+      "segmento": "alimentos, supermercado, feira",
+      "descricao": "Réplica do pacote de feijão Gama Lopes com uma pessoa ao lado. Mande para indústria de alimentos ou feira.",
+      "legenda": ""
+    },
+    {
+      "id": "kit-gama-lopes",
+      "arquivo": "kit-gama-lopes.jpg",
+      "produto": "kit (tenda, réplica e balão)",
+      "segmento": "alimentos, feira, kit",
+      "descricao": "Kit da Gama Lopes em feira: réplica do feijão, tenda com balcão e balão. Mande quando o cliente pensar em mais de um produto para o mesmo evento.",
+      "legenda": ""
+    },
+    {
+      "id": "tenda-laby-icekiss",
+      "arquivo": "tenda-laby-icekiss.jpg",
+      "produto": "tenda inflável",
+      "segmento": "bala, alimentos, ativação",
+      "descricao": "Tenda Laby Icekiss com medalhão de boca e balcão inflável. Mande quando o cliente pedir tenda com balcão ou medalhão no formato da marca.",
+      "legenda": ""
+    },
+    {
+      "id": "tamanhos-baloes",
+      "arquivo": "tamanhos-baloes.jpg",
+      "produto": "balão inflável (tamanhos)",
+      "segmento": "tamanhos",
+      "descricao": "Tamanhos de balão com pessoa ao lado: 2 m (Claro), 3 m (RAM), 4 m (Cresol), 5 m (Sicoob), 7 m (7K), 10 m (CRF). Mande quando o cliente perguntar os tamanhos do balão (fora da Black; na Black use black-balao-tamanhos).",
+      "legenda": ""
+    },
+    {
+      "id": "tamanhos-tendas",
+      "arquivo": "tamanhos-tendas.jpg",
+      "produto": "tenda inflável (tamanhos)",
+      "segmento": "tamanhos",
+      "descricao": "Tamanhos de tenda com pessoa: 3x3, 4x4, 5x5, 6x6, 8x8 e 10x10 m. Mande quando o cliente perguntar os tamanhos da tenda. A 2,5x2,5 não aparece: ofereça em texto.",
+      "legenda": ""
+    },
+    {
+      "id": "tamanhos-portais",
+      "arquivo": "tamanhos-portais.jpg",
+      "produto": "portal inflável (tamanhos)",
+      "segmento": "tamanhos",
+      "descricao": "Tamanhos de portal com pessoa: 2,5x2, 3x2, 3x3, 4x3, 5x4 e 6x4 m. Mande quando o cliente perguntar os tamanhos do portal.",
+      "legenda": ""
+    },
+    {
+      "id": "tamanhos-garrafas",
+      "arquivo": "tamanhos-garrafas.jpg",
+      "produto": "réplica inflável (tamanhos de garrafa)",
+      "segmento": "tamanhos",
+      "descricao": "Tamanhos de réplica de garrafa e embalagem com pessoa: 2; 2,5; 3; 4; 5 e 6 m. Mande quando o cliente perguntar o tamanho da réplica de garrafa, lata ou caixa.",
+      "legenda": ""
+    },
+    {
+      "id": "tamanhos-sacos",
+      "arquivo": "tamanhos-sacos.jpg",
+      "produto": "réplica inflável (tamanhos de saco)",
+      "segmento": "tamanhos",
+      "descricao": "Tamanhos de réplica de saco e pacote com pessoa: 2; 2,5; 3; 4; 5 e 6 m. Mande quando o cliente perguntar o tamanho da réplica de saco ou pacote.",
+      "legenda": ""
+    },
+    {
+      "id": "tamanhos-paineis-logotipo",
+      "arquivo": "tamanhos-paineis-logotipo.jpg",
+      "produto": "painel inflável (tamanhos)",
+      "segmento": "tamanhos",
+      "descricao": "Tamanhos de painel e logotipo inflável com pessoa: 1,5; 2; 2,5; 3; 4 e 5 m. Mande quando o cliente perguntar o tamanho do painel ou da logomarca.",
+      "legenda": ""
+    },
+    {
+      "id": "tamanhos-totens",
+      "arquivo": "tamanhos-totens.jpg",
+      "produto": "totem inflável (tamanhos)",
+      "segmento": "tamanhos",
+      "descricao": "Tamanhos de totem com pessoa: 2; 2,5; 3; 4; 5 e 7 m. Mande quando o cliente perguntar o tamanho do totem.",
+      "legenda": ""
+    },
+    {
+      "id": "tamanhos-chute-ao-gol",
+      "arquivo": "tamanhos-chute-ao-gol.jpg",
+      "produto": "chute ao gol inflável (tamanhos)",
+      "segmento": "tamanhos",
+      "descricao": "Tamanhos do chute ao gol com pessoa: 2x2, 3x3 e 4x2 m. Mande quando o cliente perguntar sobre o chute ao gol.",
+      "legenda": ""
     }
   ]
 }
