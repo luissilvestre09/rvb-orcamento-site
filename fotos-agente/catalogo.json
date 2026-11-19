@@ -1266,6 +1266,166 @@
       "segmento": "tamanhos",
       "descricao": "Tamanhos do chute ao gol com pessoa: 2x2, 3x3 e 4x2 m. Mande quando o cliente perguntar sobre o chute ao gol.",
       "legenda": ""
+    },
+    {
+      "id": "case-telecom",
+      "arquivo": "case-telecom.jpg",
+      "produto": "case de sucesso por segmento",
+      "segmento": "telecom, provedor de internet, operadora",
+      "descricao": "Card Case de Sucesso do segmento telecom, provedor de internet, operadora: Claro (balão), Vivo (tenda e mascote boneco) e TIM (portal); +26 anos, +150 mil projetos, fabricante mais bem avaliada do Brasil. Mande quando o cliente for desse segmento, uma vez na conversa.",
+      "legenda": ""
+    },
+    {
+      "id": "case-suplementos",
+      "arquivo": "case-suplementos.jpg",
+      "produto": "case de sucesso por segmento",
+      "segmento": "suplementos, nutrição esportiva, loja de suplementos",
+      "descricao": "Card Case de Sucesso do segmento suplementos, nutrição esportiva, loja de suplementos: réplica de pote de whey Shark Pro, tenda Integralmédica e réplica Max Titanium; +26 anos, +150 mil projetos, fabricante mais bem avaliada do Brasil. Mande quando o cliente for desse segmento, uma vez na conversa.",
+      "legenda": ""
+    },
+    {
+      "id": "case-supermercado",
+      "arquivo": "case-supermercado.jpg",
+      "produto": "case de sucesso por segmento",
+      "segmento": "supermercado, atacarejo, mercado",
+      "descricao": "Card Case de Sucesso do segmento supermercado, atacarejo, mercado: balão Detona Preços, tenda Supermercado Toda Hora e balão Supermercado Planalto; +26 anos, +150 mil projetos, fabricante mais bem avaliada do Brasil. Mande quando o cliente for desse segmento, uma vez na conversa.",
+      "legenda": ""
+    },
+    {
+      "id": "case-seguros",
+      "arquivo": "case-seguros.jpg",
+      "produto": "case de sucesso por segmento",
+      "segmento": "seguradora, corretora de seguros",
+      "descricao": "Card Case de Sucesso do segmento seguradora, corretora de seguros: painel Central Seguros, portal Porto Seguro e balão 77 Seguros; +26 anos, +150 mil projetos, fabricante mais bem avaliada do Brasil. Mande quando o cliente for desse segmento, uma vez na conversa.",
+      "legenda": ""
+    },
+    {
+      "id": "case-prefeitura",
+      "arquivo": "case-prefeitura.jpg",
+      "produto": "case de sucesso por segmento",
+      "segmento": "prefeitura, órgão público, governo",
+      "descricao": "Card Case de Sucesso do segmento prefeitura, órgão público, governo: tenda Detran SP, balão Prefeitura de São Paulo e túnel Prefeitura de Canaã; +26 anos, +150 mil projetos, fabricante mais bem avaliada do Brasil. Mande quando o cliente for desse segmento, uma vez na conversa.",
+      "legenda": ""
+    },
+    {
+      "id": "case-pet",
+      "arquivo": "case-pet.jpg",
+      "produto": "case de sucesso por segmento",
+      "segmento": "pet shop, ração, veterinária",
+      "descricao": "Card Case de Sucesso do segmento pet shop, ração, veterinária: réplica de saco de ração Danes, tenda Wanpy/Petz e réplica Bone Apettit; +26 anos, +150 mil projetos, fabricante mais bem avaliada do Brasil. Mande quando o cliente for desse segmento, uma vez na conversa.",
+      "legenda": ""
+    },
+    {
+      "id": "case-otica",
+      "arquivo": "case-otica.jpg",
+      "produto": "case de sucesso por segmento",
+      "segmento": "ótica",
+      "descricao": "Card Case de Sucesso do segmento ótica: tenda Instituto +Visão com óculos, portal Óticas Carol com óculos e totem Óticas Carol; +26 anos, +150 mil projetos, fabricante mais bem avaliada do Brasil. Mande quando o cliente for desse segmento, uma vez na conversa.",
+      "legenda": ""
+    },
+    {
+      "id": "case-odontologia",
+      "arquivo": "case-odontologia.jpg",
+      "produto": "case de sucesso por segmento",
+      "segmento": "dentista, clínica odontológica, clínica",
+      "descricao": "Card Case de Sucesso do segmento dentista, clínica odontológica, clínica: mascote dente com escova, tenda Ortho Dente e réplica de implante Grupo Orto; +26 anos, +150 mil projetos, fabricante mais bem avaliada do Brasil. Mande quando o cliente for desse segmento, uma vez na conversa.",
+      "legenda": ""
+    },
+    {
+      "id": "case-autopecas",
+      "arquivo": "case-autopecas.jpg",
+      "produto": "case de sucesso por segmento",
+      "segmento": "autopeças, motopeças, oficina, troca de óleo, baterias",
+      "descricao": "Card Case de Sucesso do segmento autopeças, motopeças, oficina, troca de óleo, baterias: réplica de bateria Moura, tenda Bosch e réplica de frasco Shell Helix; +26 anos, +150 mil projetos, fabricante mais bem avaliada do Brasil. Mande quando o cliente for desse segmento, uma vez na conversa.",
+      "legenda": ""
+    },
+    {
+      "id": "case-futebol",
+      "arquivo": "case-futebol.jpg",
+      "produto": "case de sucesso por segmento",
+      "segmento": "futebol, clube, escolinha de futebol",
+      "descricao": "Card Case de Sucesso do segmento futebol, clube, escolinha de futebol: réplica de bola Nike, túnel FPC Esportes e chute ao gol Above; +26 anos, +150 mil projetos, fabricante mais bem avaliada do Brasil. Mande quando o cliente for desse segmento, uma vez na conversa.",
+      "legenda": ""
+    },
+    {
+      "id": "case-fast-food",
+      "arquivo": "case-fast-food.jpg",
+      "produto": "case de sucesso por segmento",
+      "segmento": "fast-food, lanchonete, restaurante, hamburgueria",
+      "descricao": "Card Case de Sucesso do segmento fast-food, lanchonete, restaurante, hamburgueria: réplica de balde KFC, quiosque Subway e réplica de coroa Burger King; +26 anos, +150 mil projetos, fabricante mais bem avaliada do Brasil. Mande quando o cliente for desse segmento, uma vez na conversa.",
+      "legenda": ""
+    },
+    {
+      "id": "case-farmacia",
+      "arquivo": "case-farmacia.jpg",
+      "produto": "case de sucesso por segmento",
+      "segmento": "farmácia, drogaria",
+      "descricao": "Card Case de Sucesso do segmento farmácia, drogaria: tenda Ultrafarma, réplica de cápsula e tenda Cimed; +26 anos, +150 mil projetos, fabricante mais bem avaliada do Brasil. Mande quando o cliente for desse segmento, uma vez na conversa.",
+      "legenda": ""
+    },
+    {
+      "id": "case-educacao",
+      "arquivo": "case-educacao.jpg",
+      "produto": "case de sucesso por segmento",
+      "segmento": "escola, faculdade, universidade, curso",
+      "descricao": "Card Case de Sucesso do segmento escola, faculdade, universidade, curso: portal Unopar, tenda Anhanguera e tenda com balão UNIP; +26 anos, +150 mil projetos, fabricante mais bem avaliada do Brasil. Mande quando o cliente for desse segmento, uma vez na conversa.",
+      "legenda": ""
+    },
+    {
+      "id": "case-corrida",
+      "arquivo": "case-corrida.jpg",
+      "produto": "case de sucesso por segmento",
+      "segmento": "corrida de rua, assessoria esportiva, evento esportivo",
+      "descricao": "Card Case de Sucesso do segmento corrida de rua, assessoria esportiva, evento esportivo: tenda Track&Field, réplica de tênis FILA e portal Resenha Runners; +26 anos, +150 mil projetos, fabricante mais bem avaliada do Brasil. Mande quando o cliente for desse segmento, uma vez na conversa.",
+      "legenda": ""
+    },
+    {
+      "id": "case-construcao",
+      "arquivo": "case-construcao.jpg",
+      "produto": "case de sucesso por segmento",
+      "segmento": "construtora, incorporadora, imobiliária, obra",
+      "descricao": "Card Case de Sucesso do segmento construtora, incorporadora, imobiliária, obra: balão CRF Construtora, tenda Direcional e chute ao gol MRV; +26 anos, +150 mil projetos, fabricante mais bem avaliada do Brasil. Mande quando o cliente for desse segmento, uma vez na conversa.",
+      "legenda": ""
+    },
+    {
+      "id": "case-bancos",
+      "arquivo": "case-bancos.jpg",
+      "produto": "case de sucesso por segmento",
+      "segmento": "banco, correspondente bancário, financeira, crédito",
+      "descricao": "Card Case de Sucesso do segmento banco, correspondente bancário, financeira, crédito: balão Itaú, totem Santander e portal BTG Pactual; +26 anos, +150 mil projetos, fabricante mais bem avaliada do Brasil. Mande quando o cliente for desse segmento, uma vez na conversa.",
+      "legenda": ""
+    },
+    {
+      "id": "case-automotivo",
+      "arquivo": "case-automotivo.jpg",
+      "produto": "case de sucesso por segmento",
+      "segmento": "concessionária, loja de veículos, revenda de carros",
+      "descricao": "Card Case de Sucesso do segmento concessionária, loja de veículos, revenda de carros: tenda Fiat, portal Renault Valec e tenda Jeep; +26 anos, +150 mil projetos, fabricante mais bem avaliada do Brasil. Mande quando o cliente for desse segmento, uma vez na conversa.",
+      "legenda": ""
+    },
+    {
+      "id": "case-academia",
+      "arquivo": "case-academia.jpg",
+      "produto": "case de sucesso por segmento",
+      "segmento": "academia, fitness, crossfit",
+      "descricao": "Card Case de Sucesso do segmento academia, fitness, crossfit: portal Skyfit, portal Smart Fit e balão Bluefit; +26 anos, +150 mil projetos, fabricante mais bem avaliada do Brasil. Mande quando o cliente for desse segmento, uma vez na conversa.",
+      "legenda": ""
+    },
+    {
+      "id": "case-bebidas",
+      "arquivo": "case-bebidas.jpg",
+      "produto": "case de sucesso por segmento",
+      "segmento": "bebidas, distribuidora, adega, cervejaria",
+      "descricao": "Card Case de Sucesso do segmento bebidas, distribuidora, adega, cervejaria: réplicas de garrafa Pérgola, lata Schweppes e garrafas Mansão Maromba; +26 anos, +150 mil projetos, fabricante mais bem avaliada do Brasil. Mande quando o cliente for desse segmento, uma vez na conversa.",
+      "legenda": ""
+    },
+    {
+      "id": "case-alimenticio",
+      "arquivo": "case-alimenticio.jpg",
+      "produto": "case de sucesso por segmento",
+      "segmento": "indústria de alimentos, marca de alimentos, chocolate",
+      "descricao": "Card Case de Sucesso do segmento indústria de alimentos, marca de alimentos, chocolate: réplica Lindt, tenda e réplicas Gama Lopes e tenda Nestlé; +26 anos, +150 mil projetos, fabricante mais bem avaliada do Brasil. Mande quando o cliente for desse segmento, uma vez na conversa.",
+      "legenda": ""
     }
   ]
 }
