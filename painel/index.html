@@ -101,7 +101,7 @@
     .chat .thread, .chat .lista { min-height:0; }
     .msgs { min-height:0; }
   }
-  @media (max-width:760px) { .chat { grid-template-columns:1fr; } .chat .lista { display:block; } .chat .thread { display:none; } .chat.aberta .lista { display:none; } .chat.aberta .thread { display:flex; } .thead .voltar { display:inline-block; } }
+  @media (max-width:760px) { .chat { grid-template-columns:1fr; } .chat .lista { display:block; } .chat .thread { display:none; } .chat.aberta .lista { display:none; } .chat.aberta .thread { display:flex; } }
   .drawer { position:fixed; inset:0; background:rgba(20,26,51,.45); display:none; z-index:20; }
   .drawer.on { display:block; }
   .drawer .box { position:absolute; right:0; top:0; bottom:0; width:min(560px,100%); background:#fff; overflow:auto; padding:20px; }
@@ -133,6 +133,28 @@
   .inp { border:1px solid var(--line); border-radius:8px; padding:6px 8px; width:100%; }
   h3 { margin:18px 0 8px; font-size:16px; }
   @media (max-width:700px) { .top-in { flex-wrap:wrap; } th.oc, td.oc { display:none; } .barra { grid-template-columns:100px 1fr 40px; } }
+  /* celular compacto (Luis, 20/11/2026: "ficou muito apertado"): topo numa linha só, cabeçalho da conversa e ferramentas enxutos */
+  @media (max-width:760px) {
+    .top-in { flex-wrap:nowrap; padding:6px 8px; gap:6px; }
+    .top img, .top .t, .top .sp, .who, #avisos[data-e="ligado"] { display:none; }
+    .tabs { flex:1; min-width:0; overflow-x:auto; scrollbar-width:none; } .tabs::-webkit-scrollbar { display:none; }
+    .tab { padding:6px 10px; font-size:14px; white-space:nowrap; }
+    #sair, #avisos { padding:4px 10px; font-size:12px; white-space:nowrap; }
+    .thead { padding:6px 10px; gap:4px 8px; font-size:14px; }
+    .thead .small { font-size:12px; }
+    .ferr { flex-wrap:nowrap; overflow-x:auto; padding:6px 8px; scrollbar-width:none; } .ferr::-webkit-scrollbar { display:none; }
+    .ferr .btn, .ferr .modo button { white-space:nowrap; padding:4px 8px; font-size:12px; }
+    .ferr .modo > .muted { display:none; }
+    .compor { padding:6px 8px; } .compor textarea { min-height:42px; height:42px; } .compor .btn { padding:8px 14px; }
+    .previas { padding:6px 10px; }
+    .previa img { width:90px; height:90px; }
+  }
+  /* prévia já enviada: fica recolhida numa linha (Luis, 20/11/2026) */
+  .previa-min > summary { cursor:pointer; font-size:13px; list-style:none; padding:2px 0; }
+  .previa-min > summary::-webkit-details-marker { display:none; }
+  .previa-min > summary::before { content:'▸ '; color:var(--muted); }
+  .previa-min[open] > summary::before { content:'▾ '; }
+  .previa-min[open] > summary { margin-bottom:8px; }
 .apagar{margin-top:18px;padding-top:12px;border-top:1px solid #eee}.btn-apagar{background:#fff;border:1px solid #c33;color:#c33;border-radius:6px;padding:5px 10px;cursor:pointer;font:inherit;font-size:13px}.btn-apagar.sim{background:#c33;color:#fff}
 .previas{padding:10px 12px;border-top:1px solid #e3e8f0;background:#fffbe6}
 .previa{display:flex;gap:12px;align-items:flex-start;margin-bottom:10px}.previa img{width:140px;height:140px;object-fit:cover;border-radius:8px;border:1px solid #e3e8f0}
@@ -660,7 +682,7 @@ async function abrirConversa(t) {
   carregarPrevias(t);
   $('#cCompor').hidden = false; $('#cErro').textContent = '';
   const janelaAberta = CONV.ultima_do_cliente_em && (Date.now() - new Date(CONV.ultima_do_cliente_em).getTime()) < 24 * 3600 * 1000;
-  $('#cTexto').placeholder = janelaAberta ? 'Escreva como no WhatsApp… (Enter envia, Shift+Enter quebra linha)' : 'Janela de 24h fechada: reabra com o template de retorno e, quando o cliente responder, escreva aqui.';
+  $('#cTexto').placeholder = janelaAberta ? (matchMedia('(max-width:760px)').matches ? 'Mensagem' : 'Escreva como no WhatsApp… (Enter envia, Shift+Enter quebra linha)') : 'Janela de 24h fechada: reabra com o template de retorno e, quando o cliente responder, escreva aqui.';
   $('#cJanela').hidden = !!janelaAberta;
   mostrarAgendados(t);
   if (CONV.nao_lida) { chamarFn({ acao: 'lida', telefone: t }); CONV.nao_lida = false; renderConversas(); }
@@ -677,13 +699,13 @@ async function carregarPrevias(t) {
   }
   if (!lista.length) { box.hidden = true; box.innerHTML = ''; return; }
   box.hidden = false;
-  box.innerHTML = lista.map(p => `<div class="previa" data-id="${p.id}">
+  box.innerHTML = lista.map(p => (p.status === 'enviada' ? `<details class="previa-min"><summary>🎨 Prévia já enviada ao cliente · ver ou refazer</summary>` : '') + `<div class="previa" data-id="${p.id}">
       ${p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener"><img src="${esc(p.url)}" alt=""></a>` : '<div class="muted small" style="width:140px">gerando…</div>'}
       <div class="txt"><b>🎨 Prévia visual ${p.status === 'gerando' ? '(gerando)' : p.status === 'erro' ? '(falhou)' : p.status === 'enviada' ? 'já enviada ao cliente' : 'pronta para aprovar'}</b><div class="muted small">${esc(p.descricao || '')}</div>
         ${p.status === 'erro' ? `<div class="erro small">${esc(p.erro || '')}</div>` : ''}
         ${p.status === 'enviada' ? `<div class="acoes"><button class="btn" data-pv-refazer>Refazer com ajuste</button></div><div class="muted small" style="margin-top:4px">Gera outra versão para você aprovar antes de mandar. A que já foi continua na conversa.</div>` : ''}
         ${p.status === 'pendente' ? `<div class="acoes"><button class="btn primario" data-pv-enviar>Enviar ao cliente</button><button class="btn" data-pv-refazer>Refazer com ajuste</button><button class="btn" data-pv-descartar>Descartar</button></div><div class="muted small" style="margin-top:4px">Vai com a marca "prévia conceitual" e a legenda explicando que o layout final vem depois.</div>` : ''}
-      </div></div>`).join('');
+      </div></div>` + (p.status === 'enviada' ? '</details>' : '')).join('');
   box.querySelectorAll('[data-pv-descartar]').forEach(b => b.addEventListener('click', async () => {
     const id = b.closest('.previa').dataset.id; b.disabled = true;
     const r = await chamarFn({ acao: 'previa', telefone: t, id, decisao: 'descartar' });
