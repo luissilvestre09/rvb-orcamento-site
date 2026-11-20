@@ -68,6 +68,10 @@
   .thead .modo button { border:1px solid var(--line); background:#fff; border-radius:999px; padding:4px 10px; cursor:pointer; font-size:12.5px; }
   .thead .modo button.on { background:var(--blue); color:#fff; border-color:var(--blue); }
   .msgs { flex:1; overflow:auto; padding:14px; background:#EFE7DD; display:flex; flex-direction:column; gap:6px; }
+  /* botão flutuante "ir para a última mensagem" (Luis, 20/11/2026) */
+  .chat .thread { position:relative; }
+  .irfim { position:absolute; right:16px; width:40px; height:40px; border-radius:50%; border:1px solid var(--line); background:#fff; color:var(--navy); font-size:20px; line-height:38px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,.18); cursor:pointer; z-index:4; padding:0; }
+  .irfim[hidden] { display:none; }
   .m { max-width:78%; padding:7px 10px; border-radius:10px; font-size:14px; white-space:pre-wrap; word-break:break-word; box-shadow:0 1px 0 rgba(0,0,0,.06); }
   .m.in { background:#fff; align-self:flex-start; } .m.out { background:#D9FDD3; align-self:flex-end; } .m.sis { background:#FFF3D6; align-self:center; font-size:12px; color:#7A5200; }
   .m .q { font-size:11px; color:var(--muted); margin-bottom:2px; } .m .h { font-size:10.5px; color:var(--muted); text-align:right; margin-top:2px; }
@@ -86,7 +90,18 @@
   .ferr .btn { padding:5px 10px; font-size:12.5px; }
   .compor textarea { flex:1; border:1px solid var(--line); border-radius:10px; padding:8px 10px; font:inherit; resize:vertical; }
   .dados { font-size:12.5px; color:#333; padding:8px 12px; border-top:1px solid var(--line); background:#FAFCFF; max-height:30%; overflow:auto; } .dados[hidden] { display:none; } .dados b { color:var(--muted); font-weight:600; }
-  @media (max-width:760px) { .chat { grid-template-columns:1fr; height:calc(100vh - 100px); } .chat .lista { display:block; } .chat .thread { display:none; } .chat.aberta .lista { display:none; } .chat.aberta .thread { display:flex; } .thead .voltar { display:inline-block; } }
+  @media (max-width:760px) {
+    /* celular (Luis, 20/11/2026): o menu fica sempre preso no alto e só as mensagens rolam */
+    .top { position:fixed; top:0; left:0; right:0; }
+    body { padding-top:var(--topH, 120px); }
+    main { padding:8px; }
+    .top .t { display:none; }
+    .tabs { overflow-x:auto; flex-wrap:nowrap; }
+    .chat { height:calc(100dvh - var(--topH, 120px) - 16px); min-height:0; grid-template-rows:minmax(0,1fr); }
+    .chat .thread, .chat .lista { min-height:0; }
+    .msgs { min-height:0; }
+  }
+  @media (max-width:760px) { .chat { grid-template-columns:1fr; } .chat .lista { display:block; } .chat .thread { display:none; } .chat.aberta .lista { display:none; } .chat.aberta .thread { display:flex; } .thead .voltar { display:inline-block; } }
   .drawer { position:fixed; inset:0; background:rgba(20,26,51,.45); display:none; z-index:20; }
   .drawer.on { display:block; }
   .drawer .box { position:absolute; right:0; top:0; bottom:0; width:min(560px,100%); background:#fff; overflow:auto; padding:20px; }
@@ -187,6 +202,7 @@ body.so-meu .sc{display:none}
         <div class="nova" id="cBuscaBar"><input id="cBusca" type="search" placeholder="🔎 Buscar por nome, empresa ou telefone" autocomplete="off" style="flex:1;min-width:0;width:100%"></div>
         <div id="cLista"><div class="muted small" style="padding:12px">Carregando…</div></div></div>
       <div class="thread" id="cThread">
+        <button class="irfim" id="cIrFim" hidden title="Ir para a última mensagem">⌄</button>
         <div class="thead" id="cHead"><button class="btn voltar" id="cVoltar">‹</button><div class="muted">Escolha uma conversa</div></div>
         <div class="msgs" id="cMsgs"></div>
         <div class="previas" id="cPrevias" hidden></div>
@@ -259,6 +275,27 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 import { SUPABASE_URL, SUPABASE_ANON } from './config.js';
 const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
 const $ = (s) => document.querySelector(s);
+// ---- celular: altura real do menu fixo (Luis, 20/11/2026) ----
+(function () {
+  const topo = document.querySelector('.top');
+  const medir = () => document.documentElement.style.setProperty('--topH', topo.offsetHeight + 'px');
+  medir(); addEventListener('resize', medir);
+  try { new ResizeObserver(medir).observe(topo); } catch { /* navegador antigo */ }
+})();
+// ---- botão flutuante: ir para a última mensagem ----
+(function () {
+  const box = $('#cMsgs'), btn = $('#cIrFim'), th = $('#cThread');
+  const atualizar = () => {
+    const longe = box.scrollHeight - box.scrollTop - box.clientHeight > 250;
+    btn.hidden = !longe;
+    if (longe) btn.style.bottom = (th.clientHeight - (box.offsetTop + box.clientHeight) + 12) + 'px';
+  };
+  box.addEventListener('scroll', atualizar, { passive: true });
+  addEventListener('resize', atualizar);
+  try { new MutationObserver(atualizar).observe(box, { childList: true }); } catch { /* sem observer */ }
+  btn.addEventListener('click', () => box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' }));
+})();
+
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fone = (d) => { d = String(d || '').replace(/\D/g, ''); return d.length === 11 ? `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}` : d.length === 10 ? `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}` : d; };
 const dt = (s) => s ? new Date(s).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }) : '';
