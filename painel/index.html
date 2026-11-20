@@ -304,7 +304,10 @@ function mostrar(p) {
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.p === p));
   document.querySelectorAll('.painel').forEach(x => x.classList.toggle('on', x.id === 'p-' + p));
 }
-$('#tabs').addEventListener('click', e => { const t = e.target.closest('.tab'); if (!t) return; if (!VE_TUDO && !['conversas', 'leads'].includes(t.dataset.p)) return; mostrar(t.dataset.p); lembrarHash(t.dataset.p === 'conversas' ? (CONV ? '#conversas/' + CONV.telefone : '#conversas') : '#' + t.dataset.p); });
+$('#tabs').addEventListener('click', e => { const t = e.target.closest('.tab'); if (!t) return; if (!VE_TUDO && !['conversas', 'leads'].includes(t.dataset.p)) return;
+  // celular (Luis, 20/11/2026): tocar em "Conversas" com uma conversa aberta volta para a lista, sem rolar até a seta; no PC a lista já fica ao lado
+  if (t.dataset.p === 'conversas' && matchMedia('(max-width:760px)').matches && document.querySelector('.chat')?.classList.contains('aberta')) { document.querySelector('.chat').classList.remove('aberta'); mostrar('conversas'); window.scrollTo(0, 0); lembrarHash('#conversas'); return; }
+  mostrar(t.dataset.p); lembrarHash(t.dataset.p === 'conversas' ? (CONV ? '#conversas/' + CONV.telefone : '#conversas') : '#' + t.dataset.p); });
 function lembrarHash(h) { history.replaceState(null, '', h); try { localStorage.setItem('painel_ultima', JSON.stringify({ h, ts: Date.now() })); } catch { /* sem localStorage */ } }
 
 /* ---------- dados ---------- */
